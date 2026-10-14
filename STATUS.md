@@ -81,7 +81,7 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
 - [x] README in airmkit's structure; `CITATION.cff`; `CONTRIBUTING.md`
 - [x] Staleness tests for `paper/paper.md`, the reference pages, the README findings and the reader/PDF
 - [x] Site published on GitHub Pages (H8, 2026-10-14): https://thanatchon36.github.io/rulewarden/
-- [x] 0.1.1 prepared (ADR-019): README quickstart with real outputs, `init` names pack-covered rules; the human
-      pushes tag `v0.1.1` to publish
+- [x] 0.1.1 published (ADR-019): README quickstart with real outputs, `init` names pack-covered rules; the human
+      pushed tag `v0.1.1` on 2026-10-14, `release.yml` run 38566999003 → https://pypi.org/project/rulewarden/0.1.1/
 - [x] Paper prose revised (abstract, principal findings, formal register); 11-page PDF and reader rebuilt; all
       placeholders and citations still resolve
