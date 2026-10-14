@@ -1,0 +1,82 @@
+# Documentation site. Lives under docs/ (the repository's allowed paths); build with `make docs`.
+site_name: rulewarden
+site_description: >-
+  Deterministic runtime assurance for AI coding agents: enforce CLAUDE.md / AGENTS.md rules on every change,
+  in a pre-tool hook, a git hook and CI, fail-closed.
+site_url: https://thanatchon36.github.io/rulewarden/
+repo_url: https://github.com/thanatchon36/rulewarden
+repo_name: thanatchon36/rulewarden
+edit_uri: edit/main/docs/pages/
+copyright: Apache-2.0 · Thanatchon Chongmankhong
+
+docs_dir: pages
+site_dir: ../site
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - toc.follow
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+  - include-markdown
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+validation:
+  omitted_files: warn
+  absolute_links: info
+  unrecognized_links: warn
+  anchors: info
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Concepts: concepts.md
+  - Writing rules: writing-rules.md
+  - Rule catalogue: rules.md
+  - CLI reference: cli.md
+  - Integrations: integrations.md
+  - Security model: security.md
+  - Research:
+      - The paper: research/paper.md
+      - Read the paper (web): paper/index.html
+      - Corpus study: research/corpus.md
+      - Benchmark: research/benchmark.md
+  - Project:
+      - Status: project/status.md
+      - Design decisions: project/decisions.md
+      - Needs a human: project/needs-human.md
+      - Changelog: project/changelog.md

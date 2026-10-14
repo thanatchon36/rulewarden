@@ -3,11 +3,11 @@ SHELL := /bin/bash
 UV ?= uv
 RUN := $(UV) run --frozen
 
-.PHONY: check ci ci-gate paper-ci lint fmt types test cov test-rules determinism selfcheck paper replay corpus bench-report refs clean
+.PHONY: check ci ci-gate paper-ci lint fmt types test cov test-rules determinism selfcheck paper docs docs-serve replay corpus bench-report refs clean
 
 check: lint types cov test-rules determinism selfcheck
 
-ci: check replay
+ci: check replay docs
 
 # CI entry points (the workflow files only call these targets; see ADR-005).
 ci-gate:
@@ -49,11 +49,20 @@ replay:
 corpus:
 	$(RUN) --group research python corpus/analyse.py
 
+# Rebuild paper/paper.md, paper/paper.pdf and the web reader docs/pages/paper/ (PDF and reader need pandoc).
 paper:
 	bash paper/build.sh
+
+# Regenerate the reference pages, then build the site into site/ (git-ignored).
+docs:
+	$(RUN) python docs/gen_reference.py
+	$(RUN) --group docs mkdocs build --strict -f docs/mkdocs.yml
+
+docs-serve:
+	$(RUN) --group docs mkdocs serve -f docs/mkdocs.yml
 
 refs:
 	$(RUN) python paper/verify_refs.py
 
 clean:
-	rm -rf dist build .pytest_cache .mypy_cache .ruff_cache .coverage paper/build
+	rm -rf dist build site .pytest_cache .mypy_cache .ruff_cache .coverage paper/build

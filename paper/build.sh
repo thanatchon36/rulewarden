@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Build the paper from scripts: verify references (unless --no-network), recompute corpus and
-# benchmark numbers, render placeholders (fails on any unresolved number or unverified citation),
-# then convert to HTML with pandoc when it is installed.
+# Build the paper: verify references (unless --no-network), recompute the numbers, render
+# paper/paper.md and the README findings (fails on an unresolved number or unverified citation),
+# then the PDF and web reader if pandoc exists. paper/build/ feeds the CI artifact.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -17,14 +17,12 @@ fi
 "${run[@]}" --group research python corpus/analyse.py
 "${run[@]}" --group research python bench/replay.py --check
 "${run[@]}" python paper/render.py
+"${run[@]}" python paper/findings.py
+mkdir -p paper/build
+cp paper/paper.md paper/build/paper.md
 
 if command -v pandoc >/dev/null 2>&1; then
-  pandoc paper/build/main.md \
-    --from markdown --citeproc --bibliography paper/refs.verified.bib \
-    --resource-path paper --standalone --embed-resources \
-    --metadata link-citations=true --toc \
-    -o paper/build/paper.html
-  echo "built paper/build/paper.html"
+  "${run[@]}" --group paper python paper/build_paper.py
 else
-  echo "pandoc not found: rendered markdown only (paper/build/main.md)"
+  echo "pandoc not found: rendered paper/paper.md only (PDF and web reader not rebuilt)"
 fi

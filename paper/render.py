@@ -1,4 +1,4 @@
-"""Render paper/main.md to paper/build/main.md, filling every number from generated results.
+"""Render paper/main.md to paper/paper.md (committed), filling every number from generated results.
 
 Placeholders: {{corpus:dotted.path|filter}}, {{bench:dotted.path|filter}}, {{table:name}}.
 Sources: corpus/data/summary.json, bench/results/summary.json, paper/tables/<name>.md.
@@ -16,6 +16,7 @@ from typing import Any
 
 PAPER = Path(__file__).resolve().parent
 ROOT = PAPER.parent
+OUTPUT = PAPER / "paper.md"
 SOURCES = {
     "corpus": ROOT / "corpus" / "data" / "summary.json",
     "bench": ROOT / "bench" / "results" / "summary.json",
@@ -95,8 +96,6 @@ def unverified_citations(text: str) -> list[str]:
 
 
 def main() -> int:
-    out_dir = PAPER / "build"
-    out_dir.mkdir(exist_ok=True)
     text, missing = render((PAPER / "main.md").read_text(encoding="utf-8"))
     for key in unverified_citations(text):
         missing.append(f"citation @{key} is not in refs.verified.bib")
@@ -104,8 +103,8 @@ def main() -> int:
         for m in missing:
             print(f"unresolved: {m}", file=sys.stderr)
         return 1
-    (out_dir / "main.md").write_text(text, encoding="utf-8")
-    print(f"rendered {out_dir / 'main.md'}")
+    OUTPUT.write_text(text, encoding="utf-8")
+    print(f"rendered {OUTPUT.relative_to(ROOT)}")
     return 0
 
 

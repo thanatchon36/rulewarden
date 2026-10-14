@@ -1,0 +1,40 @@
+# Protected file (P2). Builds the documentation site (docs/mkdocs.yml, including the paper's web
+# reader and PDF under paper/) and deploys it to GitHub Pages. Deployment stays off until a human
+# makes the repository public (NEEDS_HUMAN H2), enables Pages with source "GitHub Actions" and sets
+# the repository variable PAGES_PUBLISH=true.
+name: docs
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --all-groups
+      - run: make docs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+  deploy:
+    needs: build
+    if: vars.PAGES_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

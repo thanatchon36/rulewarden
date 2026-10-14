@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. The format follows Keep a Changelog, and the project uses
 semantic versioning.
 
+## [Unreleased]
+
+### Added
+- Documentation site (`docs/mkdocs.yml`, `make docs`) with a generated CLI reference and rule catalogue.
+- The paper as a PDF (`paper/paper.pdf`) and a web reader (`docs/pages/paper/`), both built from `paper/paper.md`
+  by `make paper`.
+- `CITATION.cff` and `CONTRIBUTING.md`; README rewritten, with its findings table generated from the result files.
+
 ## [0.1.0] — 2026-10-14
 
 ### Added

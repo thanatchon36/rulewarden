@@ -47,6 +47,9 @@ research = [
   "matplotlib>=3.9",
   "scipy>=1.14",
 ]
+# Documentation site (docs/mkdocs.yml) and paper typesetting; neither is a runtime dependency (ADR-018).
+docs = ["mkdocs-material>=9.5", "mkdocs-include-markdown-plugin>=6.2"]
+paper = ["typst>=0.13"]
 
 [build-system]
 requires = ["hatchling>=1.25"]
