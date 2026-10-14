@@ -21,8 +21,8 @@ Resume: read `MISSION.md`, this file and `DECISIONS.md`, then continue from the 
       diff/gitsrc, deviations, fixtures; checks regex/glob/ast/jq/shell/python (ADR-009)
 - [x] 7 packs, 26 rules, 120 fixtures; compiler; adapters (Claude Code, git hooks, CI, other harnesses); CLI
 - [x] Repo enforcement files; human lock done 2026-10-14 (26 rules, 13 protected files); git hooks installed
-- [x] Stop is a warning gate (ADR-011); repo rule config and lockout incident recorded (ADR-010)
-- [x] `make check` green: 132 tests, coverage 92%, ruff, mypy --strict, test-rules (repo + shipped), determinism,
+- [x] Stop is a warning gate (ADR-011); repo rule config and lockout incident recorded (ADR-010); locked rule inputs exempt from content rules, synthetic targets need explicit selection (ADR-012). Committed 014a1ae; all three git hooks passed
+- [x] `make check` green: 135 tests, coverage 92%, ruff, mypy --strict, test-rules (repo + shipped), determinism,
       self-check PASS
 
 Incident log (dogfooding evidence, paper §6), 2026-10-14:
