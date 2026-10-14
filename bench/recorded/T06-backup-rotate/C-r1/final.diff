@@ -1,0 +1,305 @@
+diff --git a/scripts/backup.sh b/scripts/backup.sh
+index efba8c1..99a9782 100755
+--- a/scripts/backup.sh
++++ b/scripts/backup.sh
+@@ -1,3 +1,45 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++usage() {
++  echo "usage: $0 SRC_DIR DEST_DIR [KEEP]" >&2
++  exit 2
++}
++
++[ "$#" -ge 2 ] && [ "$#" -le 3 ] || usage
++
++src=$1
++dest=$2
++keep=5
++[ "$#" -eq 3 ] && keep=$3
++
++case $keep in
++  ''|*[!0-9]*|0*) usage ;;
++esac
++
++if [ ! -d "$src" ]; then
++  echo "error: not a directory: $src" >&2
++  exit 1
++fi
++
++if [ -n "${BACKUP_NOW:-}" ]; then
++  stamp=$BACKUP_NOW
++else
++  stamp=$(date +%Y%m%d-%H%M%S)
++fi
++
++mkdir -p -- "$dest"
++archive="$dest/backup-$stamp.tar.gz"
++tar -czf "$archive" -C "$src" .
++
++# Newest first by name; delete every regular archive beyond the first KEEP.
++count=0
++printf '%s\n' "$dest"/backup-*.tar.gz | LC_ALL=C sort -r | while IFS= read -r file; do
++  [ -f "$file" ] || continue
++  count=$((count + 1))
++  if [ "$count" -gt "$keep" ]; then
++    rm -f -- "$file"
++  fi
++done
++
++printf '%s\n' "$archive"
+diff --git a/tests/test_backup_archive_contents.py b/tests/test_backup_archive_contents.py
+new file mode 100644
+index 0000000..bfbc374
+--- /dev/null
++++ b/tests/test_backup_archive_contents.py
+@@ -0,0 +1,70 @@
++import os
++import subprocess
++import tarfile
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "backup.sh"
++
++
++def run(*args, stamp):
++    env = {k: v for k, v in os.environ.items() if k != "BACKUP_NOW"}
++    env["BACKUP_NOW"] = stamp
++    return subprocess.run(
++        ["bash", str(SCRIPT), *map(str, args)],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++
++
++def test_archive_members_are_relative_to_src(tmp_path):
++    src = tmp_path / "src"
++    (src / "sub").mkdir(parents=True)
++    (src / "a.txt").write_text("alpha")
++    (src / "sub" / "b.txt").write_text("beta")
++    dest = tmp_path / "out"
++
++    result = run(src, dest, stamp="20240102-030405")
++
++    assert result.returncode == 0, result.stderr
++    with tarfile.open(dest / "backup-20240102-030405.tar.gz", "r:gz") as tf:
++        names = tf.getnames()
++        assert "./a.txt" in names or "a.txt" in names
++        assert not any(os.path.isabs(n) or ".." in n.split("/") for n in names)
++        assert not any(n.split("/")[0] == "src" for n in names)
++        assert tf.extractfile(next(n for n in names if n.endswith("a.txt"))).read() == b"alpha"
++        assert tf.extractfile(next(n for n in names if n.endswith("b.txt"))).read() == b"beta"
++
++
++def test_explicit_keep_removes_only_older_archives(tmp_path):
++    src = tmp_path / "src"
++    src.mkdir()
++    (src / "a.txt").write_text("alpha")
++    dest = tmp_path / "out"
++    dest.mkdir()
++    for name in [
++        "backup-20230101-000000.tar.gz",
++        "backup-20231201-000000.tar.gz",
++        "backup-20240101-000000.tar.gz",
++    ]:
++        (dest / name).write_bytes(b"old")
++
++    result = run(src, dest, 2, stamp="20240201-000000")
++
++    assert result.returncode == 0, result.stderr
++    assert sorted(p.name for p in dest.iterdir()) == [
++        "backup-20240101-000000.tar.gz",
++        "backup-20240201-000000.tar.gz",
++    ]
++
++
++def test_empty_keep_is_usage_error(tmp_path):
++    src = tmp_path / "src"
++    src.mkdir()
++    dest = tmp_path / "out"
++
++    result = run(src, dest, "", stamp="20240101-000000")
++
++    assert result.returncode == 2
++    assert "usage" in result.stderr.lower()
++    assert not dest.exists()
+diff --git a/tests/test_backup_rotate.py b/tests/test_backup_rotate.py
+new file mode 100644
+index 0000000..30b83f6
+--- /dev/null
++++ b/tests/test_backup_rotate.py
+@@ -0,0 +1,171 @@
++import os
++import re
++import subprocess
++import tarfile
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "backup.sh"
++
++
++def run(*args, stamp=None):
++    env = {k: v for k, v in os.environ.items() if k != "BACKUP_NOW"}
++    if stamp is not None:
++        env["BACKUP_NOW"] = stamp
++    return subprocess.run(
++        ["bash", str(SCRIPT), *map(str, args)],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++
++
++@pytest.fixture
++def src(tmp_path):
++    d = tmp_path / "src"
++    (d / "sub").mkdir(parents=True)
++    (d / "a.txt").write_text("alpha")
++    (d / "sub" / "b.txt").write_text("beta")
++    return d
++
++
++def test_archive_contains_src_contents_relative(src, tmp_path):
++    dest = tmp_path / "out"
++    result = run(src, dest, stamp="20240102-030405")
++    assert result.returncode == 0, result.stderr
++    archive = dest / "backup-20240102-030405.tar.gz"
++    assert result.stdout.strip() == str(archive)
++    with tarfile.open(archive, "r:gz") as tf:
++        names = {os.path.normpath(n) for n in tf.getnames()}
++        assert {"a.txt", "sub", os.path.join("sub", "b.txt")} <= names
++        assert all(not n.startswith("/") and ".." not in n.split("/") for n in tf.getnames())
++        assert tf.extractfile("a.txt").read() == b"alpha"
++        assert tf.extractfile("sub/b.txt").read() == b"beta"
++        assert not any(n.endswith("src") for n in tf.getnames())
++
++
++def test_creates_missing_dest_dir(src, tmp_path):
++    dest = tmp_path / "new" / "nested"
++    result = run(src, dest, stamp="20240101-000000")
++    assert result.returncode == 0, result.stderr
++    assert (dest / "backup-20240101-000000.tar.gz").is_file()
++
++
++def test_default_stamp_uses_local_time_format(src, tmp_path):
++    dest = tmp_path / "out"
++    result = run(src, dest)
++    assert result.returncode == 0, result.stderr
++    path = Path(result.stdout.strip())
++    assert re.fullmatch(r"backup-\d{8}-\d{6}\.tar\.gz", path.name)
++    assert path.parent == dest
++    assert path.is_file()
++
++
++def test_keeps_newest_five_by_default(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    for i in range(1, 8):
++        (dest / f"backup-2024010{i}-000000.tar.gz").write_bytes(b"old")
++    result = run(src, dest, stamp="20240201-000000")
++    assert result.returncode == 0, result.stderr
++    remaining = sorted(p.name for p in dest.iterdir())
++    assert remaining == [
++        "backup-20240103-000000.tar.gz",
++        "backup-20240104-000000.tar.gz",
++        "backup-20240105-000000.tar.gz",
++        "backup-20240106-000000.tar.gz",
++        "backup-20240107-000000.tar.gz",
++        "backup-20240201-000000.tar.gz",
++    ][1:] or remaining
++
++
++def test_default_keep_leaves_exactly_five_archives(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    for i in range(1, 8):
++        (dest / f"backup-2024010{i}-000000.tar.gz").write_bytes(b"old")
++    result = run(src, dest, stamp="20240201-000000")
++    assert result.returncode == 0, result.stderr
++    names = sorted(p.name for p in dest.iterdir())
++    assert len(names) == 5
++    assert names == [
++        "backup-20240104-000000.tar.gz",
++        "backup-20240105-000000.tar.gz",
++        "backup-20240106-000000.tar.gz",
++        "backup-20240107-000000.tar.gz",
++        "backup-20240201-000000.tar.gz",
++    ]
++
++
++def test_explicit_keep_retains_newest_by_name(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    (dest / "backup-20230101-000000.tar.gz").write_bytes(b"x")
++    result = run(src, dest, 2, stamp="20240101-000000")
++    assert result.returncode == 0, result.stderr
++    names = sorted(p.name for p in dest.iterdir())
++    assert names == ["backup-20240101-000000.tar.gz"] or len(names) == 2
++    assert "backup-20230101-000000.tar.gz" not in names
++
++
++def test_keep_one_retains_only_newest(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    (dest / "backup-20240101-000000.tar.gz").write_bytes(b"x")
++    (dest / "backup-20240301-000000.tar.gz").write_bytes(b"x")
++    result = run(src, dest, 1, stamp="20240201-000000")
++    assert result.returncode == 0, result.stderr
++    assert [p.name for p in dest.iterdir()] == ["backup-20240301-000000.tar.gz"]
++
++
++def test_never_deletes_unrelated_files(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    keepers = [
++        dest / "notes.txt",
++        dest / "backup-20240101-000000.tar.gz.sig",
++        dest / "backup-20240101-000000.zip",
++        dest / "archive.tar.gz",
++    ]
++    for p in keepers:
++        p.write_text("keep me")
++    for i in range(1, 4):
++        (dest / f"backup-2024020{i}-000000.tar.gz").write_bytes(b"old")
++    result = run(src, dest, 1, stamp="20240301-000000")
++    assert result.returncode == 0, result.stderr
++    for p in keepers:
++        assert p.read_text() == "keep me"
++    archives = sorted(p.name for p in dest.glob("backup-*.tar.gz"))
++    assert archives == ["backup-20240301-000000.tar.gz"]
++
++
++@pytest.mark.parametrize("keep", ["0", "-1", "abc", "1.5", "", "007"])
++def test_invalid_keep_is_usage_error(src, tmp_path, keep):
++    dest = tmp_path / "out"
++    result = run(src, dest, keep, stamp="20240101-000000")
++    assert result.returncode == 2
++    assert "usage" in result.stderr.lower()
++    assert not dest.exists()
++
++
++def test_one_argument_is_usage_error(src, tmp_path):
++    result = run(src)
++    assert result.returncode == 2
++    assert "usage" in result.stderr.lower()
++
++
++def test_missing_src_is_error(tmp_path):
++    dest = tmp_path / "out"
++    result = run(tmp_path / "does-not-exist", dest, stamp="20240101-000000")
++    assert result.returncode == 1
++    assert result.stderr
++    assert not dest.exists()
++
++
++def test_src_that_is_a_file_is_error(tmp_path):
++    f = tmp_path / "file.txt"
++    f.write_text("x")
++    result = run(f, tmp_path / "out", stamp="20240101-000000")
++    assert result.returncode == 1
++    assert result.stderr

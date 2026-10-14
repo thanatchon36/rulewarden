@@ -1,0 +1,147 @@
+diff --git a/src/durations/core.py b/src/durations/core.py
+index 5592d64..587965d 100644
+--- a/src/durations/core.py
++++ b/src/durations/core.py
+@@ -1,6 +1,46 @@
++import re
++
++_UNIT_RE = re.compile(
++    r"(?:([0-9]+)d)?\s*(?:([0-9]+)h)?\s*(?:([0-9]+)m)?\s*(?:([0-9]+)s)?",
++    re.IGNORECASE,
++)
++_CLOCK_RE = re.compile(r"([0-9]+):([0-5][0-9]):([0-5][0-9])|([0-9]{2}):([0-5][0-9])")
++_UNIT_SECONDS = (("d", 86400), ("h", 3600), ("m", 60), ("s", 1))
++
++
+ def parse_duration(text: str) -> int:
+-    raise NotImplementedError
++    """Parse a unit form ("1d2h", "2h 15m") or clock form ("MM:SS", "HH:MM:SS") into seconds."""
++    stripped = text.strip()
++    clock = _CLOCK_RE.fullmatch(stripped)
++    if clock:
++        if clock.group(1) is not None:
++            hours, minutes, seconds = clock.group(1, 2, 3)
++        else:
++            hours, minutes, seconds = "0", clock.group(4), clock.group(5)
++        return int(hours) * 3600 + int(minutes) * 60 + int(seconds)
++
++    unit = _UNIT_RE.fullmatch(stripped)
++    if not stripped or unit is None or not any(unit.groups()):
++        raise ValueError(f"invalid duration: {text!r}")
++    return sum(
++        int(value) * seconds
++        for value, (_, seconds) in zip(unit.groups(), _UNIT_SECONDS)
++        if value is not None
++    )
+ 
+ 
+ def format_duration(seconds: int) -> str:
+-    raise NotImplementedError
++    """Format a non-negative integer number of seconds as "1d 2h 3m 4s", omitting zero parts."""
++    if isinstance(seconds, bool) or not isinstance(seconds, int):
++        raise ValueError(f"seconds must be an int, got {type(seconds).__name__}")
++    if seconds < 0:
++        raise ValueError(f"seconds must be non-negative, got {seconds}")
++    if seconds == 0:
++        return "0s"
++    parts = []
++    remaining = seconds
++    for label, size in _UNIT_SECONDS:
++        count, remaining = divmod(remaining, size)
++        if count:
++            parts.append(f"{count}{label}")
++    return " ".join(parts)
+diff --git a/tests/test_duration_behaviour.py b/tests/test_duration_behaviour.py
+new file mode 100644
+index 0000000..bc37cc0
+--- /dev/null
++++ b/tests/test_duration_behaviour.py
+@@ -0,0 +1,88 @@
++import pytest
++
++from durations import format_duration, parse_duration
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("1d2h", 93600),
++        ("90s", 90),
++        ("2h 15m", 8100),
++        ("1D 1S", 86401),
++        ("1d 2h 3m 4s", 93784),
++        ("2H15M", 8100),
++        ("  5m  ", 300),
++        ("0s", 0),
++    ],
++)
++def test_parse_unit_form(text, expected):
++    assert parse_duration(text) == expected
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("01:30", 90),
++        ("59:59", 3599),
++        ("1:00:00", 3600),
++        ("100:00:05", 360005),
++        (" 00:05 ", 5),
++    ],
++)
++def test_parse_clock_form(text, expected):
++    assert parse_duration(text) == expected
++
++
++@pytest.mark.parametrize(
++    "text",
++    [
++        "",
++        "   ",
++        "1x",
++        "1.5h",
++        "-5s",
++        "-1:00",
++        "2m1h",
++        "1h1h",
++        "1h 1d",
++        "5",
++        "1 h",
++        "1:60",
++        "01:7",
++        "1:5",
++        "1:30:60",
++        "10:00:0",
++        "h",
++    ],
++)
++def test_parse_rejects_invalid(text):
++    with pytest.raises(ValueError):
++        parse_duration(text)
++
++
++@pytest.mark.parametrize(
++    "seconds, expected",
++    [
++        (93784, "1d 2h 3m 4s"),
++        (0, "0s"),
++        (90, "1m 30s"),
++        (86400, "1d"),
++        (3600, "1h"),
++        (3601, "1h 1s"),
++        (90061, "1d 1h 1m 1s"),
++    ],
++)
++def test_format(seconds, expected):
++    assert format_duration(seconds) == expected
++
++
++@pytest.mark.parametrize("value", [-1, 1.5, "60", None, True])
++def test_format_rejects_invalid(value):
++    with pytest.raises(ValueError):
++        format_duration(value)
++
++
++def test_round_trip():
++    for seconds in (1, 59, 61, 3599, 3600, 86399, 90061):
++        assert parse_duration(format_duration(seconds)) == seconds

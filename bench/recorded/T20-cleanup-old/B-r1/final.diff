@@ -1,0 +1,301 @@
+diff --git a/scripts/cleanup.sh b/scripts/cleanup.sh
+index 7578737..bc6ec89 100755
+--- a/scripts/cleanup.sh
++++ b/scripts/cleanup.sh
+@@ -1,3 +1,73 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Delete regular files under DIR older than DAYS days whose name matches PATTERN.
++# Usage: cleanup.sh [-n] DIR DAYS [PATTERN]
++set -euo pipefail
++
++usage() {
++  echo "usage: cleanup.sh [-n] DIR DAYS [PATTERN]" >&2
++  exit 2
++}
++
++die() {
++  echo "cleanup.sh: $*" >&2
++  exit 1
++}
++
++dry_run=0
++if [[ "${1:-}" == "-n" ]]; then
++  dry_run=1
++  shift
++fi
++
++if (( $# < 2 || $# > 3 )); then
++  usage
++fi
++
++dir=$1
++days=$2
++pattern=${3:-*}
++
++if [[ ! $days =~ ^[0-9]+$ ]]; then
++  usage
++fi
++# Base 10 so leading zeros are not read as octal. The cap keeps DAYS * 1440 from
++# overflowing; 100000000 days is far older than any file's modification time.
++days=$((10#$days))
++if (( days > 100000000 )); then
++  days=100000000
++fi
++
++if [[ -z $dir ]]; then
++  die "refusing to run with an empty directory argument"
++fi
++if [[ ! -d $dir ]]; then
++  die "not a directory: $dir"
++fi
++
++resolved=$(cd -P -- "$dir" && pwd -P)
++home=$(cd -P -- "${HOME:?HOME is not set}" && pwd -P)
++# macOS pwd -P returns "//" for the root, so match any run of slashes.
++if [[ $resolved =~ ^/+$ || $resolved == "$home" ]]; then
++  die "refusing to clean $dir (resolves to $resolved)"
++fi
++
++# find -P never follows symbolic links, and -type f skips symlinks and directories.
++# -mmin +N selects files whose age is more than N minutes.
++matches=()
++while IFS= read -r -d '' path; do
++  name=${path##*/}
++  if [[ $name == $pattern ]]; then
++    matches+=("$path")
++  fi
++done < <(find -P "$dir" -type f -mmin +$((days * 1440)) -print0)
++
++if (( ${#matches[@]} == 0 )); then
++  exit 0
++fi
++
++while IFS= read -r path; do
++  if (( ! dry_run )); then
++    rm -f -- "$path"
++  fi
++  printf '%s\n' "$path"
++done < <(printf '%s\n' "${matches[@]}" | LC_ALL=C sort)
+diff --git a/tests/test_cleanup_behaviour.py b/tests/test_cleanup_behaviour.py
+new file mode 100644
+index 0000000..64d2972
+--- /dev/null
++++ b/tests/test_cleanup_behaviour.py
+@@ -0,0 +1,215 @@
++import os
++import subprocess
++import time
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "cleanup.sh"
++DAY = 86400
++
++
++def make_file(path, age_days=None):
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text("x")
++    if age_days is not None:
++        t = time.time() - age_days * DAY
++        os.utime(path, (t, t))
++    return path
++
++
++def run(*args, env=None):
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args], capture_output=True, text=True, env=env
++    )
++
++
++def test_deletes_only_files_older_than_days(tmp_path):
++    old = make_file(tmp_path / "old.log", age_days=10)
++    new = make_file(tmp_path / "new.log", age_days=1)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert not old.exists()
++    assert new.exists()
++    assert result.stdout == f"{tmp_path}/old.log\n"
++
++
++def test_recurses_into_subdirectories(tmp_path):
++    deep = make_file(tmp_path / "a" / "b" / "deep.txt", age_days=30)
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert not deep.exists()
++    assert result.stdout == f"{tmp_path}/a/b/deep.txt\n"
++
++
++def test_pattern_limits_deletion(tmp_path):
++    log = make_file(tmp_path / "x.log", age_days=10)
++    txt = make_file(tmp_path / "x.txt", age_days=10)
++
++    result = run(str(tmp_path), "1", "*.log")
++
++    assert result.returncode == 0, result.stderr
++    assert not log.exists()
++    assert txt.exists()
++    assert result.stdout == f"{tmp_path}/x.log\n"
++
++
++def test_default_pattern_matches_all_names(tmp_path):
++    names = [make_file(tmp_path / n, age_days=10) for n in ("a", "b.txt", ".hidden")]
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert all(not p.exists() for p in names)
++
++
++def test_never_deletes_directories(tmp_path):
++    empty_dir = tmp_path / "empty"
++    empty_dir.mkdir()
++    old_t = time.time() - 30 * DAY
++    os.utime(empty_dir, (old_t, old_t))
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert empty_dir.is_dir()
++    assert result.stdout == ""
++
++
++def test_symlink_to_old_file_is_not_deleted_or_followed(tmp_path):
++    outside = make_file(tmp_path / "outside" / "target.txt", age_days=30)
++    scan = tmp_path / "scan"
++    scan.mkdir()
++    link = scan / "link.txt"
++    link.symlink_to(outside)
++
++    result = run(str(scan), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert link.is_symlink()
++    assert outside.exists()
++    assert result.stdout == ""
++
++
++def test_symlink_to_old_directory_is_not_followed(tmp_path):
++    outside = tmp_path / "outside"
++    victim = make_file(outside / "victim.txt", age_days=30)
++    scan = tmp_path / "scan"
++    scan.mkdir()
++    (scan / "linkdir").symlink_to(outside, target_is_directory=True)
++
++    result = run(str(scan), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert victim.exists()
++    assert result.stdout == ""
++
++
++def test_dry_run_prints_without_deleting(tmp_path):
++    old = make_file(tmp_path / "old.txt", age_days=10)
++    new = make_file(tmp_path / "new.txt", age_days=0)
++
++    result = run("-n", str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert old.exists()
++    assert new.exists()
++    assert result.stdout == f"{tmp_path}/old.txt\n"
++
++
++def test_output_is_sorted(tmp_path):
++    for name in ("c.txt", "a.txt", "b.txt"):
++        make_file(tmp_path / name, age_days=10)
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout.splitlines() == [
++        f"{tmp_path}/a.txt",
++        f"{tmp_path}/b.txt",
++        f"{tmp_path}/c.txt",
++    ]
++
++
++def test_leading_zeros_in_days_are_decimal(tmp_path):
++    old = make_file(tmp_path / "old.txt", age_days=10)
++
++    result = run(str(tmp_path), "08")
++
++    assert result.returncode == 0, result.stderr
++    assert not old.exists()
++
++
++def test_no_matches_prints_nothing_and_succeeds(tmp_path):
++    make_file(tmp_path / "new.txt", age_days=0)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++
++
++@pytest.mark.parametrize(
++    "args",
++    [
++        (),
++        ("dir",),
++        ("dir", "1", "*", "extra"),
++        ("dir", "-1"),
++        ("dir", "abc"),
++        ("dir", "1.5"),
++        ("dir", ""),
++    ],
++)
++def test_bad_usage_exits_2(args, tmp_path):
++    resolved = [str(tmp_path) if a == "dir" else a for a in args]
++
++    result = run(*resolved)
++
++    assert result.returncode == 2
++    assert "usage" in result.stderr
++
++
++def test_refuses_empty_dir_argument(tmp_path):
++    result = run("", "1")
++
++    assert result.returncode == 1
++    assert result.stderr != ""
++
++
++def test_refuses_missing_directory(tmp_path):
++    result = run(str(tmp_path / "missing"), "1")
++
++    assert result.returncode == 1
++    assert result.stderr != ""
++
++
++def test_refuses_regular_file(tmp_path):
++    f = make_file(tmp_path / "file.txt", age_days=10)
++
++    result = run(str(f), "1")
++
++    assert result.returncode == 1
++    assert f.exists()
++
++
++def test_refuses_home_directory(tmp_path):
++    home = tmp_path / "home"
++    old = make_file(home / "old.txt", age_days=10)
++    env = {**os.environ, "HOME": str(home)}
++
++    result = run(str(home), "1", env=env)
++
++    assert result.returncode == 1
++    assert old.exists()
++    assert result.stderr != ""
++
++
++def test_refuses_root_with_trailing_slashes(tmp_path):
++    result = run("//", "1")
++
++    assert result.returncode == 1

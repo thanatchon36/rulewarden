@@ -1,0 +1,136 @@
+diff --git a/src/textkit/slug.py b/src/textkit/slug.py
+index 13b4508..e6cacff 100644
+--- a/src/textkit/slug.py
++++ b/src/textkit/slug.py
+@@ -1,2 +1,51 @@
++import re
++import unicodedata
++
++_SPECIAL = str.maketrans(
++    {"ß": "ss", "ẞ": "SS", "æ": "ae", "Æ": "AE", "ø": "o", "Ø": "O", "ł": "l", "Ł": "L"}
++)
++_NON_SLUG_RUN = re.compile(r"[^a-z0-9]+")
++
++
++def _transliterate(text: str) -> str:
++    """Return ASCII text with accents removed and other non-ASCII dropped."""
++    text = unicodedata.normalize("NFKD", text.translate(_SPECIAL))
++    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
++    return text.encode("ascii", "ignore").decode("ascii")
++
++
++def _strip_separator(text: str, separator: str) -> str:
++    while text.startswith(separator):
++        text = text[len(separator):]
++    while text.endswith(separator):
++        text = text[: -len(separator)]
++    return text
++
++
++def _cut(slug: str, max_length: int, separator: str) -> str:
++    if len(slug) <= max_length:
++        return slug
++    for end in range(max_length, 0, -1):
++        if slug.startswith(separator, end):
++            head = _strip_separator(slug[:end], separator)
++            if head:
++                return head
++    return _strip_separator(slug[:max_length], separator)
++
++
+ def slugify(text: str, max_length: int | None = None, separator: str = "-") -> str:
+-    raise NotImplementedError
++    """Return a URL-safe slug of ``text``.
++
++    Runs of non-alphanumeric characters become ``separator``.
++    If ``max_length`` is set, cut at the last separator that fits, else hard-cut.
++    """
++    if not separator:
++        raise ValueError("separator must be a non-empty string")
++    if max_length is not None and max_length < 1:
++        raise ValueError("max_length must be at least 1")
++    slug = _transliterate(text).lower()
++    slug = _NON_SLUG_RUN.sub(lambda _: separator, slug)
++    slug = _strip_separator(slug, separator)
++    if max_length is not None:
++        slug = _cut(slug, max_length, separator)
++    return slug
+diff --git a/tests/test_slug_behaviour.py b/tests/test_slug_behaviour.py
+new file mode 100644
+index 0000000..3ba6043
+--- /dev/null
++++ b/tests/test_slug_behaviour.py
+@@ -0,0 +1,73 @@
++import pytest
++
++from textkit import slugify
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("Å", "a"),
++        ("Ångström", "angstrom"),
++        ("Straße", "strasse"),
++        ("Æsir", "aesir"),
++        ("Ødegaard", "odegaard"),
++        ("łódź", "lodz"),
++        ("日本 text", "text"),
++    ],
++)
++def test_transliteration(text, expected):
++    assert slugify(text) == expected
++
++
++def test_runs_collapse_to_one_separator():
++    assert slugify("a!!!  b") == "a-b"
++
++
++def test_strips_leading_and_trailing_separators():
++    assert slugify("  -hi-  ") == "hi"
++
++
++@pytest.mark.parametrize("text", ["", "!!!", "日本語"])
++def test_empty_result(text):
++    assert slugify(text) == ""
++
++
++def test_custom_separator():
++    assert slugify("Hello World", separator="_") == "hello_world"
++
++
++def test_multi_character_separator():
++    assert slugify("a   b", separator="--") == "a--b"
++
++
++def test_max_length_equal_to_length_is_unchanged():
++    assert slugify("hello world", max_length=11) == "hello-world"
++
++
++def test_max_length_cuts_at_last_separator_that_fits():
++    assert slugify("hello big world", max_length=9) == "hello-big"
++    assert slugify("hello big world", max_length=8) == "hello"
++
++
++def test_max_length_hard_cut_when_no_separator_fits():
++    assert slugify("abcdefghij", max_length=4) == "abcd"
++
++
++def test_max_length_never_ends_with_separator():
++    assert slugify("ab-cd", max_length=2) == "ab"
++    assert slugify("abc defgh", max_length=4, separator="--") == "abc"
++
++
++def test_max_length_with_multi_character_separator():
++    assert slugify("one two three", max_length=9, separator="--") == "one--two"
++
++
++def test_empty_separator_raises():
++    with pytest.raises(ValueError):
++        slugify("hello", separator="")
++
++
++@pytest.mark.parametrize("max_length", [0, -1])
++def test_max_length_below_one_raises(max_length):
++    with pytest.raises(ValueError):
++        slugify("hello", max_length=max_length)

@@ -1,0 +1,236 @@
+diff --git a/scripts/check-env.sh b/scripts/check-env.sh
+index 7578737..34d2c7e 100755
+--- a/scripts/check-env.sh
++++ b/scripts/check-env.sh
+@@ -1,3 +1,65 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Check that environment variables are set and commands are on PATH.
++# Usage: check-env.sh [FILE]   (FILE defaults to env.required)
++set -euo pipefail
++
++usage() {
++  echo "usage: check-env.sh [FILE]" >&2
++}
++
++# Strips leading and trailing whitespace from $1 into TRIMMED.
++trim() {
++  local s=$1
++  s=${s#"${s%%[![:space:]]*}"}
++  s=${s%"${s##*[![:space:]]}"}
++  TRIMMED=$s
++}
++
++if [[ $# -gt 1 ]]; then
++  usage
++  exit 2
++fi
++
++file=${1:-env.required}
++
++if [[ ! -f $file || ! -r $file ]]; then
++  echo "check-env.sh: cannot read '$file'" >&2
++  exit 2
++fi
++
++missing=0
++
++while IFS= read -r line || [[ -n $line ]]; do
++  trim "$line"
++  line=$TRIMMED
++
++  case $line in
++    ''|'#'*) continue ;;
++  esac
++
++  if [[ $line == cmd:* ]]; then
++    name=${line#cmd:}
++    if [[ ! $name =~ ^[A-Za-z0-9_][A-Za-z0-9_.+-]*$ ]]; then
++      echo "invalid $line"
++      missing=1
++    elif type -P -- "$name" >/dev/null 2>&1; then
++      echo "ok cmd $name"
++    else
++      echo "missing cmd $name"
++      missing=1
++    fi
++  elif [[ $line =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
++    # The name is validated above, so indirect expansion cannot run code.
++    if [[ -n ${!line:-} ]]; then
++      echo "ok $line"
++    else
++      echo "missing $line"
++      missing=1
++    fi
++  else
++    echo "invalid $line"
++    missing=1
++  fi
++done < "$file"
++
++exit "$missing"
+diff --git a/tests/test_check_env_requirements.py b/tests/test_check_env_requirements.py
+new file mode 100644
+index 0000000..bd68fe8
+--- /dev/null
++++ b/tests/test_check_env_requirements.py
+@@ -0,0 +1,158 @@
++import shutil
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check-env.sh"
++# Tests pass a restricted PATH to the script, so bash is resolved here.
++BASH = shutil.which("bash")
++
++
++def run(args, env, cwd):
++    return subprocess.run(
++        [BASH, str(SCRIPT), *args],
++        capture_output=True,
++        text=True,
++        env=env,
++        cwd=cwd,
++    )
++
++
++def make_env(bin_dir, **variables):
++    # PATH is limited to bin_dir so commands resolve only where the test puts them.
++    env = {"PATH": str(bin_dir)}
++    env.update(variables)
++    return env
++
++
++def make_command(bin_dir, name):
++    bin_dir.mkdir(exist_ok=True)
++    exe = bin_dir / name
++    exe.write_text("#!/bin/sh\nexit 0\n")
++    exe.chmod(0o755)
++
++
++def write_req(tmp_path, text):
++    path = tmp_path / "env.required"
++    path.write_text(text)
++    return path
++
++
++def test_variable_set_and_nonempty_is_ok(tmp_path):
++    req = write_req(tmp_path, "HOME_DIR\n")
++    r = run([str(req)], make_env(tmp_path, HOME_DIR="/x"), tmp_path)
++    assert r.returncode == 0
++    assert r.stdout == "ok HOME_DIR\n"
++
++
++def test_unset_and_empty_variables_are_missing(tmp_path):
++    req = write_req(tmp_path, "UNSET_VAR\nEMPTY_VAR\n")
++    r = run([str(req)], make_env(tmp_path, EMPTY_VAR=""), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == "missing UNSET_VAR\nmissing EMPTY_VAR\n"
++
++
++def test_command_on_path_is_ok_and_absent_command_is_missing(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_command(bin_dir, "mytool")
++    req = write_req(tmp_path, "cmd:mytool\ncmd:nosuchtool\n")
++    r = run([str(req)], make_env(bin_dir), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == "ok cmd mytool\nmissing cmd nosuchtool\n"
++
++
++def test_shell_builtin_is_not_a_command_on_path(tmp_path):
++    req = write_req(tmp_path, "cmd:cd\n")
++    r = run([str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == "missing cmd cd\n"
++
++
++def test_output_follows_file_order_and_mixes_kinds(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_command(bin_dir, "b_tool")
++    req = write_req(tmp_path, "cmd:b_tool\nA_VAR\ncmd:a_missing\nB_VAR\n")
++    env = make_env(bin_dir, A_VAR="1", B_VAR="2")
++    r = run([str(req)], env, tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == (
++        "ok cmd b_tool\nok A_VAR\nmissing cmd a_missing\nok B_VAR\n"
++    )
++
++
++def test_blank_comment_and_whitespace_lines(tmp_path):
++    req = write_req(tmp_path, "\n# a comment\n   \n   SPACED_VAR   \n\t# indented comment\n")
++    r = run([str(req)], make_env(tmp_path, SPACED_VAR="v"), tmp_path)
++    assert r.returncode == 0
++    assert r.stdout == "ok SPACED_VAR\n"
++
++
++def test_all_present_exits_zero_and_empty_file_exits_zero(tmp_path):
++    req = write_req(tmp_path, "")
++    r = run([str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 0
++    assert r.stdout == ""
++
++
++def test_last_line_without_newline_is_checked(tmp_path):
++    req = write_req(tmp_path, "LAST_VAR")
++    r = run([str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == "missing LAST_VAR\n"
++
++
++def test_invalid_lines_are_reported_and_count_as_missing(tmp_path):
++    req = write_req(tmp_path, "1BAD\nBAD-NAME\ncmd:\ncmd:bad name\ncmd: spaced\nFOO BAR\n")
++    r = run([str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == (
++        "invalid 1BAD\n"
++        "invalid BAD-NAME\n"
++        "invalid cmd:\n"
++        "invalid cmd:bad name\n"
++        "invalid cmd: spaced\n"
++        "invalid FOO BAR\n"
++    )
++
++
++def test_invalid_line_is_never_executed(tmp_path):
++    marker = tmp_path / "pwned"
++    req = write_req(tmp_path, f"$(touch {marker})\nA[$(touch {marker})]\n")
++    r = run([str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 1
++    assert not marker.exists()
++    assert r.stdout.count("invalid ") == 2
++
++
++def test_invalid_line_does_not_stop_later_checks(tmp_path):
++    req = write_req(tmp_path, "1BAD\nGOOD_VAR\n")
++    r = run([str(req)], make_env(tmp_path, GOOD_VAR="y"), tmp_path)
++    assert r.returncode == 1
++    assert r.stdout == "invalid 1BAD\nok GOOD_VAR\n"
++
++
++def test_default_file_is_env_required_in_cwd(tmp_path):
++    (tmp_path / "env.required").write_text("DEFAULT_VAR\n")
++    r = run([], make_env(tmp_path, DEFAULT_VAR="z"), tmp_path)
++    assert r.returncode == 0
++    assert r.stdout == "ok DEFAULT_VAR\n"
++
++
++def test_missing_default_file_exits_two_with_stderr(tmp_path):
++    r = run([], make_env(tmp_path), tmp_path)
++    assert r.returncode == 2
++    assert "env.required" in r.stderr
++    assert r.stdout == ""
++
++
++def test_missing_file_message_goes_to_stderr(tmp_path):
++    r = run([str(tmp_path / "none")], make_env(tmp_path), tmp_path)
++    assert r.returncode == 2
++    assert r.stderr != ""
++    assert r.stdout == ""
++
++
++def test_too_many_arguments_exit_two(tmp_path):
++    req = write_req(tmp_path, "X\n")
++    r = run([str(req), str(req)], make_env(tmp_path), tmp_path)
++    assert r.returncode == 2
++    assert "usage" in r.stderr

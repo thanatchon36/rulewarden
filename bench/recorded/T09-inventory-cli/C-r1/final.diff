@@ -1,0 +1,268 @@
+diff --git a/src/inventory/cli.py b/src/inventory/cli.py
+index d362eed..e5e2318 100644
+--- a/src/inventory/cli.py
++++ b/src/inventory/cli.py
+@@ -1,2 +1,43 @@
++import argparse
++import sys
++
++from inventory.core import Inventory
++
++
++def build_parser() -> argparse.ArgumentParser:
++    parser = argparse.ArgumentParser(prog="inventory")
++    parser.add_argument("--db", required=True, help="path to the JSON database file")
++    subparsers = parser.add_subparsers(dest="command", required=True)
++
++    add = subparsers.add_parser("add", help="add stock for an item")
++    add.add_argument("name")
++    add.add_argument("qty", type=int)
++
++    remove = subparsers.add_parser("remove", help="remove stock from an item")
++    remove.add_argument("name")
++    remove.add_argument("qty", type=int)
++
++    subparsers.add_parser("list", help="list all items")
++    return parser
++
++
+ def main(argv: list[str] | None = None) -> int:
+-    raise NotImplementedError
++    args = build_parser().parse_args(argv)
++    inventory = Inventory.load(args.db)
++    try:
++        if args.command == "add":
++            inventory.add(args.name, args.qty)
++            inventory.save(args.db)
++        elif args.command == "remove":
++            inventory.remove(args.name, args.qty)
++            inventory.save(args.db)
++        elif args.command == "list":
++            for name, qty in inventory.items():
++                print(f"{name} {qty}")
++    except KeyError as exc:
++        print(f"error: {exc.args[0]}", file=sys.stderr)
++        return 1
++    except ValueError as exc:
++        print(f"error: {exc}", file=sys.stderr)
++        return 1
++    return 0
+diff --git a/src/inventory/core.py b/src/inventory/core.py
+index b7483f3..b71bfba 100644
+--- a/src/inventory/core.py
++++ b/src/inventory/core.py
+@@ -1,2 +1,46 @@
++import json
++from pathlib import Path
++
++
++def _check_qty(qty: object) -> None:
++    if isinstance(qty, bool) or not isinstance(qty, int) or qty <= 0:
++        raise ValueError(f"quantity must be a positive int, got {qty!r}")
++
++
+ class Inventory:
+-    pass
++    """Item quantities keyed by name, persisted as a JSON object."""
++
++    def __init__(self, quantities: dict[str, int] | None = None) -> None:
++        self._quantities: dict[str, int] = dict(quantities or {})
++
++    @classmethod
++    def load(cls, path: str | Path) -> "Inventory":
++        """Load from a JSON file; a missing file gives an empty inventory."""
++        path = Path(path)
++        if not path.exists():
++            return cls()
++        return cls(json.loads(path.read_text(encoding="utf-8")))
++
++    def save(self, path: str | Path) -> None:
++        """Write the inventory as a JSON object with sorted keys."""
++        data = json.dumps(dict(sorted(self._quantities.items())), indent=2)
++        Path(path).write_text(data + "\n", encoding="utf-8")
++
++    def add(self, name: str, qty: int) -> None:
++        _check_qty(qty)
++        self._quantities[name] = self._quantities.get(name, 0) + qty
++
++    def remove(self, name: str, qty: int) -> None:
++        _check_qty(qty)
++        if name not in self._quantities:
++            raise KeyError(f"unknown item: {name}")
++        current = self._quantities[name]
++        if qty > current:
++            raise ValueError(f"cannot remove {qty} of {name!r}: only {current} in stock")
++        if qty == current:
++            del self._quantities[name]
++        else:
++            self._quantities[name] = current - qty
++
++    def items(self) -> list[tuple[str, int]]:
++        return sorted(self._quantities.items())
+diff --git a/tests/test_cli.py b/tests/test_cli.py
+new file mode 100644
+index 0000000..0b02d55
+--- /dev/null
++++ b/tests/test_cli.py
+@@ -0,0 +1,66 @@
++import json
++
++import pytest
++
++from inventory.cli import main
++
++
++def test_add_then_list_prints_items(tmp_path, capsys):
++    db = str(tmp_path / "db.json")
++    assert main(["--db", db, "add", "pen", "2"]) == 0
++    assert main(["--db", db, "add", "apple", "7"]) == 0
++    capsys.readouterr()
++    assert main(["--db", db, "list"]) == 0
++    assert capsys.readouterr().out == "apple 7\npen 2\n"
++
++
++def test_add_saves_to_database_file(tmp_path):
++    db = tmp_path / "db.json"
++    main(["--db", str(db), "add", "pen", "2"])
++    assert json.loads(db.read_text(encoding="utf-8")) == {"pen": 2}
++
++
++def test_remove_updates_database_file(tmp_path):
++    db = tmp_path / "db.json"
++    main(["--db", str(db), "add", "pen", "5"])
++    assert main(["--db", str(db), "remove", "pen", "2"]) == 0
++    assert json.loads(db.read_text(encoding="utf-8")) == {"pen": 3}
++
++
++def test_remove_to_zero_removes_entry_from_file(tmp_path):
++    db = tmp_path / "db.json"
++    main(["--db", str(db), "add", "pen", "2"])
++    main(["--db", str(db), "remove", "pen", "2"])
++    assert json.loads(db.read_text(encoding="utf-8")) == {}
++
++
++def test_list_on_missing_database_prints_nothing(tmp_path, capsys):
++    assert main(["--db", str(tmp_path / "none.json"), "list"]) == 0
++    assert capsys.readouterr().out == ""
++
++
++def test_remove_unknown_item_reports_error(tmp_path, capsys):
++    db = str(tmp_path / "db.json")
++    assert main(["--db", db, "remove", "pen", "1"]) == 1
++    err = capsys.readouterr().err
++    assert err.startswith("error: ")
++    assert "pen" in err
++
++
++def test_remove_too_many_reports_error_and_keeps_stock(tmp_path, capsys):
++    db = tmp_path / "db.json"
++    main(["--db", str(db), "add", "pen", "2"])
++    assert main(["--db", str(db), "remove", "pen", "3"]) == 1
++    assert capsys.readouterr().err.startswith("error: ")
++    assert json.loads(db.read_text(encoding="utf-8")) == {"pen": 2}
++
++
++def test_add_non_positive_reports_error(tmp_path, capsys):
++    db = str(tmp_path / "db.json")
++    assert main(["--db", db, "add", "pen", "0"]) == 1
++    assert capsys.readouterr().err.startswith("error: ")
++
++
++def test_db_is_required(capsys):
++    with pytest.raises(SystemExit):
++        main(["list"])
+diff --git a/tests/test_core_behaviour.py b/tests/test_core_behaviour.py
+new file mode 100644
+index 0000000..1432ca2
+--- /dev/null
++++ b/tests/test_core_behaviour.py
+@@ -0,0 +1,89 @@
++import json
++
++import pytest
++
++from inventory.core import Inventory
++
++
++def test_load_missing_file_gives_empty_inventory(tmp_path):
++    inv = Inventory.load(tmp_path / "missing.json")
++    assert inv.items() == []
++
++
++def test_load_reads_json_object(tmp_path):
++    path = tmp_path / "db.json"
++    path.write_text(json.dumps({"pen": 2, "cup": 5}), encoding="utf-8")
++    assert Inventory.load(path).items() == [("cup", 5), ("pen", 2)]
++
++
++def test_save_writes_sorted_keys(tmp_path):
++    path = tmp_path / "db.json"
++    inv = Inventory()
++    inv.add("pen", 2)
++    inv.add("apple", 7)
++    inv.save(path)
++    assert list(json.loads(path.read_text(encoding="utf-8"))) == ["apple", "pen"]
++
++
++def test_save_then_load_round_trip(tmp_path):
++    path = tmp_path / "db.json"
++    inv = Inventory()
++    inv.add("pen", 3)
++    inv.save(path)
++    assert Inventory.load(path).items() == [("pen", 3)]
++
++
++def test_add_accumulates_quantity():
++    inv = Inventory()
++    inv.add("pen", 2)
++    inv.add("pen", 3)
++    assert inv.items() == [("pen", 5)]
++
++
++@pytest.mark.parametrize("qty", [0, -1, 1.5, "2", True, None])
++def test_add_rejects_non_positive_or_non_int(qty):
++    with pytest.raises(ValueError):
++        Inventory().add("pen", qty)
++
++
++@pytest.mark.parametrize("qty", [0, -1, 1.5, "2", True])
++def test_remove_rejects_non_positive_or_non_int(qty):
++    inv = Inventory()
++    inv.add("pen", 5)
++    with pytest.raises(ValueError):
++        inv.remove("pen", qty)
++
++
++def test_remove_unknown_item_raises_key_error():
++    with pytest.raises(KeyError):
++        Inventory().remove("pen", 1)
++
++
++def test_remove_more_than_stock_raises_value_error():
++    inv = Inventory()
++    inv.add("pen", 2)
++    with pytest.raises(ValueError):
++        inv.remove("pen", 3)
++    assert inv.items() == [("pen", 2)]
++
++
++def test_remove_partial_reduces_quantity():
++    inv = Inventory()
++    inv.add("pen", 5)
++    inv.remove("pen", 2)
++    assert inv.items() == [("pen", 3)]
++
++
++def test_remove_to_zero_drops_item():
++    inv = Inventory()
++    inv.add("pen", 2)
++    inv.remove("pen", 2)
++    assert inv.items() == []
++
++
++def test_items_sorted_by_name():
++    inv = Inventory()
++    inv.add("pen", 1)
++    inv.add("apple", 4)
++    inv.add("mug", 2)
++    assert inv.items() == [("apple", 4), ("mug", 2), ("pen", 1)]

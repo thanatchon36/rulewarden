@@ -9,6 +9,32 @@ subtitle: "Borrowing Safety-Critical Systems Engineering to Enforce Agent Instru
 
 # 1 Introduction
 
+Developers steer coding agents with instruction files: `CLAUDE.md`, `AGENTS.md`, `.cursorrules` and their
+relatives. These files are read as context, and nothing checks whether the agent obeyed them. Two of the most
+reacted-to issues in the Claude Code tracker (251 and 181 reactions when we checked; `research/evidence.md`) are
+about exactly this. Developers report stacking "a CLAUDE.md rule + memory
+entries + enforcement hooks just to get clean code, and that still working partially" [@gh65961]; see also
+[@gh53454; @gh77136]. Agents that face failing tests sometimes edit the tests instead of the code [@gh319], and
+benchmarks built to measure this find it happens often [@zhong2025impossiblebench].
+
+Safety-critical engineering has a mature answer to "a capable controller we cannot verify": wrap it in a simple
+monitor that we can. We ask what that answer looks like for coding agents, and how far it reaches. Our contributions:
+
+1. **A requirements mapping.** Twelve concepts from safety-critical practice (Simplex, independence of verification,
+   MISRA decidability classes, integrity levels, fail-closed bounded execution, tool qualification, alarm
+   management, deviations, traceability, near-miss reporting, STPA, assurance cases) are turned into testable
+   requirements for an agent-rule enforcer (§3).
+2. **rulewarden**, an open-source, deterministic enforcer that implements them. It is harness-agnostic, adds no
+   model to the enforcement path, ships 26 starter rules with fixtures, and checks each change in a pre-tool hook,
+   a git hook and CI. It compiles instruction files into rules and reports which lines it could *not* compile.
+3. **A corpus study (RQ1)** of {{corpus:n_files|int}} public instruction files. Only a minority of rules can be
+   enforced deterministically on a diff ({{corpus:model.decidability_p1.deterministic.share|pct}} to
+   {{corpus:rubric_decidability.deterministic.share|pct}}, depending on the labeller).
+4. **A controlled, replayable evaluation (RQ2–RQ5)** of headless Claude Code on 20 tasks under pre-registered
+   conditions. All transcripts are recorded, and `bench/replay.py` recomputes every number without an API key (§5).
+5. **A dogfooding record.** rulewarden enforced its own repository's rules on the agent that built it, including an
+   incident in which the agent proposed disabling its own monitor (§6).
+
 # 2 Background
 
 ## 2.1 Agent instruction files and harness hooks
@@ -211,6 +237,31 @@ ImpossibleBench quantifies [@zhong2025impossiblebench]. Our `no-answer-embedding
 of this behaviour: test files are read-only in a task.
 
 # 8 Threats to validity
+
+**Construct validity.** Decidability is relative to a checker. We define it as "decidable on one diff or command",
+and the corpus labels show that this definition is itself contested (rubric–model κ ≈ 0.09). The benchmark scores
+violations with the same engine that enforces them in condition C. For deterministic rules, C is therefore close to
+zero by construction whenever the agent finishes. The plan pre-registers this circularity, and the informative
+comparisons are A against B, the cost of C, and the heuristic tier.
+
+**Internal validity.** Model labels come from one model family with no temperature control. We report two passes and
+their agreement, publish every raw response, and pair the model with a deterministic rubric, but no human labelled
+the corpus. The benchmark used one agent (Claude Code with Haiku 5.5) and a fixed engine version. A rulewarden defect
+found during stage 1 (amendment A1: a false-positive block when the agent edits a test file it created itself) was
+deliberately left unfixed for the whole benchmark, so condition C measures the tool as frozen, defect included.
+Benchmark tasks and their rules were written by the same agent that built rulewarden. Reference solutions prove each
+task can be solved without violations, but task difficulty and rule choice are not independent of the authors'
+expectations.
+
+**External validity.** The corpus is a convenience sample in GitHub search order, restricted to OSI-licensed
+repositories (between 17 and 30 of every ~80–100 results were skipped for licence reasons). It may over-represent
+popular and recent projects. The tasks are small, self-contained Python and shell tasks with 6–8 rules each, far
+simpler than the instruction files in the corpus. Results for a 2026 frontier-adjacent model may not transfer to
+weaker models, longer tasks or other harnesses.
+
+**Reproducibility.** Every benchmark number is recomputed from recordings by `bench/replay.py` without an API key.
+Corpus numbers are recomputed from `corpus/data/` by `corpus/analyse.py`. Re-running the *agent* will not reproduce
+the transcripts exactly: the model is non-deterministic and the CLI exposes no seed.
 
 # 9 Conclusion and future work
 

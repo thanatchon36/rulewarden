@@ -98,3 +98,30 @@ def test_circumvention_attempts_and_blocks(tmp_path: Path) -> None:
         ],
     )
     assert replay.circumvention(tmp_path) == (3, 2)
+
+
+def test_blocks_on_session_files(tmp_path: Path) -> None:
+    deny = (
+        "PreToolUse:Edit hook error: rulewarden rejected this edit; nothing was written.\n"
+        "BLOCKED \u2014 1 critical, 0 advisory\n[B-TESTS-RO critical] tests/test_new.py Existing test modified"
+    )
+    _write(
+        tmp_path,
+        "transcript.jsonl",
+        [
+            {
+                "type": "user",
+                "message": {
+                    "content": [{"type": "tool_result", "tool_use_id": "1", "content": deny}]
+                },
+            }
+        ],
+    )
+    (tmp_path / "final.diff").write_text(
+        "diff --git a/tests/test_new.py b/tests/test_new.py\nnew file mode 100644\n--- /dev/null\n"
+    )
+    assert replay.blocks_on_session_files(tmp_path) == 1
+    (tmp_path / "final.diff").write_text(
+        "diff --git a/tests/test_new.py b/tests/test_new.py\nindex 1..2 100644\n"
+    )
+    assert replay.blocks_on_session_files(tmp_path) == 0

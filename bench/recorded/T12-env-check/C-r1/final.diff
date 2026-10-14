@@ -1,0 +1,227 @@
+diff --git a/scripts/check-env.sh b/scripts/check-env.sh
+index 7578737..af2a340 100755
+--- a/scripts/check-env.sh
++++ b/scripts/check-env.sh
+@@ -1,3 +1,56 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Check that environment variables and commands listed in a requirements file are present.
++#
++# Usage: check-env.sh [FILE]     (FILE defaults to ./env.required)
++#
++# Each line is one of:
++#   NAME       the environment variable NAME must be set and non-empty
++#   cmd:NAME   the command NAME must be found on PATH
++# Blank lines and lines starting with '#' are ignored; surrounding whitespace is ignored.
++# Exit: 0 all present, 1 something missing or invalid, 2 FILE not readable.
++
++set -euo pipefail
++
++file="${1:-env.required}"
++
++if [[ ! -f "$file" || ! -r "$file" ]]; then
++  echo "check-env: cannot read requirements file: $file" >&2
++  exit 2
++fi
++
++status=0
++
++while IFS= read -r line || [[ -n "$line" ]]; do
++  # Trim leading and trailing whitespace.
++  line="${line#"${line%%[![:space:]]*}"}"
++  line="${line%"${line##*[![:space:]]}"}"
++
++  if [[ -z "$line" || "$line" == \#* ]]; then
++    continue
++  fi
++
++  if [[ "$line" == cmd:* ]]; then
++    name="${line#cmd:}"
++    if [[ ! "$name" =~ ^[A-Za-z0-9_.+-]+$ ]]; then
++      echo "invalid $line"
++      status=1
++    elif type -P "$name" >/dev/null 2>&1; then
++      echo "ok cmd $name"
++    else
++      echo "missing cmd $name"
++      status=1
++    fi
++  elif [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
++    if [[ -n "${!line:-}" ]]; then
++      echo "ok $line"
++    else
++      echo "missing $line"
++      status=1
++    fi
++  else
++    echo "invalid $line"
++    status=1
++  fi
++done < "$file"
++
++exit "$status"
+diff --git a/tests/test_check_env_requirements.py b/tests/test_check_env_requirements.py
+new file mode 100644
+index 0000000..37089f8
+--- /dev/null
++++ b/tests/test_check_env_requirements.py
+@@ -0,0 +1,158 @@
++import os
++import shutil
++import stat
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check-env.sh"
++# Resolved once from the test process PATH, since child envs may omit bash's directory.
++BASH = shutil.which("bash")
++
++
++def make_fake_command(bin_dir: Path, name: str) -> None:
++    bin_dir.mkdir(parents=True, exist_ok=True)
++    exe = bin_dir / name
++    exe.write_text("#!/bin/sh\nexit 0\n")
++    exe.chmod(exe.stat().st_mode | stat.S_IXUSR)
++
++
++def run_check(tmp_path, requirements, env=None, args=None):
++    req = tmp_path / "env.required"
++    req.write_text(requirements)
++    if env is None:
++        env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin")}
++    cmd = [BASH, str(SCRIPT)] + (args if args is not None else [str(req)])
++    return subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=tmp_path)
++
++
++def test_set_variable_is_ok(tmp_path):
++    r = run_check(tmp_path, "FOO\n", env={"PATH": "/usr/bin:/bin", "FOO": "x"})
++    assert r.returncode == 0
++    assert r.stdout == "ok FOO\n"
++
++
++def test_unset_variable_is_missing(tmp_path):
++    r = run_check(tmp_path, "FOO\n")
++    assert r.returncode == 1
++    assert r.stdout == "missing FOO\n"
++
++
++def test_empty_variable_is_missing(tmp_path):
++    r = run_check(tmp_path, "FOO\n", env={"PATH": "/usr/bin:/bin", "FOO": ""})
++    assert r.returncode == 1
++    assert r.stdout == "missing FOO\n"
++
++
++def test_command_on_path_is_ok(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_fake_command(bin_dir, "mytool")
++    r = run_check(tmp_path, "cmd:mytool\n", env={"PATH": str(bin_dir)})
++    assert r.returncode == 0
++    assert r.stdout == "ok cmd mytool\n"
++
++
++def test_command_not_on_path_is_missing(tmp_path):
++    bin_dir = tmp_path / "bin"
++    bin_dir.mkdir()
++    r = run_check(tmp_path, "cmd:nosuchtool\n", env={"PATH": str(bin_dir)})
++    assert r.returncode == 1
++    assert r.stdout == "missing cmd nosuchtool\n"
++
++
++def test_shell_builtin_is_not_a_path_command(tmp_path):
++    # 'cd' is a bash builtin, not an executable on PATH.
++    bin_dir = tmp_path / "bin"
++    bin_dir.mkdir()
++    r = run_check(tmp_path, "cmd:cd\n", env={"PATH": str(bin_dir)})
++    assert r.returncode == 1
++    assert r.stdout == "missing cmd cd\n"
++
++
++def test_output_follows_file_order_and_mixes_kinds(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_fake_command(bin_dir, "mytool")
++    env = {"PATH": str(bin_dir), "AAA": "1"}
++    r = run_check(tmp_path, "BBB\ncmd:mytool\nAAA\ncmd:nope\n", env=env)
++    assert r.returncode == 1
++    assert r.stdout == "missing BBB\nok cmd mytool\nok AAA\nmissing cmd nope\n"
++
++
++def test_blank_comment_and_whitespace_lines(tmp_path):
++    env = {"PATH": "/usr/bin:/bin", "FOO": "x"}
++    content = "# a comment\n\n   \n   FOO   \n\t# indented comment\n"
++    r = run_check(tmp_path, content, env=env)
++    assert r.returncode == 0
++    assert r.stdout == "ok FOO\n"
++
++
++def test_whitespace_around_command_is_trimmed(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_fake_command(bin_dir, "mytool")
++    r = run_check(tmp_path, "  cmd:mytool  \n", env={"PATH": str(bin_dir)})
++    assert r.returncode == 0
++    assert r.stdout == "ok cmd mytool\n"
++
++
++def test_last_line_without_newline_is_checked(tmp_path):
++    env = {"PATH": "/usr/bin:/bin", "FOO": "x"}
++    r = run_check(tmp_path, "FOO", env=env)
++    assert r.returncode == 0
++    assert r.stdout == "ok FOO\n"
++
++
++def test_invalid_variable_names_are_reported_and_fail(tmp_path):
++    env = {"PATH": "/usr/bin:/bin", "GOOD": "x"}
++    content = "1BAD\nBAD-NAME\nGOOD\nfoo bar\n"
++    r = run_check(tmp_path, content, env=env)
++    assert r.returncode == 1
++    assert r.stdout == (
++        "invalid 1BAD\n"
++        "invalid BAD-NAME\n"
++        "ok GOOD\n"
++        "invalid foo bar\n"
++    )
++
++
++def test_invalid_cmd_forms_are_reported_and_fail(tmp_path):
++    env = {"PATH": "/usr/bin:/bin"}
++    content = "cmd:\ncmd:a b\ncmd:/bin/sh\n"
++    r = run_check(tmp_path, content, env=env)
++    assert r.returncode == 1
++    assert r.stdout == "invalid cmd:\ninvalid cmd:a b\ninvalid cmd:/bin/sh\n"
++
++
++def test_all_present_exits_zero(tmp_path):
++    bin_dir = tmp_path / "bin"
++    make_fake_command(bin_dir, "mytool")
++    env = {"PATH": str(bin_dir), "FOO": "x"}
++    r = run_check(tmp_path, "FOO\ncmd:mytool\n", env=env)
++    assert r.returncode == 0
++    assert r.stdout == "ok FOO\nok cmd mytool\n"
++
++
++def test_empty_file_exits_zero(tmp_path):
++    r = run_check(tmp_path, "")
++    assert r.returncode == 0
++    assert r.stdout == ""
++
++
++def test_default_file_is_env_required_in_cwd(tmp_path):
++    (tmp_path / "env.required").write_text("FOO\n")
++    env = {"PATH": "/usr/bin:/bin", "FOO": "x"}
++    r = subprocess.run([BASH, str(SCRIPT)], capture_output=True, text=True, env=env, cwd=tmp_path)
++    assert r.returncode == 0
++    assert r.stdout == "ok FOO\n"
++
++
++def test_missing_file_message_on_stderr(tmp_path):
++    missing = tmp_path / "none"
++    r = subprocess.run(["bash", str(SCRIPT), str(missing)], capture_output=True, text=True)
++    assert r.returncode == 2
++    assert r.stdout == ""
++    assert "none" in r.stderr
++
++
++def test_missing_default_file_exits_two(tmp_path):
++    r = subprocess.run(["bash", str(SCRIPT)], capture_output=True, text=True, cwd=tmp_path)
++    assert r.returncode == 2
++    assert "env.required" in r.stderr

@@ -1,0 +1,224 @@
+diff --git a/src/resilience/retry.py b/src/resilience/retry.py
+index cb6d921..6354c17 100644
+--- a/src/resilience/retry.py
++++ b/src/resilience/retry.py
+@@ -1,5 +1,34 @@
++import functools
+ import time
+ 
+ 
+ def retry(times, exceptions=(Exception,), delay=0.0, backoff=2.0, sleep=time.sleep):
+-    raise NotImplementedError
++    """Call the decorated function up to ``times`` times on ``exceptions``.
++
++    Failed attempt ``n`` waits ``delay * backoff ** (n - 1)`` seconds via ``sleep``.
++    The wrapper's ``last_attempts`` holds the call count of the latest invocation.
++    """
++    if times < 1:
++        raise ValueError(f"times must be >= 1, got {times}")
++    if delay < 0:
++        raise ValueError(f"delay must be >= 0, got {delay}")
++    if backoff < 1:
++        raise ValueError(f"backoff must be >= 1, got {backoff}")
++
++    def decorator(func):
++        @functools.wraps(func)
++        def wrapper(*args, **kwargs):
++            for attempt in range(1, times + 1):
++                wrapper.last_attempts = attempt
++                try:
++                    return func(*args, **kwargs)
++                except exceptions:
++                    if attempt == times:
++                        raise
++                    if delay:
++                        sleep(delay * backoff ** (attempt - 1))
++
++        wrapper.last_attempts = 0
++        return wrapper
++
++    return decorator
+diff --git a/tests/test_retry_behaviour.py b/tests/test_retry_behaviour.py
+new file mode 100644
+index 0000000..38692b6
+--- /dev/null
++++ b/tests/test_retry_behaviour.py
+@@ -0,0 +1,178 @@
++import pytest
++
++from resilience import retry
++
++
++class Flaky:
++    """Raises the given exceptions in order, then returns 'done'."""
++
++    def __init__(self, *failures):
++        self.failures = list(failures)
++        self.calls = 0
++
++    def __call__(self):
++        self.calls += 1
++        if self.failures:
++            raise self.failures.pop(0)
++        return "done"
++
++
++def make_sleep():
++    waits = []
++    return waits, waits.append
++
++
++def test_retries_until_success_and_returns_value():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError(), ValueError())
++
++    wrapped = retry(3, sleep=sleep)(flaky)
++
++    assert wrapped() == "done"
++    assert flaky.calls == 3
++    assert wrapped.last_attempts == 3
++
++
++def test_reraises_last_exception_unchanged():
++    error = KeyError("boom")
++    flaky = Flaky(error, error, error)
++    wrapped = retry(3, sleep=lambda s: None)(flaky)
++
++    with pytest.raises(KeyError) as info:
++        wrapped()
++
++    assert info.value is error
++    assert flaky.calls == 3
++    assert wrapped.last_attempts == 3
++
++
++def test_at_most_times_calls_even_when_always_failing():
++    flaky = Flaky(*[RuntimeError()] * 10)
++    wrapped = retry(4, exceptions=(RuntimeError,), sleep=lambda s: None)(flaky)
++
++    with pytest.raises(RuntimeError):
++        wrapped()
++
++    assert flaky.calls == 4
++
++
++def test_unlisted_exception_propagates_without_retry():
++    waits, sleep = make_sleep()
++    flaky = Flaky(TypeError("nope"), ValueError())
++    wrapped = retry(5, exceptions=(ValueError,), delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(TypeError):
++        wrapped()
++
++    assert flaky.calls == 1
++    assert wrapped.last_attempts == 1
++    assert waits == []
++
++
++def test_exception_subclass_matches_exceptions_tuple():
++    waits, sleep = make_sleep()
++    flaky = Flaky(FileNotFoundError())
++    wrapped = retry(2, exceptions=(OSError,), sleep=sleep)(flaky)
++
++    assert wrapped() == "done"
++    assert flaky.calls == 2
++
++
++def test_default_exceptions_catch_any_exception():
++    flaky = Flaky(LookupError())
++    wrapped = retry(2, sleep=lambda s: None)(flaky)
++
++    assert wrapped() == "done"
++
++
++def test_exponential_backoff_between_attempts():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError(), ValueError(), ValueError())
++    wrapped = retry(4, delay=0.5, backoff=3.0, sleep=sleep)(flaky)
++
++    assert wrapped() == "done"
++    assert waits == [0.5, 1.5, 4.5]
++
++
++def test_no_sleep_after_last_failed_attempt():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError(), ValueError())
++    wrapped = retry(2, delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(ValueError):
++        wrapped()
++
++    assert waits == [1.0]
++
++
++def test_zero_delay_never_calls_sleep():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError(), ValueError())
++    wrapped = retry(3, delay=0.0, sleep=sleep)(flaky)
++
++    assert wrapped() == "done"
++    assert waits == []
++
++
++def test_last_attempts_resets_on_each_invocation():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError())
++    wrapped = retry(3, sleep=sleep)(flaky)
++
++    assert wrapped() == "done"
++    assert wrapped.last_attempts == 2
++
++    assert wrapped() == "done"
++    assert wrapped.last_attempts == 1
++
++
++def test_arguments_are_passed_through():
++    @retry(2, sleep=lambda s: None)
++    def add(a, b=0):
++        return a + b
++
++    assert add(2, b=3) == 5
++
++
++def test_wrapper_keeps_name_and_doc():
++    @retry(2)
++    def fetch():
++        """Fetch things."""
++        return 1
++
++    assert fetch.__name__ == "fetch"
++    assert fetch.__doc__ == "Fetch things."
++
++
++def test_last_attempts_is_zero_before_any_call():
++    @retry(2)
++    def fn():
++        return 1
++
++    assert fn.last_attempts == 0
++
++
++@pytest.mark.parametrize(
++    "kwargs",
++    [
++        {"times": 0},
++        {"times": -1},
++        {"times": 2, "delay": -0.1},
++        {"times": 2, "backoff": 0.5},
++    ],
++)
++def test_invalid_arguments_raise_value_error_at_decoration(kwargs):
++    with pytest.raises(ValueError):
++        retry(**kwargs)
++
++
++def test_single_attempt_does_not_retry():
++    waits, sleep = make_sleep()
++    flaky = Flaky(ValueError())
++    wrapped = retry(1, delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(ValueError):
++        wrapped()
++
++    assert flaky.calls == 1
++    assert waits == []

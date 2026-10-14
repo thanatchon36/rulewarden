@@ -1,0 +1,133 @@
+diff --git a/src/textkit/slug.py b/src/textkit/slug.py
+index 13b4508..5bd8ca8 100644
+--- a/src/textkit/slug.py
++++ b/src/textkit/slug.py
+@@ -1,2 +1,50 @@
++import re
++import unicodedata
++
++_SPECIAL = {
++    "ß": "ss",
++    "ẞ": "SS",
++    "æ": "ae",
++    "Æ": "AE",
++    "ø": "o",
++    "Ø": "O",
++    "ł": "l",
++    "Ł": "L",
++}
++
++
++def _to_ascii(text: str) -> str:
++    text = "".join(_SPECIAL.get(ch, ch) for ch in text)
++    decomposed = unicodedata.normalize("NFD", text)
++    return decomposed.encode("ascii", "ignore").decode("ascii")
++
++
+ def slugify(text: str, max_length: int | None = None, separator: str = "-") -> str:
+-    raise NotImplementedError
++    """Return an ASCII, lowercase slug of ``text`` joined by ``separator``.
++
++    With ``max_length``, keep the longest run of whole words that fits; if
++    no word fits, cut hard at ``max_length``. Trailing separators are removed.
++    """
++    if not separator:
++        raise ValueError("separator must be a non-empty string")
++    if max_length is not None and max_length < 1:
++        raise ValueError("max_length must be at least 1")
++
++    words = re.findall(r"[a-z0-9]+", _to_ascii(text).lower())
++    slug = separator.join(words)
++    if max_length is None or len(slug) <= max_length:
++        return slug
++
++    kept = []
++    length = 0
++    for word in words:
++        added = len(word) if not kept else len(separator) + len(word)
++        if length + added > max_length:
++            break
++        kept.append(word)
++        length += added
++
++    result = separator.join(kept) if kept else slug[:max_length]
++    while result.endswith(separator):
++        result = result[: -len(separator)]
++    return result
+diff --git a/tests/test_slugify_behaviour.py b/tests/test_slugify_behaviour.py
+new file mode 100644
+index 0000000..8275fff
+--- /dev/null
++++ b/tests/test_slugify_behaviour.py
+@@ -0,0 +1,71 @@
++import pytest
++
++from textkit import slugify
++
++
++def test_special_letters_transliterated():
++    assert slugify("Straße") == "strasse"
++    assert slugify("Æsir") == "aesir"
++    assert slugify("Øresund") == "oresund"
++    assert slugify("Łódź") == "lodz"
++
++
++def test_uppercase_accents_and_lowercasing():
++    assert slugify("Å ÉCOLE") == "a-ecole"
++
++
++def test_non_ascii_without_decomposition_is_dropped():
++    assert slugify("汉字 hello") == "hello"
++
++
++def test_runs_of_other_characters_collapse_to_one_separator():
++    assert slugify("  a -- b!!  c  ") == "a-b-c"
++
++
++def test_leading_and_trailing_separators_stripped():
++    assert slugify("--!!hello!!--") == "hello"
++
++
++def test_empty_and_symbol_only_input():
++    assert slugify("") == ""
++    assert slugify("!!!") == ""
++
++
++def test_custom_separator():
++    assert slugify("Hello, World!", separator="_") == "hello_world"
++
++
++def test_multi_character_separator():
++    assert slugify("a b c", separator="--") == "a--b--c"
++
++
++def test_max_length_cuts_at_last_fitting_separator():
++    assert slugify("one two three", max_length=8) == "one-two"
++
++
++def test_max_length_exact_fit_not_cut():
++    assert slugify("one two", max_length=7) == "one-two"
++
++
++def test_max_length_hard_cut_when_no_separator_fits():
++    assert slugify("abcdefghij klm", max_length=4) == "abcd"
++
++
++def test_max_length_result_never_ends_with_separator():
++    assert slugify("ab cd", max_length=3) == "ab"
++    assert slugify("a-b", max_length=2) == "a"
++
++
++def test_max_length_with_custom_separator():
++    assert slugify("one two three", max_length=9, separator="__") == "one__two"
++
++
++def test_empty_separator_raises():
++    with pytest.raises(ValueError):
++        slugify("hello", separator="")
++
++
++@pytest.mark.parametrize("max_length", [0, -1])
++def test_max_length_below_one_raises(max_length):
++    with pytest.raises(ValueError):
++        slugify("hello", max_length=max_length)

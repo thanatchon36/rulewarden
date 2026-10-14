@@ -1,0 +1,1026 @@
+[
+ {
+  "type": "system",
+  "subtype": "init",
+  "cwd": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1",
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "tools": [
+   "Task",
+   "Bash",
+   "CronCreate",
+   "CronDelete",
+   "CronList",
+   "Edit",
+   "EnterWorktree",
+   "ExitWorktree",
+   "Glob",
+   "Grep",
+   "ListAgents",
+   "NotebookEdit",
+   "Read",
+   "RemoteTrigger",
+   "ReportFindings",
+   "ScheduleWakeup",
+   "SendMessage",
+   "Skill",
+   "TaskStop",
+   "ToolSearch",
+   "WebFetch",
+   "WebSearch",
+   "Write"
+  ],
+  "mcp_servers": [],
+  "model": "claude-haiku-5-5",
+  "permissionMode": "acceptEdits",
+  "slash_commands": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring",
+   "agents",
+   "auto-mode-setup",
+   "autocompact",
+   "clear",
+   "color",
+   "compact",
+   "config",
+   "output-style",
+   "context",
+   "effort",
+   "fast",
+   "focus",
+   "heapdump",
+   "init",
+   "mcp",
+   "model",
+   "__remote-workflow",
+   "workflow-launch-exec",
+   "reload-plugins",
+   "reload-skills",
+   "rename",
+   "security-review",
+   "usage-credits",
+   "extra-usage",
+   "usage",
+   "insights",
+   "recap",
+   "goal",
+   "list-agents",
+   "team-onboarding"
+  ],
+  "terminal_slash_commands": [
+   "doctor",
+   "color",
+   "focus",
+   "reload-plugins"
+  ],
+  "apiKeySource": "none",
+  "claude_code_version": "2.1.299",
+  "output_style": "default",
+  "agents": [
+   "claude",
+   "Explore",
+   "general-purpose",
+   "Plan",
+   "statusline-setup"
+  ],
+  "skills": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring"
+  ],
+  "plugins": [
+   {
+    "name": "cc-plugin-agents-md",
+    "path": "builtin",
+    "source": "cc-plugin-agents-md@builtin"
+   },
+   {
+    "name": "cc-plugin-plugin-authoring",
+    "path": "builtin",
+    "source": "cc-plugin-plugin-authoring@builtin"
+   }
+  ],
+  "capabilities": [
+   "interrupt_receipt_v1",
+   "interrupt_cancel_queued_v1",
+   "interrupt_send_now_v1",
+   "msg_lifecycle_v1",
+   "request_marker_lists_v1",
+   "sdk_mcp_tools_list_changed",
+   "sdk_mcp_manifests",
+   "mcp_read_resource_v1",
+   "mcp_tool_ui_meta_v1",
+   "ui_surface_v1"
+  ],
+  "analytics_disabled": true,
+  "product_feedback_disabled": true,
+  "uuid": "e107df5b-5309-4a68-aa29-090e1b1da911",
+  "memory_paths": {
+   "auto": "/Users/thanatchon36/.claude/projects/-private-tmp-claude-501--Users-thanatchon36-github-rulewarden-52944ca6-e0e0-4505-9300-460146c6dd03-scratchpad-bench-work-T01-slugify-B-r1/memory/"
+  },
+  "messaging_socket_path": "/tmp/cc-socks/73622.sock",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "per_turn_effort_active": true,
+  "view_mode": "default"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kdqKxq9vM4F36upisq",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSjAUKEAgSGAI4AUIIdGhpbmtpbmcSDM3PD+CQ5sqDjlkfJBoMg4ync1xfpumhIC0WIjA/NG+IhDkS+C8sxPa9r/8c4YExp8qi9mHVhpVJsRWQdikQnxekLrf5d98fE3i/bG4qqQSOmR17UPpP3x1xbsw5o7LxMlokbc7EsRUuVRe1BNI2N0iid8ono+BPTnJpODbvy1YmPOua7cdtjsY1lzPUZWf1iFIUn47+4ZbNJscx9v2NtoR6xGRtSKR5VMPfWErQbAprLsHG6Ey7xxj4TYKX5ejbfCdod1GwsHLf3ETanRpNuoUZgAkxCvV6PK0djeo7y97beQQV1BIHz3C/rM7wPoDKU5d8nL5vNYNi4g9+28tNNz3130XVWdZYx6o34hWy5mdrlh83cEFJbFumqIp1GgbDeHjOezXb9R0pmb3ByCMAcHx+bUILyV09wTSHR6+ecOnbG/nVKBBvq0/5awTT8Ggst21aIXc1mvxRxtGgb/o65YogKMX+SxvPmRLXHv2UBi4DfZpoM9El5p2pfRx1kgeXNVE0WXZJQM15fqDzvIULuwyoWeZbk/BiYmnjHQ+k93q7BvJjrEccNWAbnHJYUeImL0bPG3qIKa27rhq7f8REbAvv6TlcQ/KwGN+vH3Itxgknh16Dqk2NJqUFhrDyksi68liWlRy82FbSle6fasq9mDhrfGE6C6tF92UjvH6h7QykD2PtGJ/bNw+tjKZD0jBEnBDPYPOH4jXLVUUsxony/WcQbjBGQRJQi0txP0AZPTxfXq3MhP8kX43T1+tSCiOb3SE10kJto8hesNXKbNY58qSKafjRpf1gVEkRCLsS3QJo01Q1yBXnde6amtbKlbh7LIqf1i5aoY+kGAE="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7028,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7028
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "e566f0c9-9050-4c1d-94a1-ddf86dd00de1",
+  "timestamp": "2026-10-14T07:42:07.298Z",
+  "request_id": "req_011Cg1kdq7KVwrUtM8zpkT19",
+  "thinking_duration_ms": 184,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kdqKxq9vM4F36upisq",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01SfyvRm8ri1qKwFL6tQthyr",
+     "name": "Bash",
+     "input": {
+      "command": "git status --short && find . -path ./.git -prune -o -type f -print | head -100 && cat src/textkit/*.py 2>/dev/null; ls tests; for f in tests/*.py; do echo \"== $f\"; cat \"$f\"; done",
+      "description": "Inspect repo layout, sources, and tests"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7028,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7028
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "0c8ea5dd-f74e-4aad-a7e4-0a0e4ad6c819",
+  "timestamp": "2026-10-14T07:42:08.004Z",
+  "request_id": "req_011Cg1kdq7KVwrUtM8zpkT19"
+ },
+ {
+  "type": "rate_limit_event",
+  "rate_limit_info": {
+   "status": "allowed",
+   "resetsAt": 1791966000,
+   "rateLimitType": "five_hour",
+   "overageStatus": "rejected",
+   "overageDisabledReason": "org_level_disabled",
+   "isUsingOverage": false,
+   "unifiedWindows": {
+    "five_hour": {
+     "utilization": 0.88,
+     "resetsAt": 1791966000
+    },
+    "seven_day": {
+     "utilization": 0.36,
+     "resetsAt": 1792407600
+    }
+   }
+  },
+  "uuid": "061f5184-7003-4335-9035-62066672d9f1",
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01SfyvRm8ri1qKwFL6tQthyr",
+     "type": "tool_result",
+     "content": "./tests/conftest.py\n./tests/test_slug.py\n./.gitignore\n./CLAUDE.md\n./src/textkit/__init__.py\n./src/textkit/slug.py\nfrom textkit.slug import slugify\n\n__all__ = [\"slugify\"]\ndef slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:\n    raise NotImplementedError\nconftest.py\ntest_slug.py\n== tests/conftest.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\n== tests/test_slug.py\nfrom textkit import slugify\n\n\ndef test_basic():\n    assert slugify(\"Hello, World!\") == \"hello-world\"\n\n\ndef test_accents():\n    assert slugify(\"Crème brûlée\") == \"creme-brulee\"",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "17e3e280-21ef-440d-ac2d-72f8bbb3e2ca",
+  "timestamp": "2026-10-14T07:42:09.610Z",
+  "tool_use_result": {
+   "stdout": "./tests/conftest.py\n./tests/test_slug.py\n./.gitignore\n./CLAUDE.md\n./src/textkit/__init__.py\n./src/textkit/slug.py\nfrom textkit.slug import slugify\n\n__all__ = [\"slugify\"]\ndef slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:\n    raise NotImplementedError\nconftest.py\ntest_slug.py\n== tests/conftest.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\n== tests/test_slug.py\nfrom textkit import slugify\n\n\ndef test_basic():\n    assert slugify(\"Hello, World!\") == \"hello-world\"\n\n\ndef test_accents():\n    assert slugify(\"Crème brûlée\") == \"creme-brulee\"",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01SfyvRm8ri1qKwFL6tQthyr",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "f01e53e2-98c6-49d6-a130-cb177b809843"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 250,
+  "estimated_tokens_delta": 200,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "25051ccd-39f9-4b2b-804e-a6eb40426791"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 600,
+  "estimated_tokens_delta": 350,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "c75984d7-725e-42e3-882f-c80922515ad8"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 850,
+  "estimated_tokens_delta": 250,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "d4dbb17b-6181-47b8-9239-d728b0f67cb3"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1100,
+  "estimated_tokens_delta": 250,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "25272338-92b8-4742-ae76-a589466b1e04"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1400,
+  "estimated_tokens_delta": 300,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "139179fc-d305-4807-8394-e0a33b367bce"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1650,
+  "estimated_tokens_delta": 250,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "ddbcd5ec-26e7-4e79-aa08-e7bbcf9430d2"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1900,
+  "estimated_tokens_delta": 250,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "2b1e900e-b6c5-4984-a382-ef917bca69f2"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2100,
+  "estimated_tokens_delta": 200,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "40f03bd6-a089-4f08-8901-8b1133fb1831"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2400,
+  "estimated_tokens_delta": 300,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "a33e5fb4-4255-4ba6-b5c6-f51e65af007a"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2750,
+  "estimated_tokens_delta": 350,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "b2a85377-429f-4f14-b068-95f2e51fac78"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3000,
+  "estimated_tokens_delta": 250,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "55d5c032-d0c7-41ce-ae2d-f91a34540a97"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3300,
+  "estimated_tokens_delta": 300,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "d4abc5b7-722b-4ec5-bf9e-72c3e7dc4574"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3650,
+  "estimated_tokens_delta": 350,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "ecf81d83-462d-426a-b850-7423f392fb87"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3850,
+  "estimated_tokens_delta": 200,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "1422dfbf-b14a-4ca9-9e21-bb13d56de210"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1ke87ku4LHabWAP8aey",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": {
+      "__rw_chunks__": [
+       "CAQSqFsKEAgSGAI4AUIIdGhpbmtpbmcSDE8qWEJ6soUMIfvUfhoMengo/ECqjsOgWQAfIjAywseelU5VgY2J3LJ5v3xxH6EgR7GKtcwfO6pkK7CZo/YSMuki/OD4mV+4xdtw6McqxVpAwDEply1o4HayoDl4eVlSO2o/plhme17UASr7gTsEy1nv2GUNNApuKjq0YBiQqkRufXySNNRZeAfNniZxkk1cBqDIpPPO/E9IbUUltMjC7yGAB2T7oLdS9/BVENjytR5OnZiWgLXhjYRo35KkGwSb9x9qaT4BEeLQgqKs3spAfIL4uqsxONqVFw0YwT1rtEoclzPvPX+AdtdGxQ7Mz+n6zHRxApZqk31YGyFP+BWzWICwfQzo2rsYSBZ5FIQEXfFbzoCTILr+xvxy9TGj3sCQvlE6durO+TVCNhhBCC2siDk11Sg1OnwDkpeA9kDN+hXp+2ztl0kmqY7sxzi2sQqLYi7WKIv3GIT9zZZfFUmuSTTMoT4gzBXcZPQqfvgvuSXty7I8h0fYw3pKQk0o3KPasSDqH98+c3ykjBFZKMv5a6/S1B4R2hCSu7Y+/nM3D3R6cAV+kn3opf2/SIqIjRsr3BI7sEypI4pV8oDe3wkgbhwzXs3WZRwVrdvHTE/I2iWVM0XS1RB+1DPef1rZjcxEBO3Un47Yq6xak05g3cPiJiKAtUDVBab6FpuqTmgn1JVB2uiXtabqIpfGkpav/GlWEOKWDtAEmsTnMh3GcHRnZrSc0DIHiHx2ZQtYGgq5wiMHphMjlpe4Y6gtmllMReg7T6upQh0CawvGNS8Wxl708Y9IksHu+pGlfPt8AfMkIbNNDWRwvRrCg9kf9kgod7gdx9mUlGqnYQBPRd53GC4PDXlNnEAIHkbvKv+ITgWlQfoDqhMccUvix/bH7+IRVKG7hLxbrXXnYUfivpWYawK5PyVqqnutR7qF9tRyIdiXkEidFCau56+jXhJV55MlDbC3PHb0E0zGl3sOGlXmD6CnbqrBNZKSQ8LJj5cwvU6e31ThO4jAU8+jHxqty6vNgTpXDvITxoj3tLG8UiMOXLEaeT7luS12/sCs6JHrvW5mfjFdzgKk9nCot+TPgQrWbDHkGNvPub63dkjaD6qM+WX7ZtgkwwKKVtUxeMfKjJStWx1Ed9xkNLptzAiuR62e3PsCRZ16AJwN17kOXa+bHc2lLOTP/rPaqK7AWorV19PyT6HkGSVcRO2Hwqq8xRSr7z9J0UZvV/Qc6eoiJXh5USDfjo2VZg9Kp9S63eoQiXrc9d0LmzprsytgGUp0bL3C46iT7faHqTiPrDtd3+U1kcrkklfz9sbHffDDVRJLxvhtWdV5HOaeh/T+UdFARt5/95gNeJt0uWxTn2fVnNgUyY+AkIzTq7ikNAuYlRn0am285BjjupAVIa/aexiEXgeYk36CRK5VUHIXo/yTMSQLUwPfcBbOLYnirg5ZL40y0zcWlB5dGfurII4BA4u+6B5AeGcYLZuyb7woxjju1YTz27rSlA+jlHTJ4GwWGvEjomeVZ+sKtCAkgTyjGtbJZIYkvSCdT3Dl/s8RrpK/R7KhutagEN9Pf+0Svd0E7ENqg8cPOCLZ6ok8/iwm6rflW7zDPk9eCzGuzEK1b8bkwZsvqJWR/4hgpPXBBFdypChEmNkWLQzMOO3J8SIDsHgCLC2kedgManKyoyx/RvmNYJzYouU8AqdAi+uZDhCOq860BEoihJfHLr9xVKj6R0i3I3Bi0aJ4VaAHYnuxK70aK/ay4+dliC98tmzdpWyEDIFGsEEpBh/WjUL+Bc1LqzCn/0j9lyk1J0ImYTQogwzV54N/lNprTFZhF90NE+pcuG8Wde8ZwGhJ01Icz60w1oY/i/s52os07+Ythsjn9ZC3jzGc5Km4Vr1kINNrD84nsHGy4Kgjd7TjfFAzfwOwroxG355HrEsH8+os+5losAvp0gUfWXw0FxLidstr3lzLngwz5JcRo5ENj5jB",
+       "7qYLSPQQSMQqKH4gjajYLHq96rJG4dj2BMArHcspLGZwIJYeqYRcY/Q7UeAk8rQ1FwaqNmR0qWbskHMhMW/sDZWbyYxizqZF2WxuioiZrqhX7szW57WwuERiv1MwxcUsV258YD83y6Jj47iXO4WwjWIQAR3yDixzG08qv85cvXxGtEfz5kXUPKYG4NdV/z9g99z8//bMQqkVhu5xZUbgu/PgDnsk7hGPKRq4boDpJWdVRSCvpXWV704B25MlDeEz8ejYlCIlBzS6Iu7cJCc/9GVw3waKvSYVguxToYiFHOfjZAmZNw10zq62lNpxTS4UDYiKdjUrzB+OVna3s/16NUnpgFy9Ky9x5fMd6vH/6dxocaL4aAybU1j5X7uwaDgAfhTEoga/SWVGbH/EtCPOguyxnI58fRX+3HbvGjrzmKN+wPOCROgn5Gxp+YzX8Y0RQYG2DzU00SXfTz26NU7mPy1Z630NOWX6GjQ0T+xLlLaPJot0WT1yx4MioXsPrcF8AEWnFv4nXIQLrtSt8EXtwTTZAfdGCYUP2wZOHOE+2IxIwEt+1CkrRRhRrxdmP6MP1YOssGRPa75bJ1ws7j3wLg4bQo27x53qL78M66S5or/bNzRai1TjKGb+CvVj/aMP9Y7cYSNBSI/lCQHQnREwXCQi2u60yd+kwzSnczWQrktcYny9fribfLqJePE2MpQGWL7QJSQ4IEYTBFSZhACO6fP6Afju2GaAfh8W5BpunSxlvP5FyWPX2rh5NNHZCdTWop8yg/oSEnl9l9WunD45DBeUOcAbBMpxuNdxrtCzezvXdUIeUNvsQDojYIL82AmK3loLl/Z1kB7bc94DWF/LcgbV2Rtci20bk487iG+fPboWo3dKYs+VlQDG3RWRo8MHk0eO22JTEbLy0+9LxcCp7EtpADY0exM8dIAy9xdSDPTKvTLbDEsak5CQP5HUM7RT7gNKdMT6Aa2yceKBQhHf1nimB2OUumFSnr2THisDrkqae+pDvuqigSFU3dA+Yv0M4KUtpVUmr46Dr09mCrdef7wOx2yR5uZ+iBgmwAoZprJZXRa1FFfnHvqv/MyKqmJL1BBcoFnhvddy+54zzwkFc8/8czC7fTu2OiNzD8P7BsKCG/ew/TUCqnrW6z/OhGdyo3WszkCtKOj70NavVvNM3MMtF1LZbVRQ02P77Xcq30u/VYHEyLpaHXXrJvTwPcI3JSVmwOBI7qofSmetghrA4R4GgDj4oc+rFnKOQnjpiVpjehvaIwz5M6Kc6CpWJnMPDIxyIGOkn6uSrFZ//M605RIYUjNcGzVjOi3PcBjpnvEq6QfD0PcICGh7vXo9ziVuj3X2JNR4NgR1NxP4ouexlNpMiNPO4+GvGCKOr7O4UuqeFWM9HGhiP6IuvfoTddVzp9GvNRMSZphqV5AXiBy3J1sqof91odTzpS9rgeqjzfDg6Om4MklrKoutP616CNrgecHXG8sMRQk5qIHxKbZWiqKLURn5JDaojUWgO/81NF8ZD9mCHG7CcRWI2Lctrt2uaCuCC+Vlk7NWGDJomKxFutUFJ938L0vUjgxMqUYA2pugePlPB0oRWEE+L7PLkft6oCBsDx+826wUSNVjnNhVETkYnvctY1zjyx7jG/IZhMKDub7pRZyvDGurE51VO3wTQneYDj6Kv/d/k3aTuPrioFv5kHW+uyBpa+S5B9spXwgxbjwdjswJCAUNvZOSt7ncKdl0DI9p3NAnLV9Map2kp0Vuk0aLgZSsvsUKmEeQfkSR1d6FrHhSsG84G2VUY8ZL27tJUe0g3vXUivpVxQlQmLtasu7zf40aC0oHNJRHINMSnwICv+NobAkjpUWw6+d6ZdsGE+zDlhqu+zCctNc2YpyOgZ79fHHVzgS7ZoNVhYlh9/kJ/sUSGn02otMIIlTL8BwpMMOA3KmvwrJqeubH+apdCf/Jxo3GpSW4b8zWwzEu8s2uzltYyTnMO+HL8c4o494tOrD37gxZbDGn",
+       "G3H5XunAu3R6hZsnmeRBwVjhzCFf0eec3VYzTgSRJcPR/96hy3hwDxOlS+VtTRFbtGYb5SocCgxuXdgTxcjDsOv/uiZVCvg09vd/h2VWn3auWOyZhbPH1JBpL/xIyYd7tzlo9flYxGIoqt2Gz4ojCmlGVJQ+arrssbBdpFAFHMxn3csSAjAvTb13faY2jKd60sRuTPpD4pSD8qBrQqgpgnqNZKOLE0M4eFnNMihWmguvDyDasimEnOXQ19hrV3W/Gn7A3h3Iw8FNmBcm8oyy7pAleuUjrr204AzDpdVAOA7B8JI2xTg+1aTyDBypJigjoGXDYHISiyc+HbYTL2kRvfc+CunyYyShoWtdLqBakUGW70lDZ2xG5w8Owg4VX8dUc9y/kyQdE7wXWF3jCdEvHvueO0JuNifvzzFFCQoKkTECewm+v4dKrAOqJS16PZg0Nn7BMOxusnYCbkErr5nd9GtUuJz5Dvkbaaf52KK7R1QFnQCtNMAIIBcNFoIOHm3/8afH/QefD1vtzUsT6iPJ2mVk4TWV41iZZjW7TgPZaoL73qeKNyYfkFTqgZch6RxVWg4B2EanawRM5O8s7DPUDKhBgystxEkloUh81uQFEs4fS47TbykmQVNoqWwMgd3jzd18DqBwMoQIkDqN6yWgi37hNXhCD5g5a1cPGhCzBpPWAKWqoY6vxpEclnnHDpx7V05sntueFSi2G10u4cZ1CjnTmbzD1kWriPeZaIORUAr+pMvkggfBm6iZrn68XYeZzvibNnAUZZpgna701ayLTeg1ytgfiLPgfd5xwo6QcCeugTUUY36szwb6W+/xOdI5rIziXyLUFHoLU2D1K/vBHc80rRO/4/RewTS37GeSzxGnNsfwqcQ5ZR7TwERxgxNhbFQpD8Rg7m7Sb/9F/zKv9u2lghM4X6DPj63PbyCSxaA72kyV+LYLAQDMptJjPl6CyzCJBVkvolJsnSfrX5K9lWdxN2b2jpWHqwF5W20bK2kPMB7AtqsvhLtIJ8G1fysrUk7i7GSC6FZ6CNvE1dwffE1yNGUx+jqJ2Ic4Gc1LV5t1cEI34Cefx7XdEyPo4L6n1/YQIiIh42iQJnC2J3h1WxZ0XYymCNUCv2IFv/GD711sSaqKjaw9jaL8CZhhYLJhZxs75RwOP8CoIi8nLTVJtoQ9OPkAfSWBv4Vb7Rh0eBal/IA3hOeTyLlNKvwhH3wNFLqCh8wseAwjG6EU9VEdJg3vyPE6yhZnolNCV0D3YYFkQTJH0b12IUDy3A7Z4OCx/YkKftphyzMxcDrDJrA1C/N7q08qu5VdxqOM9csI95oBy8DVkXf+u1B1Lsv+yAeGFOIEWpuXxJFvWv7Lfq3+NkbKbTXmxgPhsNck/OdSC6mkMCVaxlrwa9FMm++mHkHDTg3tvtL461qqGgQdf8lyGv8h3iPJvuSd+HRMFGEbd24sn2q9Ba8Corz+K9GDAm0tUhoMpvG9anZfwfqDiEfiCd2MAdNioQiEZ2Bq2EfyNk1MttB+5rFtaID0qS06dY4PgWOLzhiEX6sBqIqG2S6EHAnKOf5bZj69GvpHDekCpMEjZi8+xNDeZPAnRMtiSnZx2M4yOAMqu8Pt+cYIvH147RLbiTmSGcopqJZqcu/Y9akZTRM2YLy3PFk9ilHRkCliAb4LClOlpHOFGrOf8Pw8obiy7J3hBTk8FJ3npDM7llLOuavvGhkQsUhlFE62SM4PT+kc/r8bcJGK+OC5BcCwZ5SYTVicCemM+R+hBTD6BbwzLasDBuVsoXulTbRzHWoH7PgmkBxmfkOBSaesw3ecb+ptDSmOaInQ+7vaahrpZbcvU7itgF2rA59pxL6zCPuHwc2pGRGunZvsteLq2/E62zOZi/ozJNJ5nIIHflm/3F1RwBdsr8pUEo3hcY4/5wrOex04w43jXbU0pz2yF/j0rHRYawxReTt+O7VA7sfxBxcSVuiJyX+zCElaJAD24CLVJORYD+HVe4mCLvGT",
+       "oai1o198VFo0FEyY8n6u/9DlQlBt7FyOUgjxELQVIJYRXI4B2N/hVfGLLtuRCTrvyyHPmuJG7xGEeEBRvzQanadR6DnD4OF71ekTLMlUAi8x7Z08igaMTAiH9U/z1tHnVeke87I69YoDqqAQ1Wx91jd8seo393Q7T8iTTjZ3xoyDYUk7FLNSFMC3U0h1KbisXbn5ZiHSX6xN7kDq08hbRFHsAwU95Xp4Ui6+xRQFuJiU28sNfGZre9HPYYMrFhjBzAOpVUullDRa2DEtQdGg2lBJUFpMd7voEWc37IEiu1yLyDUrDcEBz2nme+z+x/GV+u5ZsRmY6kcPOSuX4eBP8dKJwSDZFn1ARgcYT26cBtV9UrOWuTC4TG1MomaQ3EGLasppkH8mwaHySTyD2FBVt/yK3fH9wSH6RNimhPy7d3M1S2GUO2wy+LmBFXNFFUQkHlUOuKLq1TRUrBGKX6vHb27X8JzGlrsEYIIetyq3bD94hWMidG8oG/Upat8Q+ShdQZWVO6YvPhb81YXRYR1UbuKF6B5By99cK7Csuesjg2IP81sPhmF4PI+xChG9v0aPQdShF7sJq0x9QeODkP3a6zVxCjfx7wZ7UC82PNa6cGs9NTU8qOwZv47EENr0htRiATHwf6XG/PBWEa9PtsNXc6OEuBsYmmuU5uhHh06U3cprWrgcY4uvX3c5dl5+n78Izsrnn9PgkZlCXBsQwPaDhp7uzGDa9K4b/QoIPVqnKFokgdRSHCx3mjRWzxC9R4nq0nvf8cdwDBpbI4JtG3M6OIQeryNwLpwWLYEi3XE1mh6gnr97hHigvfA9iJlOFdaPTvgIzQ+xSarUZ+QEwNHKX4bA4YKT7bJFKfSfGEwXmudbYt1AZA8YNbwX5Xyfcxm0vtAIMqFkyEczCwnFK+uMhifQdrV1B0gCUL81tGVKKO726r0hHAteWZSHDQ5FCBnKSEMWx81Ro8u0xTyLT4eMl0kZeK4RbJ5BoDE/1Q9Ca/PZE4nEFBmOzX++hp5JunjhzFWg2psS1lMeFzmnwEd4+O7Ia3PVAaQQiySbeDcl9I+3gGSLLWprYPSWliWteybrHMRnPIsNQDdqWBIx8Cx1BA349+uDpy55Qg/aZEN1Mv0Z2Qz6hWHip4l6OgJBtjp3IOkEHHXHe/r9MtWTAL4IvvSA+WyUfVnfUbwCcXQvogoX+wKtxzadw4Gn4hdofFd6iBT0vceJfQw0qZjbjqu3rbMBOjxp/MtB3alU6xF+sd9mAaBlcci4HbO7JGMuIcCip7HaxKT6BnsOGuD+D74rzYj5Q9R1lZheSmb3BCg9+GdrEegN4onKKQzrzf22QRQy3NguxcoQmzu6Ev0YLWW2s00EqKEWnNtDAV6YHx+hUhWtcN6zTp8CL4FPLCB2rp36BHWZOO6nkPFJw7SoObTvnh/AG5yhY4kADNFBwKUCyQA9aF9++pgRr9kXjgLBGEEcMGC8jCE0LzagWDLEJ6uJP5uBFU+h3G1h2fE+HfRigmgHC39oPHGigIklGvM6ESwqr+nPr5HBDZmWoekPG0UAyibncTrxCvjemymUFBlo304riviBJBOqta+x5iSyZ3VuddKWC26yv8CzySy+djmKTuZ4YBkn1eV/gXM/r6kaf0I/oufJl026Riv53uP7SwWmKmK+B5Y20mUvkSXGXKfmGXLfeOjgfi4+P3Up0iUI1qAFgDwivYnFonnpWM0L+59Zc0ALKrh3nTuVTCYfIYa9Qi91BJpIyf6E3BJ58w3+l78WaHIZedamvAGX16xCRw6d+Bmlt+RF9m0ryhe55k1YqYrwZQ4OqMUclXcdXX7G32Dv/amDIoioquKAoDySeS5ku+Z96oArO1k65Pxu/Dsn/dVPO+YeObSXHnBYSJJ1Tdp1QQqRitHb26T+N1N9Jea1Q27pvQ2zIPgigfawr5c1wHhGg0o5Th8qg2+q4RNtsh2HHGtAISz6nEA35/DNC6w7FnOnoz9FZnBv6f3Z",
+       "Q+3NbLtOCzzl0TQ8DxyQr8CoMi9wu6QA0d4fYoWLA7z9qpRNi5STwArOGpyp2W5CfVnI11FyMGyVNg94fwkJS7TUVvFC0P/jKHXdapbp9Lbj01n9kX13QfGrFlgDokrmL7QO/vcIVMX9wusQKQ7ZUvgxeN3iPvTIJuTy/wPIlMGsyygedEyUgTWL6nIYYDW91rwooP8tCw2SK84cvkamHfHIZNepL4XF8ml1lSM5zE+QLt6Jf/wD5hfOemfFG1lEtAxPSh2AzxXWs5zssHxODsAFJnDWWxjmvJGwlSk/TUm5a0WqMzFXb46FY6sIvD/LbZfRvgbj/PtRGLoEBPo1Lmbju8t3czZu4HyjUjHdkwiEwf+AiPxkCWY1WAXjqq1FkqS7IFmQ1VlHy5zNzieSNmlnQeY2NEQn7aBdgKGq2L1q+zvlLRDsbrw8KeMumkukfzBIO6AMa9/OnR6YhBHpo6nW6pk1zv4nCKLuGKWkFMNH8CW/jJxj0qjVGWbd7kFVxd71v1VRgnQApY1LeZnM5aeuxjbHClEiqo1WRqiEYXHEBcp6U9w7yRH/iXnPkx7HhvnMan429FvFbZyKHbSkYCZ+rgAO3xrnYuEGg4tBekuwsWcv/4ewdOM3rjkijxV44Pki1x9FhzYBZxw700cGFPR9rX65R+wrBjMN7UQRC3vMnBeqo57GX7IZ0Klqo8CBFD1WJ2i4XUXr9qx36fcZMwcjYCeg96/ZtBaOGBZnOETJ6mo0BlxiyyXHPVBUlZvV/IwIOaCLzZ3nOMHoO1DMrMc8bEUHIXh5bdEYq5UnIhA7b9esLSJCAIerU3tG2KpcCm6564+e8Vfa5EsI03Ow5+ieNLYZ2eITvuqPEP1zE8KWzcKkoRamSC1WJke4qfZEinDAYHshj4lg7WvywWgyBoA0denahELbaSDAtf9E9lpjhtqgjM86wjLJ4AaqySN5CuD6t4dz6DSo6P1/tZzVoXO/uptosdPkjZF10dC8rxx1b9BVpPow6JxaIra4wDsdXKC0022qdkPqpwaEvwm0ZBLSL5pXrGoysaBmDFgoyWJgseuK5hL8o2/TAKkNG5IV4tRtqHPGcJwbxfDpEhs1R+1WUUAqeqzY9OPN0GVAIRHGCCFUCM2ADWkCMce6hDVuNmgwduVKH/vXnt/kUVT9dW7CUeWDpL7pYOrH4SmMMrGhn6VYwcyPQtchx50JEYHnI6DA63E1VLiZeuY2xVBhCLC9+tuyADAaMrVL2KzclAkqKGdHfWyo86O+A91Q029WRBsnTBLLRG7HkQ76UTJ6QlYYZTYe+DuSrAn/IrtpfQBn7TwSW53LxGhXZhXIKb8wrDl/FA9okxZ8UvDTYIl7iY7v8heK9v4P65VMvTiqriNGZ+6BkrMAxAIEqncHPVc0Z0PihhMtzqItzmSdUIGdn6M0U7RcgHYTpjsad2LSl3ne7dYTMeXU42h5tPfT8WWnD8E6WYLuFNcR6JyrRB2y8N/qRu80zPWjianiaiVxoWJZwZUU/z0jjMqidQBPjVPIKRhpuxIX4neExiZUscR7YfRQAmlKyblriEcrc2SZnN3JGOuP67E6L8hhyCvCPztrwMTb97zw6DD1C98R6f2pj20AhsNfJQCq2sFtNb1CGVbt/R5ZQ8al081sLdU0ogbZ+X3SmV27ZOx+P2AIxWpX0nKlSm71T5riHYmAeqjI8Gu32hG5VoyWm3FCGfs6o3EEEQ0Fvg6FTqRNNXDouMxkXQezD17xF7VJoluZ1kxF4TIk1Wl8LOuYMm3HoWhiG+3JQQMKcxrTX6wmezV9rCN6K7dM/HuBK7CRdwPbNbXNvkDdbNG6b6Ic/upNnopNel2zB8NnBgFA44TdURCxtUbjUo6rbGlQzgKydwUQL4JnibYBEE+LW35d3b4vcBJvcOFQs7UbUJreHBo+TQ/ZcRxh/U5KxxZ8PIFJgZMpVxHixdIYaoT4DjvdNt4LTVUjVnXnRbXW3lPG/ku2wZN+",
+       "MCgC2SxC027w1IuhHsuwvwsauIXGlwFcSs9OYleUi/UcUiwSqC9Ruj52uSn43Q/iQjkdnyl7k5Hz1tKLdv6xDHQFmQMSLXaSxbqek0ahG7TsXJFTHJj0bi0wFqIFSAZWl3U1Ap7B5XVAdRhHckhRFhicAtPFMxkpQCUPzwZeyHkHMKSuFNDRv/hp5DRg1d2feb4wUzS7Rxz3EA+cTXVzo7KIblD+zMPOHpHgo4kGkoGQxa/9S+GyMs2i20x7LVWUgU8MyPP7b0Wzbs/tnrOBYbdojoOh/N1kQqeXd40gYslC1SJr/zrOhaBUgtCCXipSJ4gRwv2fOq4tp7T/fUaKQ4DXPOn4qhEp49hTIXokSmBLmaU2I64UBzN1UdDkfn9ZFeF9+GulbKg0F4W3sPdBHTp/q+T6WMR2mw0rAMpdA5w5w1LuR7dh3AoJXGwmrR7YSYWCSFo6xOf3jSp6FLMJBNQzuVVMp/Jw2+cLLgY8OGxdN9DVRszRaCzEtEuKLbCsuh3qqmQGhjk8/+O53SVbeZ/ndBFXpyTjcpFhthtaiGuOOr5ewScg9+/VKS7uE0Y68FZxDK1tII2wXZwn0jjOrE+OdfvxQHuiTu+GEUt5+Pe92uApieVFtC4VTF0e3QJRo0I90VfSrpEqB31/bb77niULPhDTb8QlH6eCB7zi9CjUwzpiMASv+lIr9+coZ25X6RHtBp3sQwOwMhqt5wBANYbKzNctPOefYMc0MH3XIKGSbfJXmzTbcAMXwapM0sApJxRwaYC8+Px3khwT4M8sg2Ve1p7Iy8KsiIp0DXpO0M2m/YyjbZbDtPtr7WuIOEln2vMfy3Knn0f+yG4gcJ/mhh7L/ibzc8EThMrTHDKTWf4OSYMzd7WV5qLBfylPyPP9SEhXqGo97Tf4L+Nxb7WfKbyNFBjwgUNsCoaESQ5QrF6owOtvzB84QhW/Au4Jx4ImmY08wRaPZfjBCXDkoFBh1B261EF9uTwGyEcXRwkS8/BPhJO31lBBU9wfE/Bh9o3M6o9z+NfCe2Ro3W6c9x6OCLnsSga+6s/Ge2PZU12MIcFb0TVAgbxzROnGfTboUsn8bhxjYaq9SGPIw17fMEZmmv5crcTO2U2KiyHbveU5TxFbL1FLjMbItEnIdR31J+/PVBuLRcxOsXAoVI+zSofFOUGVht/2GOv1eLNZP9Jx4i7EIKeNBdcFJ9lTg5/1o/DJlAzMQxRCVncx6D3hYkFiCusTHDJ/QhfP44dQKdkPcN5ELNHlwhiEfAlxmskJA60hTiXN6bhoCMiFFkaHN/9l/HiZY4HWGAfycylDZjJXuFSLnrNLVqigRGfVkpileyZ8KPaLNlBiXiV53n7Jh/rCEBm/XarQQWlxsluwR22/4TnwHZp4e3o/NJ7xu/KZa1dMeaWkWZwionJExNI2u9aZD1TALe5S5e0kbsjvE5rcb++4+9tv0sRybp3cd/P695ynUy9JA6v36XUBNbG3q1x/+CQaefaUssj+CECqzYAwAnQGGrdcuWpZy8S4Soy2SU8PVd1E4Nhha6hUjuJO+jnxYGhm+PwfMnjEish9DWP4BDQ+HMOt3+2fufZVwUtLg1SArs8P3sqTG1zxoSJ1YPcb/1bwOEuxgqObev/+e9RLuKgSyuTVE9ZeYH0lnYVbZ4nwTqSiuX6RNKFt8ytRgxi/MdjJRJWZpO91CB3nMBVyo3b/nzZv+6jbWpnMKlMBvGHarBKDZpMNg5nGW6605YddLMGkbjA/HtDgn8rOHqtZ7oWWPf8K7cSdgsbD4P6+fmZVnoRfi1VmOeSg3mRqDXVRwchLuTBWZ4XRSqqSuQr3XGE9EG9MrBu0Dpct5XmR6WOZ3ztYPykIChVUtg62CSa9sqTTQzRCTcs/YYVFce6d+3ZiUdL588Peo+4Unpv8r3Ajv+zAqakH7kpMIk/ANLAqmdctNoYxDMZWbjNrCimRvv5KJbtSS39aMwvUyy2gCi4Ij2TKCk83oxggJtfj",
+       "yl9VnIrWzaSpyy6/5xp23ey4MU60+rAUncO0sB5havF5Osdtbn/q8VbqBE9t5ltirqlF7o1t9RbQK/X6JAEFjsxq7J9UOE06/+LS+8txgUhZyD8leSf1vDA0A/5cMa1Bs4KhHV9yDWP7v1Z36HqCm6fi7iqRxximPTONQJVBshFizE4hagPKk4DnwCeZdok0LiVaOfN7f17TqLZzK4juhXG1TWeoKIHUfVoi+Kac25UHtGgUf2HVK/efzipO1ctGNoRaJVuYrJrxXwQs46UHMxV3yIW/qUxw9ILO8iT/pOInyIblmj/R5h7T7g3LZ7Simj4W4aGp67LTrYMAR14LWEn3cKwZu+sGXy/ZNYcLBXx2SxXLY5JtasmZm9Ze5loqODdGiRNUcDeShNa+E0cDFR9exPhrWQ4Thbwv4EGo0QOz1YxOaz6PoDvDUacm+PQGE0kJpP6ePtYS6mC8rdkszQitUDPkDy5F7NK/0M59nUfs2RLmBk4/MJbT191JC4uUoktyPaaruDwhy6Y7awtt3FhVrfEygRVigJr+I7ah8WZuPReFKVI4Lw3J8e7BIskwlxItoO/HRIPe/nS12xk7gPNRCccbcb7xselu8rNp10U7AbLYo71nVTf2KEbO2Epg8teqbIYhA9Eyr90GoXjairihEE9OG8bJInw3jRuy/+Poi7OVT2lMJ+asUsKEhuqKGq9k27RLy19hL4NDW7pz5CdkCyHyaKzA3VhW837+pNmtzx/RscErRATcuayKjmEwgxnIIqRAVfhGXtNCygDR5KfnndMAjeoXhw0rA+90xqJV98CuwOt9RFQMbpb6CuQPxBpIbsRf77hpis8aV9SGEcUO8fLh6HOCQpt+AO5Nzzqgga18DQ9R1aIXznNfGL4KEZ2duOPVjUBfXVCohLwcEtys37tEZyoCB7uGCmEl6vEJPTdtYPOD3LGiba5+JuusIJ9/jDnOkWy7k9bx4b6nkpMPkCD8iFlWW+xxyfuhDt/1Sl49pUF6bskEMH3Ge0MJJN35i6lDaK5kGTeT7cEQJ9nZyeF2AryHaTZKuoSdSDn6iFSkKnoCoUGjFlkSlEN0izBndCj+SK4V2KjVcndt4nlJPPBLRg6ugdVGc7/dxfgtooOI0u7r3BTf+TceDB/oXufZwDfM3sAycDcf5j0Tuju20NjtKHdTMEOd1syLMYCDHAnpdkJHrAHeNmr4xsZiosrM1qf30zCl1f4xz640k5QJKGAoSt1JU08DfR9xtqexxuhPVnzwLOWlpUrhSxDJ03igL8w+9syh7wr9RQsT3f4nKfB0bwNJw961NPXj7ySa6LO9o3IbY2kiXlrqs/PVdmqkHkp63y4EWRH3Szfu1zjiYvZlsxMMLWZGVdexBZJ0riNbNstjvosza8WCJmcQ5DrmFSw5MNFiuYo3PLMMuV35ioija4Xmik28woLYS/2HgyEzy7uPsXRp89NV3hnHcokFqp8Ml4Yer516UYb1H7OvQOIkqDIvrZ7uFJN0a1T9mxmFfbwz5t/qwDgyw35lduKkTLpSxkkIe6nkohc1ZjtiVaj12yoSzbhWrAU0eASSl6Z2cfwcJnt0Pah+y+7qrZexBSpwE939XlSIfycdsaRyySYkgL3l+W/4F2QAMqoVJwbNHwKSyesiF0F9Nz66fHjOG/K3eDn9nFk4S2aAidF6Y8zHhR9GlN+zXMxBSvlVqUvFtYsYqZgTZELTvzyR3u0UE1bHeq2ngnXeGrZC4qOCrtfI5ObVXFbEeTQr41vjkOn4Mf+Prh9lyONcZemUE3xg/74/JjFsy5Ms0/QZe+hRBp1XRM/aOP9+kzHNuMJCfB4l+pBdfsBRoalW5AeY2W/vKCgMkOHWY287QxPCCeHcEpzzLLkPISE/X0xmVsSJtj1t34rJ45N5C5TSXKNQYJC18dZPnY4jyyh603xvyAjdIN7jbxR3N0WpToRzDM2GT8GYleRu9abUEfIsvvrQDbwZQAKDW2gxNmrD",
+       "KrWBtigvjRWJa8df8y4xTtJat017OcJ+Yr6uP5ruTbP24S4n/VOTMiytQjkpdWB1TZO1DDJWAlUuepVmJKiE3AfW8AVRLCEdNepR9WYvvhkj3oyFC5SjESfTzb42sDae3XSf7qLposTm7P7laBXCnc599jrrVHvBcV983GnHgTmG2aS67Wh/IgvpagSN5frFY4ew7yuVog9yHxvq21telAyMFnlGsgXK/9DK69aSaAjdKbA/hMAhV9KeikvoQRddiOGlQWEXl0CBY9ZHZMhOiDcGwgqygqrPdTL6jAnhIzpwuBUMuYqZIt+aSG3OD0LFE5quEKdutrLHcPvNkmYs0e0kYzzx/kOWS6TixcWJ3YYPWwtByjs4s65ixCW9SN3voHSJa9RbmpCZgI/r02yaJySC6NPd0uxYjUGIgL6BTUJoJBleAi1RrKpAqQemzzqaAP36rxjux0r6TcnxjJ5StCcvbiWQQycfFvVzhSCtxbk1T/ltJ0KdO7c7Fdo//6bLpKwGD6kdk5d9wcmv2UzUXCprWYFJiLbn8dG6vYR69jxFqq0Lrif7y62q69mN2b9RxFP3YTQJBOFkhc4knTXUXXDhSb07SgONvdu1Leuj01eTVOflbWaO8UFfAqqThv8sattmLNmU+E6+0TZVtGa9i85njeMEsO4mvu9hpKiyBO+Gm+8oz+R1qwfEOoCS1LwBsYnZcGE3DGrW4lMAMGXqJhwGO/d2TTALbfN2auwBlamvlUBC7Q/44vYYvMRtIHcDQsM7z7XO2GAMJcoOgRnEjCpC55pJ/Qi89iTiq0PD45hbgYMSCeGHkKALgIeQFgmBov12ID/O0+tFMc0j9wAIyOUqAYLa0OL2TkviPBpSnyIU5GMNrsxwY3iPxHfCJqhZR/E+Qji7lEN1oNOwx+8RNeLL4j0+2R7GtS9sVQNWwzTSWtifGIX56GrsuQJHT3qCG7Ejcz/cOyFckxPReJG+hLQtxCP5JRZ+J+ihkMZRAoquSsu0uLBN1Lq7SULN9qKwCMyHjWw5UzJVFShZgLKcxQJ1LDMSUW/peE4aDibeZm2gX3lMf/tTG7WXyU415A88GfnP3K47O07MLwAOEduWyZ/Nq0JT8D81pKSPCCsN2Uha5DxouMBCxUW+7LDQJoKOMEBIFLOMZPc2R0PCovNMLTIYpgPVQbU5l+UbF2dZL1bq+9HBTL/3ou6E9ob9CIJ/v1swIa1xPL6RWu0DIhHoWlOM2StYGMNYZsC4X8TKaDQuVssjtGGuf2ZTMCDEYwMwAmuSEW7bNZ+1O0www5Mp+MP77RU4VRQFs+Kb2++iqpO0BJ1+abut8Nx7EsN4V5lDik56Kld8wJpY+vmEPDM9mbLbdDXri2RfQCDPPly9f3RNwGdbMw564ZLUckFN3/WU/pUKYzvty9AEHtYoADXlrd5oXnOP/IwtjrvLLdBSpmfuui5kbYI5sXlM8JfBPQwn1NGLCTOgOFLt0tWT69Ke4FScQWWeLF58Hgkq1jb6axv6II4xNk2H1ucBEWdsfUyz2yhnHzTa2J+sx1Mv/5u9zOk++LEIh1kFKJljSigHbQvYXgg/RG4LCmMYAQ=="
+      ]
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 485,
+    "cache_read_input_tokens": 17056,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 485
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "40b3f710-f5fa-45d9-b718-28d43f1aa432",
+  "timestamp": "2026-10-14T07:42:29.708Z",
+  "request_id": "req_011Cg1ke7tNFXLrzufLsqESt",
+  "thinking_duration_ms": 18148,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1ke87ku4LHabWAP8aey",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_0123WDT3cBCwYsCWwfCnFX6c",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/src/textkit/slug.py",
+      "content": "import re\nimport unicodedata\n\n_SPECIAL = {\n    \"ß\": \"ss\",\n    \"ẞ\": \"SS\",\n    \"æ\": \"ae\",\n    \"Æ\": \"AE\",\n    \"ø\": \"o\",\n    \"Ø\": \"O\",\n    \"ł\": \"l\",\n    \"Ł\": \"L\",\n}\n\n\ndef _to_ascii(text: str) -> str:\n    text = \"\".join(_SPECIAL.get(ch, ch) for ch in text)\n    decomposed = unicodedata.normalize(\"NFD\", text)\n    return decomposed.encode(\"ascii\", \"ignore\").decode(\"ascii\")\n\n\ndef slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:\n    \"\"\"Return an ASCII, lowercase slug of ``text`` joined by ``separator``.\n\n    With ``max_length``, keep the longest run of whole words that fits; if\n    no word fits, cut hard at ``max_length``. Trailing separators are removed.\n    \"\"\"\n    if not separator:\n        raise ValueError(\"separator must be a non-empty string\")\n    if max_length is not None and max_length < 1:\n        raise ValueError(\"max_length must be at least 1\")\n\n    words = re.findall(r\"[a-z0-9]+\", _to_ascii(text).lower())\n    slug = separator.join(words)\n    if max_length is None or len(slug) <= max_length:\n        return slug\n\n    kept = []\n    length = 0\n    for word in words:\n        added = len(word) if not kept else len(separator) + len(word)\n        if length + added > max_length:\n            break\n        kept.append(word)\n        length += added\n\n    result = separator.join(kept) if kept else slug[:max_length]\n    while result.endswith(separator):\n        result = result[: -len(separator)]\n    return result\n"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 485,
+    "cache_read_input_tokens": 17056,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 485
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "0a47c557-0fcc-4840-8a54-2d01dfdb729a",
+  "timestamp": "2026-10-14T07:42:31.710Z",
+  "request_id": "req_011Cg1ke7tNFXLrzufLsqESt"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_0123WDT3cBCwYsCWwfCnFX6c",
+     "type": "tool_result",
+     "content": "The file /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/src/textkit/slug.py has been updated successfully. (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "7cb2f723-f2d5-478f-ab29-b7228994e47c",
+  "timestamp": "2026-10-14T07:42:31.723Z",
+  "tool_use_result": {
+   "type": "update",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/src/textkit/slug.py",
+   "content": "import re\nimport unicodedata\n\n_SPECIAL = {\n    \"ß\": \"ss\",\n    \"ẞ\": \"SS\",\n    \"æ\": \"ae\",\n    \"Æ\": \"AE\",\n    \"ø\": \"o\",\n    \"Ø\": \"O\",\n    \"ł\": \"l\",\n    \"Ł\": \"L\",\n}\n\n\ndef _to_ascii(text: str) -> str:\n    text = \"\".join(_SPECIAL.get(ch, ch) for ch in text)\n    decomposed = unicodedata.normalize(\"NFD\", text)\n    return decomposed.encode(\"ascii\", \"ignore\").decode(\"ascii\")\n\n\ndef slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:\n    \"\"\"Return an ASCII, lowercase slug of ``text`` joined by ``separator``.\n\n    With ``max_length``, keep the longest run of whole words that fits; if\n    no word fits, cut hard at ``max_length``. Trailing separators are removed.\n    \"\"\"\n    if not separator:\n        raise ValueError(\"separator must be a non-empty string\")\n    if max_length is not None and max_length < 1:\n        raise ValueError(\"max_length must be at least 1\")\n\n    words = re.findall(r\"[a-z0-9]+\", _to_ascii(text).lower())\n    slug = separator.join(words)\n    if max_length is None or len(slug) <= max_length:\n        return slug\n\n    kept = []\n    length = 0\n    for word in words:\n        added = len(word) if not kept else len(separator) + len(word)\n        if length + added > max_length:\n            break\n        kept.append(word)\n        length += added\n\n    result = separator.join(kept) if kept else slug[:max_length]\n    while result.endswith(separator):\n        result = result[: -len(separator)]\n    return result\n",
+   "structuredPatch": [
+    {
+     "oldStart": 1,
+     "oldLines": 2,
+     "newStart": 1,
+     "newLines": 50,
+     "lines": [
+      "+import re",
+      "+import unicodedata",
+      "+",
+      "+_SPECIAL = {",
+      "+    \"ß\": \"ss\",",
+      "+    \"ẞ\": \"SS\",",
+      "+    \"æ\": \"ae\",",
+      "+    \"Æ\": \"AE\",",
+      "+    \"ø\": \"o\",",
+      "+    \"Ø\": \"O\",",
+      "+    \"ł\": \"l\",",
+      "+    \"Ł\": \"L\",",
+      "+}",
+      "+",
+      "+",
+      "+def _to_ascii(text: str) -> str:",
+      "+    text = \"\".join(_SPECIAL.get(ch, ch) for ch in text)",
+      "+    decomposed = unicodedata.normalize(\"NFD\", text)",
+      "+    return decomposed.encode(\"ascii\", \"ignore\").decode(\"ascii\")",
+      "+",
+      "+",
+      " def slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:",
+      "-    raise NotImplementedError",
+      "+    \"\"\"Return an ASCII, lowercase slug of ``text`` joined by ``separator``.",
+      "+",
+      "+    With ``max_length``, keep the longest run of whole words that fits; if",
+      "+    no word fits, cut hard at ``max_length``. Trailing separators are removed.",
+      "+    \"\"\"",
+      "+    if not separator:",
+      "+        raise ValueError(\"separator must be a non-empty string\")",
+      "+    if max_length is not None and max_length < 1:",
+      "+        raise ValueError(\"max_length must be at least 1\")",
+      "+",
+      "+    words = re.findall(r\"[a-z0-9]+\", _to_ascii(text).lower())",
+      "+    slug = separator.join(words)",
+      "+    if max_length is None or len(slug) <= max_length:",
+      "+        return slug",
+      "+",
+      "+    kept = []",
+      "+    length = 0",
+      "+    for word in words:",
+      "+        added = len(word) if not kept else len(separator) + len(word)",
+      "+        if length + added > max_length:",
+      "+            break",
+      "+        kept.append(word)",
+      "+        length += added",
+      "+",
+      "+    result = separator.join(kept) if kept else slug[:max_length]",
+      "+    while result.endswith(separator):",
+      "+        result = result[: -len(separator)]",
+      "+    return result"
+     ]
+    }
+   ],
+   "originalFile": "def slugify(text: str, max_length: int | None = None, separator: str = \"-\") -> str:\n    raise NotImplementedError\n",
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_0123WDT3cBCwYsCWwfCnFX6c",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kfka2fLsYAyQgDGwA5",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSgAYKEAgSGAI4AUIIdGhpbmtpbmcSDAJyeFydVXiKgBlm4hoMd9ne+9VtE8wq+xNDIjB0EIXxV7+cDDILSAEIsxrspJb9+Z+oRGAg/I60YOvhLMKuBmcYj0i/eCvUTUt3PDAqnQWWXAILMAJuLzONrh6AoSFyHHwBJa5UuSYrjr7g3UyqFWFKKIhVLW7YRX3C3QuD0ckya4/JHKht1cjJXej4A3ilC6B1M6U6gXX1i6TawKwlbGlDhu8P5EAQTeJheptv7WD56hUVZHC51BWWkaQgFYiD7Su5knoaehgun3HaRUjjRKejMqYXf0XgyU6VdgH8YrtTSCDxSqDm9BXLsM1sUbADQsC+KPUwrz8uODqplmNuGnL4YuZNQf3iIPpRiysY5lp5wPZ1LVyBLRwBsW0cmTnsornCauPybGLa6NbrPcMY+Le/vWdxZ96q3w8Gr5Wif116iOUHoLImoFpFwm4jkmh6cq5m+5mHCGtsM9anw9OrsF76OvjbkwYfo7rWP33YpTEJHH1JiIi1YaD+wyHg+t7pBxQSLn6Kp7R3rb28ECimM/T/PdXUtYKNkF5CLtmUUTAPCA7P5SAEL9KpR9ji5AGysUZmn90t7QFUV61eTQtK3HYKsU09gkI8Z20yHukGBKWBkXXWHOGqupGRfoF/YhaKGgewQwGy9WCvHGffNoonB0zSmptrtEUPWx5vZGm1PvNqGzk/b8RJUCtfWVIpUSphiq/6vnxMv7K84cIw1IBGhWVJvhMtYvuBy5bXINBXAH+RL/5y6wxET7+AR9YG7TCme9GTG7UHBeUjnU8Iv35TBa1LOBTdzZ75TGb542FQ/79SaeSZpWOi64dGjDypHuHtbLr/CRMUnTcYul1TQU1yvV0oNKl0h8E0qOx/kpnrG4eROR/jXOrXeIHcWucw+5Flo82mV7DIsbsXbq3dlC27MfZ4eff5DNJZrfnxoeKR8261VzsUxmF5oK2eEoUu37lDmV/GJw2NJF7p8eOrAfWWJPyPTp5u7TBSghLrzKkYAQ=="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 4980,
+    "cache_read_input_tokens": 17541,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 4980
+    },
+    "output_tokens": 6,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "af734c21-d95d-460d-8ef0-7eba20b9decf",
+  "timestamp": "2026-10-14T07:42:33.948Z",
+  "request_id": "req_011Cg1kfkJuG2qB1mRPzRD2o",
+  "thinking_duration_ms": 196,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kfka2fLsYAyQgDGwA5",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01RUJHGh9j1r5Qa4cusr8DQk",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/tests/test_slugify_behaviour.py",
+      "content": "import pytest\n\nfrom textkit import slugify\n\n\ndef test_special_letters_transliterated():\n    assert slugify(\"Straße\") == \"strasse\"\n    assert slugify(\"Æsir\") == \"aesir\"\n    assert slugify(\"Øresund\") == \"oresund\"\n    assert slugify(\"Łódź\") == \"lodz\"\n\n\ndef test_uppercase_accents_and_lowercasing():\n    assert slugify(\"Å ÉCOLE\") == \"a-ecole\"\n\n\ndef test_non_ascii_without_decomposition_is_dropped():\n    assert slugify(\"汉字 hello\") == \"hello\"\n\n\ndef test_runs_of_other_characters_collapse_to_one_separator():\n    assert slugify(\"  a -- b!!  c  \") == \"a-b-c\"\n\n\ndef test_leading_and_trailing_separators_stripped():\n    assert slugify(\"--!!hello!!--\") == \"hello\"\n\n\ndef test_empty_and_symbol_only_input():\n    assert slugify(\"\") == \"\"\n    assert slugify(\"!!!\") == \"\"\n\n\ndef test_custom_separator():\n    assert slugify(\"Hello, World!\", separator=\"_\") == \"hello_world\"\n\n\ndef test_multi_character_separator():\n    assert slugify(\"a b c\", separator=\"--\") == \"a--b--c\"\n\n\ndef test_max_length_cuts_at_last_fitting_separator():\n    assert slugify(\"one two three\", max_length=8) == \"one-two\"\n\n\ndef test_max_length_exact_fit_not_cut():\n    assert slugify(\"one two\", max_length=7) == \"one-two\"\n\n\ndef test_max_length_hard_cut_when_no_separator_fits():\n    assert slugify(\"abcdefghij klm\", max_length=4) == \"abcd\"\n\n\ndef test_max_length_result_never_ends_with_separator():\n    assert slugify(\"ab cd\", max_length=3) == \"ab\"\n    assert slugify(\"a-b\", max_length=2) == \"a\"\n\n\ndef test_max_length_with_custom_separator():\n    assert slugify(\"one two three\", max_length=9, separator=\"__\") == \"one__two\"\n\n\ndef test_empty_separator_raises():\n    with pytest.raises(ValueError):\n        slugify(\"hello\", separator=\"\")\n\n\n@pytest.mark.parametrize(\"max_length\", [0, -1])\ndef test_max_length_below_one_raises(max_length):\n    with pytest.raises(ValueError):\n        slugify(\"hello\", max_length=max_length)\n"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 4980,
+    "cache_read_input_tokens": 17541,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 4980
+    },
+    "output_tokens": 6,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "a878a7dc-87c6-4703-9b5a-8a7f8ffb717c",
+  "timestamp": "2026-10-14T07:42:36.985Z",
+  "request_id": "req_011Cg1kfkJuG2qB1mRPzRD2o"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01RUJHGh9j1r5Qa4cusr8DQk",
+     "type": "tool_result",
+     "content": "File created successfully at: /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/tests/test_slugify_behaviour.py (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "011b2c5d-df3b-4017-985a-54d414fcbbcd",
+  "timestamp": "2026-10-14T07:42:36.997Z",
+  "tool_use_result": {
+   "type": "create",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T01-slugify-B-r1/tests/test_slugify_behaviour.py",
+   "content": "import pytest\n\nfrom textkit import slugify\n\n\ndef test_special_letters_transliterated():\n    assert slugify(\"Straße\") == \"strasse\"\n    assert slugify(\"Æsir\") == \"aesir\"\n    assert slugify(\"Øresund\") == \"oresund\"\n    assert slugify(\"Łódź\") == \"lodz\"\n\n\ndef test_uppercase_accents_and_lowercasing():\n    assert slugify(\"Å ÉCOLE\") == \"a-ecole\"\n\n\ndef test_non_ascii_without_decomposition_is_dropped():\n    assert slugify(\"汉字 hello\") == \"hello\"\n\n\ndef test_runs_of_other_characters_collapse_to_one_separator():\n    assert slugify(\"  a -- b!!  c  \") == \"a-b-c\"\n\n\ndef test_leading_and_trailing_separators_stripped():\n    assert slugify(\"--!!hello!!--\") == \"hello\"\n\n\ndef test_empty_and_symbol_only_input():\n    assert slugify(\"\") == \"\"\n    assert slugify(\"!!!\") == \"\"\n\n\ndef test_custom_separator():\n    assert slugify(\"Hello, World!\", separator=\"_\") == \"hello_world\"\n\n\ndef test_multi_character_separator():\n    assert slugify(\"a b c\", separator=\"--\") == \"a--b--c\"\n\n\ndef test_max_length_cuts_at_last_fitting_separator():\n    assert slugify(\"one two three\", max_length=8) == \"one-two\"\n\n\ndef test_max_length_exact_fit_not_cut():\n    assert slugify(\"one two\", max_length=7) == \"one-two\"\n\n\ndef test_max_length_hard_cut_when_no_separator_fits():\n    assert slugify(\"abcdefghij klm\", max_length=4) == \"abcd\"\n\n\ndef test_max_length_result_never_ends_with_separator():\n    assert slugify(\"ab cd\", max_length=3) == \"ab\"\n    assert slugify(\"a-b\", max_length=2) == \"a\"\n\n\ndef test_max_length_with_custom_separator():\n    assert slugify(\"one two three\", max_length=9, separator=\"__\") == \"one__two\"\n\n\ndef test_empty_separator_raises():\n    with pytest.raises(ValueError):\n        slugify(\"hello\", separator=\"\")\n\n\n@pytest.mark.parametrize(\"max_length\", [0, -1])\ndef test_max_length_below_one_raises(max_length):\n    with pytest.raises(ValueError):\n        slugify(\"hello\", max_length=max_length)\n",
+   "structuredPatch": [],
+   "originalFile": null,
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01RUJHGh9j1r5Qa4cusr8DQk",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kg9CZMB7UyX2GihUyH",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01E4zLWNt3Rh7wgHUVczz5PM",
+     "name": "Bash",
+     "input": {
+      "command": "python -m pytest -q 2>&1 | tail -30; git status --short",
+      "description": "Run test suite and show git status"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1107,
+    "cache_read_input_tokens": 22521,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1107
+    },
+    "output_tokens": 20,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "184cc813-5c03-45c7-9c40-c0a392508531",
+  "timestamp": "2026-10-14T07:42:39.047Z",
+  "request_id": "req_011Cg1kg8xfxJHXTquRafsXZ"
+ },
+ {
+  "type": "rate_limit_event",
+  "rate_limit_info": {
+   "status": "allowed",
+   "resetsAt": 1791966000,
+   "rateLimitType": "five_hour",
+   "overageStatus": "rejected",
+   "overageDisabledReason": "org_level_disabled",
+   "isUsingOverage": false,
+   "unifiedWindows": {
+    "five_hour": {
+     "utilization": 0.89,
+     "resetsAt": 1791966000
+    },
+    "seven_day": {
+     "utilization": 0.36,
+     "resetsAt": 1792407600
+    }
+   }
+  },
+  "uuid": "2ab2c052-b8b3-4af2-a7df-3eed0e592f3b",
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01E4zLWNt3Rh7wgHUVczz5PM",
+     "type": "tool_result",
+     "content": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n..................                                                       [100%]\n18 passed in 0.01s\n M src/textkit/slug.py\n?? tests/test_slugify_behaviour.py",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "40d92b65-7491-47aa-b5cc-01d5d488a9c2",
+  "timestamp": "2026-10-14T07:42:39.190Z",
+  "tool_use_result": {
+   "stdout": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n..................                                                       [100%]\n18 passed in 0.01s\n M src/textkit/slug.py\n?? tests/test_slugify_behaviour.py",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01E4zLWNt3Rh7wgHUVczz5PM",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "156283d4-7a32-462d-b0b4-a74d5268afe7"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 250,
+  "estimated_tokens_delta": 200,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "dee14a7f-bedd-466a-b273-7bc0c29d88cd"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kgJUukZgMNqaxkM6yn",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQS4AcKEAgSGAI4AUIIdGhpbmtpbmcSDBlCao/agmJAqzi/5hoM6By+PGMk7gP9IkiPIjDJCx1axiKR4YDO45rotkPUJ0IPjc9425XOGaP7Cu1f4w88Dh6whbYE8pwxUalqvx8q/Qb6je9U061CTtsb7xivY2/4Y0JL/yxXHt1Rud8f32+FQtR4Ys8vZdrWaYNI9JQRjVHMf3exEgqLcW5HC++dpoBpr5PPFB8QG366xHTvr5mZTN93JApI01AL1XhG1gTdjJW69CGyfAek3r32C2sZQhEj9RyMVt1HZQ4lTeyYaX4+BfedY3IGEJonRt5p/2wqb/HdAtfASV2rnjrgxyXvNuwpYX0fssmTyUKmTsDN1SsX2tLhKP4UmWSUmFK7f0K5dIZdO+uaHoSjndy/5DrCjZN7mHhTMKjjcVG65jve4/TQgBL5V5GZrwDoPoQJr8MEOYZxPWqTOdLuVlbQk50DFSn61axHabmCMYWvETvhPG5qvP8wANFI4V6/Vhi19GJ43jaCEw38ACpbdvx7Ocnu6ymndhjim6qjZ803Og1LWr+YIqH+DZD8M6y4IuI69g7vrpldUpBcaGmODO+PeB2m4C1G8ZyUM9n4MOnPYqLL4Fx/9j3Ac0aTh5/5NJ83HOki5F/T7DWF/mySwAfCMj9FcgToYqlZ+6kuP70y/KIQDEMobuK/+ttZcJtFNd2449pDdZ7bZH+daxCDIHk9+mly3ZXL48DzaJ/+OL9s7eXyElNRMLFdBOprR9FT95997CP1NasUenqBJyR/XcUTTiAoqlqBpDojZqUSA6MLEHkPdd/iwGJa3y05fkEniMKATgH3BY/kiP4vNNFo8lAY0jVaZgioEd/yh05h/BBwT+HkbT2EnEIVj8lZRdB0npNtYYSDW+Y6lKkSo/OoOfZhbFOv58O9ErJnN0KLaFWhslJN5w3u3OPia0iVAb+LzqOlmMAAAh1I46VVai2jNTUROaVtDFGpWamIt/EC77IpB2dVLKHb/Ok2QCqjXGh1FWlPD6LnXAGiW+PHZNyH/G4iKvVX9yXZ7TGLDUlk3W2FVZNsSSlwD6zXUFhWOe3sA2U8KVf2Uh7PXgST1eLnFwk3SWllu3qw285ZOnWaIkv45rwQYiK9FrxxwUqLfaci0pQCfPpt0kiYmqRxB6ayb4skGOOriOD53VCo2PtwN883oKdKTKerPl34VKTi9xkiLdcZH3o/eYY9ARla/eZmYdFAcbiRLAbM2jrc+lOrfMoUUKRnQNzyZoRkPQ9S8nKWlqbCQznl8MZHC/cov4SiXHdts9ihhqu9Dpiq3L6bUmbGiDS0ohgB"
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 210,
+    "cache_read_input_tokens": 23628,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 210
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "ce5d71d4-3846-40b5-bfd5-ea1f33cd9416",
+  "timestamp": "2026-10-14T07:42:41.202Z",
+  "request_id": "req_011Cg1kgJF2TzxTqSAnxq5YY",
+  "thinking_duration_ms": 401,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1kgJUukZgMNqaxkM6yn",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "text",
+     "text": "`slugify` is implemented in `src/textkit/slug.py`, and the full suite passes: `python -m pytest -q` gives 18 passed, including the two existing tests.\n\n- **Implementation:** transliteration maps `ß`, `æ`, `ø`, `ł` (and uppercase forms) first, then NFD-decomposes and drops anything left that isn't ASCII. The slug is built from `[a-z0-9]+` words joined by `separator`, which handles lowercasing and the separator-run and stripping rules in one step.\n- **Truncation:** when `max_length` is exceeded, the result is the longest run of whole words that fits. If not even the first word fits, it cuts hard at `max_length`. A trailing separator is removed in either case.\n- **Validation:** an empty `separator` or a `max_length` below 1 raises `ValueError`.\n- **Tests:** added in a new file, `tests/test_slugify_behaviour.py`. `tests/test_slug.py` is unchanged.\n- **CLAUDE.md:** the code uses only `re` and `unicodedata`, has no `print()`, no bare `except`, no TODOs, and a docstring of 4 lines.\n\nChoices I made that you may want to change:\n- I used NFD rather than NFKD, so compatibility characters such as `ﬁ` or `½` are dropped rather than expanded into ASCII.\n- If a separator contains letters or digits (e.g. `separator=\"a\"`), the cut treats only the word joins as separators, so the result never splits inside a word."
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 210,
+    "cache_read_input_tokens": 23628,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 210
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "uuid": "c101776b-0f25-4aee-aa60-a8ef327aca3f",
+  "timestamp": "2026-10-14T07:42:43.322Z",
+  "request_id": "req_011Cg1kgJF2TzxTqSAnxq5YY"
+ },
+ {
+  "duration_api_ms": 35911,
+  "stop_reason": "end_turn",
+  "session_id": "63658dc6-c974-4c07-8288-14193199e6ab",
+  "total_cost_usd": 0.007098740000000001,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 13810,
+   "cache_read_input_tokens": 90774,
+   "output_tokens": 6856,
+   "output_tokens_details": {
+    "thinking_tokens": 4249
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 13810,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 10,
+    "outputTokens": 6856,
+    "cacheReadInputTokens": 90774,
+    "cacheCreationInputTokens": 13810,
+    "webSearchRequests": 0,
+    "costUSD": 0.007098740000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4249,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 5,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "`slugify` is implemented in `src/textkit/slug.py`, and the full suite passes: `python -m pytest -q` gives 18 passed, including the two existing tests.\n\n- **Implementation:** transliteration maps `ß`, `æ`, `ø`, `ł` (and uppercase forms) first, then NFD-decomposes and drops anything left that isn't ASCII. The slug is built from `[a-z0-9]+` words joined by `separator`, which handles lowercasing and the separator-run and stripping rules in one step.\n- **Truncation:** when `max_length` is exceeded, the result is the longest run of whole words that fits. If not even the first word fits, it cuts hard at `max_length`. A trailing separator is removed in either case.\n- **Validation:** an empty `separator` or a `max_length` below 1 raises `ValueError`.\n- **Tests:** added in a new file, `tests/test_slugify_behaviour.py`. `tests/test_slug.py` is unchanged.\n- **CLAUDE.md:** the code uses only `re` and `unicodedata`, has no `print()`, no bare `except`, no TODOs, and a docstring of 4 lines.\n\nChoices I made that you may want to change:\n- I used NFD rather than NFKD, so compatibility characters such as `ﬁ` or `½` are dropped rather than expanded into ASCII.\n- If a separator contains letters or digits (e.g. `separator=\"a\"`), the cut treats only the word joins as separators, so the result never splits inside a word.",
+  "ttft_ms": 1675,
+  "type": "result",
+  "duration_ms": 37714,
+  "uuid": "0dc620e6-3c00-4829-a433-33c7b328faf7",
+  "ttft_stream_ms": 1490,
+  "time_to_request_ms": 55,
+  "first_content_frame_ms": 1490,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+]

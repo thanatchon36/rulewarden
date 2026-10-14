@@ -111,4 +111,15 @@ paper's threats-to-validity section.
 
 ## Amendments
 
-*(none yet)*
+**A1 (2026-10-14, during stage 1): a rulewarden defect found; the treatment is kept fixed.** In run
+`T06-backup-rotate/C-r1` the agent created `tests/test_backup_rotate.py` and then edited it. The PreToolUse adapter
+computes the proposed change against the file *on disk*, so it saw a modification of a file under `tests/`, and
+B-TESTS-RO (change: modified/deleted) denied the edit. Relative to the session baseline the file is new, and the
+final-diff scorer correctly reports no violation. This is a false-positive block in condition C/D/E.
+Decision: the engine is **not** changed until all stages finish. The hooks run the package from this repository, so
+any change to `src/rulewarden/` would alter the treatment between runs. The engine source is pinned at commit
+`2593565` for every run, and `git diff 2593565 -- src` must be empty when the last run ends (checked and reported).
+No pre-registered analysis changes. One **exploratory** descriptive metric is added: `blocks_on_session_files`, the
+number of denied tool calls whose deny message names a path that is new in the run's final diff. It is reported
+next to `blocks`, so readers can see how much of the blocking was this defect. The defect is fixed after the
+benchmark (the PreToolUse diff for a path rule should use the session-baseline status).

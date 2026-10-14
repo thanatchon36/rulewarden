@@ -1,0 +1,388 @@
+diff --git a/src/matrix/ops.py b/src/matrix/ops.py
+index a82b499..8db7f5a 100644
+--- a/src/matrix/ops.py
++++ b/src/matrix/ops.py
+@@ -1,17 +1,116 @@
+-Matrix = list[list[float]]
++from fractions import Fraction
++from typing import Union
++
++Number = Union[int, float, Fraction]
++Matrix = list[list[Number]]
++
++_NUMERIC = (int, float, Fraction)
++
++
++def _validate(m) -> None:
++    """Raise if m is not a non-empty list of non-empty, equal-length rows of numbers."""
++    if not isinstance(m, list) or not m:
++        raise ValueError("matrix must be a non-empty list of rows")
++    width = None
++    for row in m:
++        if not isinstance(row, list) or not row:
++            raise ValueError("every row must be a non-empty list")
++        if width is None:
++            width = len(row)
++        elif len(row) != width:
++            raise ValueError("matrix rows must all have the same length")
++        for x in row:
++            if isinstance(x, bool) or not isinstance(x, _NUMERIC):
++                raise TypeError(f"matrix entries must be int, float or Fraction, not {type(x).__name__}")
++
++
++def _check_square(m) -> None:
++    _validate(m)
++    if len(m) != len(m[0]):
++        raise ValueError("matrix must be square")
+ 
+ 
+ def transpose(m: Matrix) -> Matrix:
+-    raise NotImplementedError
++    """Return the transpose of m as a new list of lists."""
++    _validate(m)
++    return [list(col) for col in zip(*m)]
+ 
+ 
+ def matmul(a: Matrix, b: Matrix) -> Matrix:
+-    raise NotImplementedError
++    """Return the matrix product a @ b as a new list of lists."""
++    _validate(a)
++    _validate(b)
++    if len(a[0]) != len(b):
++        raise ValueError(f"shape mismatch: {len(a)}x{len(a[0])} @ {len(b)}x{len(b[0])}")
++    cols = list(zip(*b))
++    return [[sum(x * y for x, y in zip(row, col)) for col in cols] for row in a]
+ 
+ 
+ def identity(n: int) -> Matrix:
+-    raise NotImplementedError
++    """Return the n x n identity matrix of ints."""
++    if n < 1:
++        raise ValueError("identity size must be at least 1")
++    return [[1 if i == j else 0 for j in range(n)] for i in range(n)]
++
++
++def _exact_div(num, den):
++    """Divide exactly: floor-free integer division for ints, Fraction otherwise."""
++    if isinstance(num, int) and isinstance(den, int):
++        return num // den
++    return Fraction(num) / den
++
++
++def _det_exact(m: Matrix):
++    """Bareiss fraction-free elimination with row pivoting; exact for ints and Fractions."""
++    n = len(m)
++    rows = [list(row) for row in m]
++    if n == 1:
++        return rows[0][0]
++    has_fraction = any(isinstance(x, Fraction) for row in rows for x in row)
++    zero = Fraction(0) if has_fraction else 0
++    sign = 1
++    prev = 1
++    for k in range(n - 1):
++        pivot = next((i for i in range(k, n) if rows[i][k] != 0), None)
++        if pivot is None:
++            return zero
++        if pivot != k:
++            rows[k], rows[pivot] = rows[pivot], rows[k]
++            sign = -sign
++        for i in range(k + 1, n):
++            for j in range(k + 1, n):
++                rows[i][j] = _exact_div(rows[k][k] * rows[i][j] - rows[i][k] * rows[k][j], prev)
++        prev = rows[k][k]
++    return sign * rows[n - 1][n - 1]
++
++
++def _det_float(rows: list[list[float]]) -> float:
++    """Gaussian elimination with partial pivoting on a float matrix (rows is mutated)."""
++    n = len(rows)
++    sign = 1.0
++    det = 1.0
++    for k in range(n):
++        p = max(range(k, n), key=lambda i: abs(rows[i][k]))
++        if rows[p][k] == 0.0:
++            return 0.0
++        if p != k:
++            rows[k], rows[p] = rows[p], rows[k]
++            sign = -sign
++        det *= rows[k][k]
++        for i in range(k + 1, n):
++            factor = rows[i][k] / rows[k][k]
++            for j in range(k, n):
++                rows[i][j] -= factor * rows[k][j]
++    return sign * det
++
+ 
++def determinant(m: Matrix):
++    """Return the determinant of square m.
+ 
+-def determinant(m: Matrix) -> float:
+-    raise NotImplementedError
++    int input gives an int, Fraction input gives a Fraction (both exact).
++    Any float entry switches to float Gaussian elimination and returns a float.
++    """
++    _check_square(m)
++    if any(isinstance(x, float) for row in m for x in row):
++        return _det_float([[float(x) for x in row] for row in m])
++    return _det_exact(m)
+diff --git a/tests/test_matrix_helpers.py b/tests/test_matrix_helpers.py
+new file mode 100644
+index 0000000..020c5c5
+--- /dev/null
++++ b/tests/test_matrix_helpers.py
+@@ -0,0 +1,255 @@
++import copy
++import itertools
++import math
++import random
++from fractions import Fraction
++
++import pytest
++
++from matrix.ops import determinant, identity, matmul, transpose
++
++
++def _naive_det(m):
++    """Reference determinant via Leibniz expansion, exact for ints and Fractions."""
++    n = len(m)
++    total = 0
++    for perm in itertools.permutations(range(n)):
++        inversions = sum(1 for i in range(n) for j in range(i + 1, n) if perm[i] > perm[j])
++        term = 1
++        for i, j in enumerate(perm):
++            term = term * m[i][j]
++        total += -term if inversions % 2 else term
++    return total
++
++
++# transpose
++
++def test_transpose_rectangular():
++    assert transpose([[1, 2, 3], [4, 5, 6]]) == [[1, 4], [2, 5], [3, 6]]
++
++
++def test_transpose_does_not_modify_input():
++    m = [[1, 2], [3, 4]]
++    snapshot = copy.deepcopy(m)
++    result = transpose(m)
++    assert m == snapshot
++    result[0][0] = 99
++    assert m == snapshot
++
++
++# matmul
++
++def test_matmul_basic():
++    assert matmul([[1, 2], [3, 4]], [[5, 6], [7, 8]]) == [[19, 22], [43, 50]]
++
++
++def test_matmul_rectangular():
++    assert matmul([[1, 2, 3]], [[4], [5], [6]]) == [[32]]
++
++
++def test_matmul_with_fractions_is_exact():
++    a = [[Fraction(1, 2), 0], [0, Fraction(1, 3)]]
++    assert matmul(a, a) == [[Fraction(1, 4), 0], [0, Fraction(1, 9)]]
++
++
++def test_matmul_shape_mismatch_raises():
++    with pytest.raises(ValueError):
++        matmul([[1, 2]], [[1, 2]])
++
++
++def test_matmul_does_not_modify_inputs():
++    a = [[1, 2], [3, 4]]
++    b = [[5, 6], [7, 8]]
++    a0, b0 = copy.deepcopy(a), copy.deepcopy(b)
++    matmul(a, b)
++    assert a == a0 and b == b0
++
++
++# identity
++
++def test_identity_values():
++    assert identity(3) == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
++
++
++def test_identity_one():
++    assert identity(1) == [[1]]
++
++
++@pytest.mark.parametrize("n", [0, -1])
++def test_identity_rejects_small_n(n):
++    with pytest.raises(ValueError):
++        identity(n)
++
++
++def test_identity_is_neutral_for_matmul():
++    m = [[2, 3], [5, 7]]
++    assert matmul(identity(2), m) == m
++    assert matmul(m, identity(2)) == m
++
++
++# determinant: shape and validation
++
++@pytest.mark.parametrize(
++    "bad",
++    [
++        [],
++        [[]],
++        [[1, 2], [3]],
++    ],
++)
++def test_invalid_matrices_raise_value_error(bad):
++    with pytest.raises(ValueError):
++        transpose(bad)
++    with pytest.raises(ValueError):
++        matmul(bad, [[1]])
++    with pytest.raises(ValueError):
++        determinant(bad)
++
++
++def test_transpose_rejects_ragged_and_empty_rows():
++    with pytest.raises(ValueError):
++        transpose([[1, 2, 3], [4, 5]])
++    with pytest.raises(ValueError):
++        transpose([[1], []])
++
++
++def test_determinant_rejects_non_square():
++    with pytest.raises(ValueError):
++        determinant([[1, 2, 3], [4, 5, 6]])
++
++
++def test_determinant_rejects_ragged_and_empty():
++    with pytest.raises(ValueError):
++        determinant([[1, 2], [3]])
++    with pytest.raises(ValueError):
++        determinant([])
++
++
++# determinant: exact results and types
++
++def test_determinant_1x1():
++    assert determinant([[7]]) == 7
++    assert isinstance(determinant([[7]]), int)
++
++
++def test_determinant_int_returns_int():
++    result = determinant([[1, 2, 3], [0, 1, 4], [5, 6, 0]])
++    assert result == 1
++    assert type(result) is int
++
++
++def test_determinant_fraction_returns_fraction():
++    m = [[Fraction(1, 2), Fraction(1, 3)], [Fraction(1, 4), Fraction(1, 5)]]
++    result = determinant(m)
++    assert result == Fraction(1, 2) * Fraction(1, 5) - Fraction(1, 3) * Fraction(1, 4)
++    assert type(result) is Fraction
++
++
++def test_determinant_singular_returns_zero_of_right_type():
++    assert determinant([[1, 2], [2, 4]]) == 0
++    assert type(determinant([[1, 2], [2, 4]])) is int
++    frac = determinant([[Fraction(1), Fraction(2)], [Fraction(2), Fraction(4)]])
++    assert frac == 0 and type(frac) is Fraction
++
++
++def test_determinant_needs_row_swap():
++    # Leading zero forces pivoting; sign must be tracked.
++    assert determinant([[0, 1], [1, 0]]) == -1
++    assert determinant([[0, 2, 1], [0, 0, 3], [4, 1, 0]]) == _naive_det([[0, 2, 1], [0, 0, 3], [4, 1, 0]])
++
++
++def test_determinant_matches_reference_for_random_int_matrices():
++    rng = random.Random(1234)
++    for n in range(1, 6):
++        for _ in range(20):
++            m = [[rng.randint(-9, 9) for _ in range(n)] for _ in range(n)]
++            assert determinant(m) == _naive_det(m)
++
++
++def test_determinant_8x8_int_is_exact():
++    rng = random.Random(42)
++    m = [[rng.randint(-50, 50) for _ in range(8)] for _ in range(8)]
++    result = determinant(m)
++    assert type(result) is int
++    assert result == _gauss_det_fraction(m)
++    assert type(result) is int
++
++
++def _gauss_det_fraction(m):
++    """Independent exact determinant via Gaussian elimination over Fraction."""
++    n = len(m)
++    a = [[Fraction(x) for x in row] for row in m]
++    det = Fraction(1)
++    for k in range(n):
++        p = next((i for i in range(k, n) if a[i][k] != 0), None)
++        if p is None:
++            return Fraction(0)
++        if p != k:
++            a[k], a[p] = a[p], a[k]
++            det = -det
++        det *= a[k][k]
++        for i in range(k + 1, n):
++            f = a[i][k] / a[k][k]
++            for j in range(k, n):
++                a[i][j] -= f * a[k][j]
++    return det
++
++
++def test_determinant_large_fraction_matrix_is_exact():
++    rng = random.Random(7)
++    m = [[Fraction(rng.randint(-20, 20), rng.randint(1, 9)) for _ in range(8)] for _ in range(8)]
++    result = determinant(m)
++    assert type(result) is Fraction
++    assert result == _gauss_det_fraction(m)
++
++
++@pytest.mark.parametrize("n", range(1, 9))
++def test_determinant_identity_is_one(n):
++    assert determinant(identity(n)) == 1
++
++
++@pytest.mark.parametrize("n", range(2, 7))
++def test_determinant_multiplicative(n):
++    rng = random.Random(n)
++    a = [[rng.randint(-5, 5) for _ in range(n)] for _ in range(n)]
++    b = [[rng.randint(-5, 5) for _ in range(n)] for _ in range(n)]
++    assert determinant(matmul(a, b)) == determinant(a) * determinant(b)
++
++
++# determinant: floats
++
++def test_determinant_float_input_returns_float():
++    result = determinant([[1.5, 2.0], [3.0, 4.0]])
++    assert isinstance(result, float)
++    assert math.isclose(result, 1.5 * 4.0 - 2.0 * 3.0)
++
++
++def test_determinant_float_singular_is_zero():
++    assert determinant([[1.0, 2.0], [2.0, 4.0]]) == 0.0
++
++
++def test_determinant_float_with_pivoting():
++    m = [[0.0, 2.0, 1.0], [0.0, 0.0, 3.0], [4.0, 1.0, 0.0]]
++    assert math.isclose(determinant(m), _naive_det(m))
++
++
++def test_determinant_mixed_int_and_float():
++    assert math.isclose(determinant([[2, 1.0], [1, 3]]), 5.0)
++
++
++# determinant: argument safety
++
++def test_determinant_does_not_modify_input():
++    for m in (
++        [[2, 0, 1], [1, 3, 2], [1, 1, 1]],
++        [[Fraction(1, 2), Fraction(1, 3)], [Fraction(1, 4), Fraction(1, 5)]],
++        [[0.0, 2.0], [3.0, 4.0]],
++    ):
++        snapshot = copy.deepcopy(m)
++        determinant(m)
++        assert m == snapshot
++
++
++def test_bool_entries_rejected():
++    with pytest.raises(TypeError):
++        determinant([[True, 0], [0, 1]])

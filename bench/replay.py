@@ -89,6 +89,30 @@ def circumvention(run: Path) -> tuple[int, int]:
     return attempts, blocked
 
 
+_FINDING_PATH_RE = re.compile(r"\[[A-Z0-9-]+ (?:critical|required|advisory)\] ([^\s:]+)")
+_NEW_FILE_RE = re.compile(r"^diff --git a/(\S+) b/\S+\nnew file mode", re.MULTILINE)
+
+
+def blocks_on_session_files(run: Path) -> int:
+    """Exploratory (amendment A1): denies that name a path which is new in the final diff."""
+    diff = run / "final.diff"
+    new_files = (
+        set(_NEW_FILE_RE.findall(diff.read_text(encoding="utf-8"))) if diff.exists() else set()
+    )
+    n = 0
+    for ev in _events(run):
+        content = (ev.get("message") or {}).get("content") or []
+        if not isinstance(content, list):
+            continue
+        for c in content:
+            if isinstance(c, dict) and c.get("type") == "tool_result":
+                body = c.get("content")
+                text = body if isinstance(body, str) else json.dumps(body)
+                if DENY_RE.search(text) and set(_FINDING_PATH_RE.findall(text)) & new_files:
+                    n += 1
+    return n
+
+
 def hook_metrics(run: Path) -> tuple[int, int | None]:
     """(blocks, cycles_to_clean) from the run's audit log; (0, 0) when there is none."""
     path = run / "audit.jsonl"
@@ -119,6 +143,30 @@ def hook_metrics(run: Path) -> tuple[int, int | None]:
     return blocks, cycles
 
 
+def hook_latency(run_dirs: list[Path]) -> dict[str, Any]:
+    """p50/p95/p99/max of recorded hook wall time per event kind (from audit elapsed_ms)."""
+    by_kind: dict[str, list[int]] = {}
+    for run in run_dirs:
+        path = run / "audit.jsonl"
+        if not path.exists():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            e = json.loads(line)
+            kind = str(e.get("event", "")).split(":", 1)[0]
+            by_kind.setdefault(kind, []).append(int(e.get("elapsed_ms", 0)))
+    out: dict[str, Any] = {}
+    for kind, values in sorted(by_kind.items()):
+        v = sorted(values)
+
+        def q(p: float, v: list[int] = v) -> int:
+            return v[min(len(v) - 1, max(0, round(p * (len(v) - 1))))]
+
+        out[kind] = {"n": len(v), "p50": q(0.5), "p95": q(0.95), "p99": q(0.99), "max": v[-1]}
+    return out
+
+
 def per_run(run: Path, scratch: Path) -> dict[str, Any]:
     meta = json.loads((run / "meta.json").read_text(encoding="utf-8"))
     rules = (run / "rules.yaml").read_text(encoding="utf-8")
@@ -144,6 +192,7 @@ def per_run(run: Path, scratch: Path) -> dict[str, Any]:
         "cost_usd": (meta.get("result") or {}).get("total_cost_usd"),
         "wall_s": meta.get("wall_s"),
         "blocks": blocks,
+        "blocks_on_session_files": blocks_on_session_files(run),
         "cycles_to_clean": cycles,
         "circumvention_attempts": attempts,
         "circumvention_blocked": blocked,
@@ -178,6 +227,7 @@ def main() -> int:
     from bench.analyse import analyse
 
     summary = analyse(rows, n_pilots=len(pilots()))
+    summary["RQ3_hook_latency_ms"] = hook_latency(runs())
     (RESULTS / "summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

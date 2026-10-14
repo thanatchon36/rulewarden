@@ -1,0 +1,192 @@
+diff --git a/src/appconfig/loader.py b/src/appconfig/loader.py
+index 3e6f7d7..5821b65 100644
+--- a/src/appconfig/loader.py
++++ b/src/appconfig/loader.py
+@@ -1,6 +1,63 @@
++import configparser
++import os
++import re
+ from collections.abc import Mapping
+ from pathlib import Path
+ 
++_REF_RE = re.compile(r"\$\$|\$\{([^}]*)\}")
++_INT_RE = re.compile(r"[+-]?[0-9]+", re.ASCII)
++_FLOAT_RE = re.compile(r"[+-]?(?:[0-9]+\.[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", re.ASCII)
++_TRUE = frozenset({"true", "yes", "on"})
++_FALSE = frozenset({"false", "no", "off"})
++
++
++def _interpolate(raw: str, env: Mapping[str, str]) -> str:
++    """Replace ``${NAME}`` with ``env[NAME]`` and ``$$`` with ``$``."""
++
++    def replace(match: re.Match[str]) -> str:
++        if match.group(0) == "$$":
++            return "$"
++        name = match.group(1)
++        if name not in env:
++            raise KeyError(name)
++        return env[name]
++
++    return _REF_RE.sub(replace, raw)
++
++
++def _convert(value: str) -> object:
++    text = value.strip()
++    lowered = text.lower()
++    if lowered in _TRUE:
++        return True
++    if lowered in _FALSE:
++        return False
++    if _INT_RE.fullmatch(text):
++        return int(text)
++    if _FLOAT_RE.fullmatch(text):
++        return float(text)
++    return text
++
+ 
+ def load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:
+-    raise NotImplementedError
++    source = Path(path)
++    if not source.exists():
++        raise FileNotFoundError(f"config file not found: {source}")
++    environ = os.environ if env is None else env
++
++    # interpolation=None keeps '%' literal; only ${NAME} references are expanded.
++    parser = configparser.ConfigParser(interpolation=None)
++    parser.read_string(source.read_text(encoding="utf-8"), source=str(source))
++
++    result: dict[str, dict[str, object]] = {}
++    for section in parser.sections():
++        values: dict[str, object] = {}
++        for key, raw in parser.items(section):
++            override = f"APP_{section}_{key}".upper()
++            if override in environ:
++                value = environ[override]
++            else:
++                value = _interpolate(raw, environ)
++            values[key] = _convert(value)
++        result[section] = values
++    return result
+diff --git a/tests/test_load_config_behaviour.py b/tests/test_load_config_behaviour.py
+new file mode 100644
+index 0000000..82a306b
+--- /dev/null
++++ b/tests/test_load_config_behaviour.py
+@@ -0,0 +1,117 @@
++import pytest
++
++from appconfig import load_config
++
++
++def write_ini(tmp_path, text):
++    p = tmp_path / "app.ini"
++    p.write_text(text)
++    return p
++
++
++def test_accepts_str_path(tmp_path):
++    p = write_ini(tmp_path, "[server]\nhost = localhost\n")
++    assert load_config(str(p), env={})["server"]["host"] == "localhost"
++
++
++def test_missing_file_raises(tmp_path):
++    with pytest.raises(FileNotFoundError):
++        load_config(tmp_path / "missing.ini", env={})
++
++
++def test_keys_are_lowercased(tmp_path):
++    p = write_ini(tmp_path, "[Server]\nHOST = a\n")
++    assert load_config(p, env={}) == {"Server": {"host": "a"}}
++
++
++def test_default_section_applied_and_not_returned(tmp_path):
++    p = write_ini(tmp_path, "[DEFAULT]\nretries = 3\n[a]\nx = 1\n[b]\nretries = 5\n")
++    result = load_config(p, env={})
++    assert set(result) == {"a", "b"}
++    assert result["a"]["retries"] == 3
++    assert result["b"]["retries"] == 5
++
++
++def test_interpolates_env_reference(tmp_path):
++    p = write_ini(tmp_path, "[db]\nurl = postgres://${HOST}/app\n")
++    assert load_config(p, env={"HOST": "db1"})["db"]["url"] == "postgres://db1/app"
++
++
++def test_double_dollar_is_literal(tmp_path):
++    p = write_ini(tmp_path, "[a]\nprice = $$5 and $${NOT}\n")
++    assert load_config(p, env={})["a"]["price"] == "$5 and ${NOT}"
++
++
++def test_missing_interpolation_variable_raises_keyerror(tmp_path):
++    p = write_ini(tmp_path, "[a]\nx = ${NOPE}\n")
++    with pytest.raises(KeyError, match="NOPE"):
++        load_config(p, env={})
++
++
++def test_env_override_replaces_value(tmp_path):
++    p = write_ini(tmp_path, "[server]\nport = 8000\n")
++    assert load_config(p, env={"APP_SERVER_PORT": "9000"})["server"]["port"] == 9000
++
++
++def test_env_override_skips_interpolation_of_file_value(tmp_path):
++    p = write_ini(tmp_path, "[server]\nhost = ${UNSET_VAR}\n")
++    result = load_config(p, env={"APP_SERVER_HOST": "example.com"})
++    assert result["server"]["host"] == "example.com"
++
++
++def test_env_override_applies_to_default_inherited_key(tmp_path):
++    p = write_ini(tmp_path, "[DEFAULT]\ndebug = no\n[svc]\nname = x\n")
++    result = load_config(p, env={"APP_SVC_DEBUG": "yes"})
++    assert result["svc"]["debug"] is True
++
++
++def test_env_override_is_converted(tmp_path):
++    p = write_ini(tmp_path, "[a]\nratio = 0.5\n")
++    assert load_config(p, env={"APP_A_RATIO": "2.5"})["a"]["ratio"] == 2.5
++
++
++def test_env_defaults_to_os_environ(tmp_path, monkeypatch):
++    monkeypatch.setenv("HOST", "from-environ")
++    monkeypatch.setenv("APP_A_PORT", "7")
++    p = write_ini(tmp_path, "[a]\nhost = ${HOST}\nport = 1\n")
++    assert load_config(p) == {"a": {"host": "from-environ", "port": 7}}
++
++
++@pytest.mark.parametrize("text", ["true", "yes", "on", "TRUE", "Yes", "ON"])
++def test_truthy_strings_become_true(tmp_path, text):
++    p = write_ini(tmp_path, f"[a]\nflag = {text}\n")
++    assert load_config(p, env={})["a"]["flag"] is True
++
++
++@pytest.mark.parametrize("text", ["false", "no", "off", "FALSE", "No", "OFF"])
++def test_falsy_strings_become_false(tmp_path, text):
++    p = write_ini(tmp_path, f"[a]\nflag = {text}\n")
++    assert load_config(p, env={})["a"]["flag"] is False
++
++
++def test_integers_become_int(tmp_path):
++    p = write_ini(tmp_path, "[a]\nn = -42\nm = +7\n")
++    result = load_config(p, env={})
++    assert result["a"]["n"] == -42 and type(result["a"]["n"]) is int
++    assert result["a"]["m"] == 7 and type(result["a"]["m"]) is int
++
++
++def test_decimals_become_float(tmp_path):
++    p = write_ini(tmp_path, "[a]\nx = 3.25\ny = -.5\nz = 1.\n")
++    result = load_config(p, env={})
++    assert result["a"] == {"x": 3.25, "y": -0.5, "z": 1.0}
++    assert all(type(v) is float for v in result["a"].values())
++
++
++def test_other_values_stay_str_and_stripped(tmp_path):
++    p = write_ini(tmp_path, "[a]\nname = hello world\nempty =\nnum = 1e5\nbad = nan\n")
++    result = load_config(p, env={})["a"]
++    assert result["name"] == "hello world"
++    assert result["empty"] == ""
++    assert result["num"] == "1e5"
++    assert result["bad"] == "nan"
++
++
++def test_override_value_whitespace_is_stripped(tmp_path):
++    p = write_ini(tmp_path, "[a]\nname = x\n")
++    assert load_config(p, env={"APP_A_NAME": "  padded  "})["a"]["name"] == "padded"

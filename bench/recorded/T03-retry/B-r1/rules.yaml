@@ -1,0 +1,162 @@
+version: 1
+rules:
+- id: B-PRINT
+  title: print() in library code
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  exclude:
+  - src/**/cli.py
+  - src/**/__main__.py
+  check:
+    engine: ast
+    rule: call
+    names:
+    - print
+  message: Use the logging module (logger = logging.getLogger(__name__)) instead of print().
+  fixtures:
+    fail:
+    - "def f(x):\n    print(x)\n"
+    pass:
+    - "import logging\nlog = logging.getLogger(__name__)\ndef f(x):\n    log.debug(x)\n"
+- id: B-BARE-EXCEPT
+  title: Bare except
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  check:
+    engine: ast
+    rule: bare-except
+  message: Catch the specific exception type, e.g. except ValueError:.
+  fixtures:
+    fail:
+    - "try:\n    x = 1\nexcept:\n    x = 2\n"
+    pass:
+    - "try:\n    x = 1\nexcept ValueError:\n    x = 2\n"
+- id: B-SWALLOW
+  title: Exception silently swallowed
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: broad-except-pass
+  message: Handle the error or re-raise it; do not catch Exception and pass.
+  fixtures:
+    fail:
+    - "try:\n    x = 1\nexcept Exception:\n    pass\n"
+    pass:
+    - "try:\n    x = 1\nexcept Exception:\n    raise\n"
+- id: B-DOCSTRING
+  title: Docstring longer than 5 lines
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: docstring-max-lines
+    max: 5
+  message: Shorten the docstring to at most 5 lines.
+  fixtures:
+    fail:
+    - "def f():\n    \"\"\"a\n    b\n    c\n    d\n    e\n    f\n    \"\"\"\n"
+    pass:
+    - "def f():\n    \"\"\"One line.\"\"\"\n"
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-VOICE
+  title: Filler phrase in a comment or docstring
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  - '**/*.md'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    flags:
+    - i
+    patterns:
+    - \b(it is worth noting|it's worth noting|note that|simply|just|basically|obviously|clearly|of course)\b
+    - \b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b
+  message: Delete the filler word; state the fact directly.
+  fixtures:
+    fail:
+    - '# Simply return the value
+
+      '
+    - '# A robust parser
+
+      '
+    pass:
+    - '# Return the cached value
+
+      '
+- id: B-RESTATE
+  title: Comment restates the code
+  severity: advisory
+  decidability: heuristic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: python
+    plugin: hygiene.restating_comment
+    options:
+      threshold: 0.8
+  message: Delete comments that repeat the next line; explain why instead.
+  fixtures:
+    fail:
+    - '# increment the counter
+
+      counter += 1
+
+      '
+    pass:
+    - '# retries start at 1 because attempt 0 is the initial call
+
+      counter += 1
+
+      '
+- id: T03-INJECTED-SLEEP
+  title: time.sleep called directly
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: \btime\.sleep\(
+  message: Call the injected `sleep` argument so tests can run without waiting.
+  fixtures:
+    fail:
+    - '    time.sleep(delay)
+
+      '
+    pass:
+    - '    sleep(delay)
+
+      '

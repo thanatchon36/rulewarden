@@ -1,17 +1,59 @@
 {
   "H1_viol_det_B_C": {
     "comparison": "C - B",
-    "mean_B": null,
-    "mean_C": null,
-    "median_B": null,
-    "median_C": null,
+    "mean_B": 0.0,
+    "mean_C": 0.0,
+    "mean_diff": 0.0,
+    "median_B": 0.0,
+    "median_C": 0.0,
+    "median_diff": 0.0,
+    "median_diff_ci95": [
+      0.0,
+      0.0
+    ],
     "metric": "viol_det",
-    "n_tasks": 0,
-    "note": "fewer than 2 paired tasks",
-    "p": null
+    "n_nonzero": 0,
+    "n_tasks": 20,
+    "note": "all differences zero",
+    "p": 1.0,
+    "p_pratt": 1.0,
+    "rank_biserial": 0.0
   },
   "H4_success_B_C": {
-    "n_tasks": 0
+    "ci95": [
+      0.0,
+      0.0
+    ],
+    "comparison": "C - B",
+    "diff": 0.0,
+    "margin": -0.1,
+    "n_tasks": 20,
+    "non_inferior": true,
+    "rate_B": 1.0,
+    "rate_C": 1.0
+  },
+  "RQ3_hook_latency_ms": {
+    "PostToolUse": {
+      "max": 76,
+      "n": 111,
+      "p50": 51,
+      "p95": 61,
+      "p99": 75
+    },
+    "PreToolUse": {
+      "max": 16,
+      "n": 125,
+      "p50": 9,
+      "p95": 12,
+      "p99": 14
+    },
+    "Stop": {
+      "max": 59,
+      "n": 20,
+      "p50": 53,
+      "p95": 58,
+      "p99": 59
+    }
   },
   "RQ5": {
     "attempts": 0,
@@ -19,9 +61,42 @@
     "runs": 0,
     "share_blocked": null
   },
-  "cells": {},
+  "cells": {
+    "B": {
+      "blocks_on_session_files_total": 0,
+      "blocks_total": 0,
+      "circumvention_attempts": 0,
+      "circumvention_blocked": 0,
+      "clean_rate": 1.0,
+      "excluded_infra": 0,
+      "median_turns": 7.0,
+      "median_wall_s": 34.78,
+      "runs": 20,
+      "success_rate": 1.0,
+      "tasks": 20,
+      "timed_out": 0,
+      "viol_det_total": 0,
+      "viol_heur_total": 0
+    },
+    "C": {
+      "blocks_on_session_files_total": 5,
+      "blocks_total": 10,
+      "circumvention_attempts": 0,
+      "circumvention_blocked": 0,
+      "clean_rate": 1.0,
+      "excluded_infra": 0,
+      "median_turns": 7.0,
+      "median_wall_s": 35.53,
+      "runs": 20,
+      "success_rate": 1.0,
+      "tasks": 20,
+      "timed_out": 0,
+      "viol_det_total": 0,
+      "viol_heur_total": 0
+    }
+  },
   "n_pilot_runs_excluded": 1,
-  "n_runs": 0,
+  "n_runs": 40,
   "secondary": {
     "H2_viol_det_A_B": {
       "comparison": "B - A",
@@ -37,51 +112,87 @@
     },
     "H3_viol_heur_B_C": {
       "comparison": "C - B",
-      "mean_B": null,
-      "mean_C": null,
-      "median_B": null,
-      "median_C": null,
+      "mean_B": 0.0,
+      "mean_C": 0.0,
+      "mean_diff": 0.0,
+      "median_B": 0.0,
+      "median_C": 0.0,
+      "median_diff": 0.0,
+      "median_diff_ci95": [
+        0.0,
+        0.0
+      ],
       "metric": "viol_heur",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 0,
+      "n_tasks": 20,
+      "note": "all differences zero",
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_pratt": 1.0,
+      "rank_biserial": 0.0
     },
     "H5_tokens_B_C": {
+      "W": 101.0,
       "comparison": "C - B",
-      "mean_B": null,
-      "mean_C": null,
-      "median_B": null,
-      "median_C": null,
+      "mean_B": 163216.75,
+      "mean_C": 158703.05,
+      "mean_diff": -4513.7,
+      "median_B": 127494.5,
+      "median_C": 137931.0,
+      "median_diff": -1431.0,
+      "median_diff_ci95": [
+        -27429.0,
+        23953.5
+      ],
       "metric": "tokens",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 20,
+      "n_tasks": 20,
+      "p": 0.8983173370361328,
+      "p_holm": 1.0,
+      "p_pratt": 0.8983173370361328,
+      "rank_biserial": -0.0381
     },
     "H5_turns_B_C": {
+      "W": 68.5,
       "comparison": "C - B",
-      "mean_B": null,
-      "mean_C": null,
-      "median_B": null,
-      "median_C": null,
+      "mean_B": 7.7,
+      "mean_C": 7.45,
+      "mean_diff": -0.25,
+      "median_B": 7.0,
+      "median_C": 7.0,
+      "median_diff": 0.0,
+      "median_diff_ci95": [
+        -1.5,
+        1.0
+      ],
       "metric": "turns",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 17,
+      "n_tasks": 20,
+      "p": 0.6999393546818139,
+      "p_holm": 1.0,
+      "p_pratt": 0.7192813458886834,
+      "rank_biserial": -0.1046
     },
     "H5_wall_s_B_C": {
+      "W": 102.0,
       "comparison": "C - B",
-      "mean_B": null,
-      "mean_C": null,
-      "median_B": null,
-      "median_C": null,
+      "mean_B": 46.8625,
+      "mean_C": 43.315,
+      "mean_diff": -3.5475,
+      "median_B": 34.78,
+      "median_C": 35.53,
+      "median_diff": 0.48,
+      "median_diff_ci95": [
+        -6.185,
+        3.685
+      ],
       "metric": "wall_s",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 20,
+      "n_tasks": 20,
+      "p": 0.9272785186767578,
+      "p_holm": 1.0,
+      "p_pratt": 0.9272785186767578,
+      "rank_biserial": 0.0286
     },
     "H6_cycles_C_D": {
       "comparison": "D - C",

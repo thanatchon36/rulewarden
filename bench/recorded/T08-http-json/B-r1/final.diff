@@ -1,0 +1,164 @@
+diff --git a/src/httpkit/client.py b/src/httpkit/client.py
+index b9e1342..a2587cb 100644
+--- a/src/httpkit/client.py
++++ b/src/httpkit/client.py
+@@ -1,6 +1,32 @@
++import json
++import urllib.error
++import urllib.request
++
++
+ class HTTPStatusError(Exception):
+-    pass
++    def __init__(self, status: int, url: str) -> None:
++        super().__init__(f"HTTP {status} for {url}")
++        self.status = status
++        self.url = url
++
++
++_HEADERS = {"Accept": "application/json", "User-Agent": "httpkit/1.0"}
+ 
+ 
+ def fetch_json(url: str, timeout: float = 5.0, retries: int = 0) -> object:
+-    raise NotImplementedError
++    """GET a URL and return the decoded JSON body.
++
++    Non-2xx raises HTTPStatusError; 5xx is retried up to `retries` times, 4xx is not.
++    Invalid JSON raises ValueError; network errors propagate unchanged.
++    """
++    request = urllib.request.Request(url, headers=_HEADERS)
++    for attempt in range(retries + 1):
++        try:
++            with urllib.request.urlopen(request, timeout=timeout) as response:
++                body = response.read()
++        except urllib.error.HTTPError as exc:
++            if exc.code < 500 or attempt == retries:
++                raise HTTPStatusError(exc.code, url) from exc
++            continue
++        break
++    return json.loads(body)
+diff --git a/tests/test_fetch_json.py b/tests/test_fetch_json.py
+new file mode 100644
+index 0000000..cabe92b
+--- /dev/null
++++ b/tests/test_fetch_json.py
+@@ -0,0 +1,119 @@
++import socket
++import threading
++import urllib.error
++from collections import Counter
++from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
++
++import pytest
++
++from httpkit import HTTPStatusError, fetch_json
++
++
++class _Handler(BaseHTTPRequestHandler):
++    def do_GET(self):
++        server = self.server
++        server.hits[self.path] += 1
++        server.seen_headers = self.headers
++        if self.path == "/ok":
++            self._reply(200, b'{"a": 1}')
++        elif self.path == "/missing":
++            self._reply(404, b"nope")
++        elif self.path == "/error":
++            self._reply(500, b"boom")
++        elif self.path == "/flaky":
++            # Fail the first request, succeed afterwards.
++            if server.hits[self.path] == 1:
++                self._reply(503, b"busy")
++            else:
++                self._reply(200, b'{"flaky": true}')
++        elif self.path == "/notjson":
++            self._reply(200, b"<html>not json</html>")
++        else:
++            self._reply(404, b"unknown")
++
++    def _reply(self, status, body):
++        self.send_response(status)
++        self.send_header("Content-Type", "application/json")
++        self.send_header("Content-Length", str(len(body)))
++        self.end_headers()
++        self.wfile.write(body)
++
++    def log_message(self, format, *args):
++        pass
++
++
++@pytest.fixture
++def server():
++    srv = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
++    srv.hits = Counter()
++    srv.seen_headers = None
++    thread = threading.Thread(target=srv.serve_forever, daemon=True)
++    thread.start()
++    yield srv
++    srv.shutdown()
++    srv.server_close()
++
++
++def _url(srv, path):
++    host, port = srv.server_address
++    return f"http://{host}:{port}{path}"
++
++
++def test_returns_decoded_json(server):
++    assert fetch_json(_url(server, "/ok")) == {"a": 1}
++
++
++def test_sends_accept_and_user_agent_headers(server):
++    fetch_json(_url(server, "/ok"))
++    assert server.seen_headers["Accept"] == "application/json"
++    assert server.seen_headers["User-Agent"] == "httpkit/1.0"
++
++
++def test_4xx_raises_status_error_with_status_and_url(server):
++    url = _url(server, "/missing")
++    with pytest.raises(HTTPStatusError) as info:
++        fetch_json(url)
++    assert info.value.status == 404
++    assert info.value.url == url
++
++
++def test_4xx_is_not_retried(server):
++    with pytest.raises(HTTPStatusError):
++        fetch_json(_url(server, "/missing"), retries=3)
++    assert server.hits["/missing"] == 1
++
++
++def test_5xx_is_retried_up_to_retries_then_raises_last(server):
++    url = _url(server, "/error")
++    with pytest.raises(HTTPStatusError) as info:
++        fetch_json(url, retries=2)
++    assert info.value.status == 500
++    assert info.value.url == url
++    assert server.hits["/error"] == 3
++
++
++def test_5xx_without_retries_makes_single_attempt(server):
++    with pytest.raises(HTTPStatusError):
++        fetch_json(_url(server, "/error"))
++    assert server.hits["/error"] == 1
++
++
++def test_5xx_then_success_returns_body(server):
++    assert fetch_json(_url(server, "/flaky"), retries=1) == {"flaky": True}
++    assert server.hits["/flaky"] == 2
++
++
++def test_invalid_json_raises_value_error(server):
++    with pytest.raises(ValueError):
++        fetch_json(_url(server, "/notjson"))
++
++
++def test_connection_refused_propagates_original_error():
++    # Bind then close to obtain a port with nothing listening on it.
++    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
++    sock.bind(("127.0.0.1", 0))
++    port = sock.getsockname()[1]
++    sock.close()
++    with pytest.raises(urllib.error.URLError) as info:
++        fetch_json(f"http://127.0.0.1:{port}/ok", timeout=1.0)
++    assert not isinstance(info.value, HTTPStatusError)

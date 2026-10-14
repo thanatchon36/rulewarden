@@ -1,0 +1,190 @@
+diff --git a/src/mdtoc/toc.py b/src/mdtoc/toc.py
+index c7c0c10..4b07d76 100644
+--- a/src/mdtoc/toc.py
++++ b/src/mdtoc/toc.py
+@@ -1,2 +1,65 @@
++import re
++from collections.abc import Iterator
++
++_HEADING = re.compile(r"^ {0,3}(#{1,6}) +(.*?)\s*$")
++_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
++_CLOSING_SEQUENCE = re.compile(r"(?:^|\s)#+$")
++_NON_ANCHOR_CHARS = re.compile(r"[^\w\- ]")
++
++
+ def toc(markdown: str, max_level: int = 3) -> str:
+-    raise NotImplementedError
++    """Return a Markdown table of contents for the ATX headings in ``markdown``.
++
++    Fenced code and headings deeper than ``max_level`` are skipped; indent is
++    relative to the shallowest included heading.
++    """
++    headings = [(level, title) for level, title in _headings(markdown) if level <= max_level]
++    if not headings:
++        return ""
++
++    top = min(level for level, _ in headings)
++    used: set[str] = set()
++    lines = []
++    for level, title in headings:
++        anchor = _unique_anchor(_anchor(title), used)
++        indent = "  " * (level - top)
++        lines.append(f"{indent}- [{title}](#{anchor})\n")
++    return "".join(lines)
++
++
++def _headings(markdown: str) -> Iterator[tuple[int, str]]:
++    # The fence is tracked by marker and length so a shorter or differently
++    # marked line inside a code block cannot close it early.
++    fence: tuple[str, int] | None = None
++    for line in markdown.splitlines():
++        fence_match = _FENCE.match(line)
++        if fence is not None:
++            if fence_match and _closes(fence_match, fence):
++                fence = None
++            continue
++        if fence_match:
++            fence = (fence_match.group(1)[0], len(fence_match.group(1)))
++            continue
++
++        heading = _HEADING.match(line)
++        if heading:
++            yield len(heading.group(1)), _CLOSING_SEQUENCE.sub("", heading.group(2)).strip()
++
++
++def _closes(match: re.Match[str], fence: tuple[str, int]) -> bool:
++    marker, info = match.group(1), match.group(2)
++    return marker[0] == fence[0] and len(marker) >= fence[1] and not info.strip()
++
++
++def _anchor(title: str) -> str:
++    return _NON_ANCHOR_CHARS.sub("", title.lower()).replace(" ", "-")
++
++
++def _unique_anchor(anchor: str, used: set[str]) -> str:
++    candidate = anchor
++    suffix = 0
++    while candidate in used:
++        suffix += 1
++        candidate = f"{anchor}-{suffix}"
++    used.add(candidate)
++    return candidate
+diff --git a/tests/test_toc_behaviour.py b/tests/test_toc_behaviour.py
+new file mode 100644
+index 0000000..73c0ac9
+--- /dev/null
++++ b/tests/test_toc_behaviour.py
+@@ -0,0 +1,113 @@
++import pytest
++
++from mdtoc import toc
++
++
++def test_no_headings_gives_empty_string():
++    assert toc("just text\n") == ""
++
++
++def test_nested_levels_are_indented_relative_to_shallowest():
++    markdown = "## One\n### Two\n#### Three\n## Four\n"
++    assert toc(markdown, max_level=6) == (
++        "- [One](#one)\n"
++        "  - [Two](#two)\n"
++        "    - [Three](#three)\n"
++        "- [Four](#four)\n"
++    )
++
++
++def test_indent_starts_at_zero_when_top_heading_is_deeper():
++    assert toc("### Deep\n#### Deeper\n", max_level=6) == "- [Deep](#deep)\n  - [Deeper](#deeper)\n"
++
++
++def test_headings_deeper_than_max_level_are_skipped():
++    markdown = "# A\n## B\n### C\n#### D\n"
++    assert toc(markdown, max_level=2) == "- [A](#a)\n  - [B](#b)\n"
++
++
++def test_default_max_level_is_three():
++    assert toc("#### Hidden\n") == ""
++    assert toc("### Shown\n") == "- [Shown](#shown)\n"
++
++
++def test_headings_inside_backtick_fence_are_ignored():
++    markdown = "# Real\n```\n# Fake\n```\n## After\n"
++    assert toc(markdown) == "- [Real](#real)\n  - [After](#after)\n"
++
++
++def test_headings_inside_tilde_fence_are_ignored():
++    markdown = "# Real\n~~~python\n# Fake\n~~~\n"
++    assert toc(markdown) == "- [Real](#real)\n"
++
++
++def test_fence_is_not_closed_by_shorter_or_different_marker():
++    markdown = "````\n```\n# Fake\n~~~~\n# Still fake\n````\n# Real\n"
++    assert toc(markdown) == "- [Real](#real)\n"
++
++
++def test_fence_closing_line_with_info_string_does_not_close():
++    markdown = "```\n```python\n# Fake\n```\n# Real\n"
++    assert toc(markdown) == "- [Real](#real)\n"
++
++
++def test_closing_hash_sequence_is_removed():
++    assert toc("## Setup ##\n") == "- [Setup](#setup)\n"
++
++
++def test_hash_without_preceding_space_is_kept_in_title():
++    assert toc("# C#\n") == "- [C#](#c)\n"
++
++
++def test_surrounding_whitespace_is_stripped_from_title():
++    assert toc("#    Spaced out   \n") == "- [Spaced out](#spaced-out)\n"
++
++
++def test_lines_without_space_after_hashes_are_not_headings():
++    assert toc("#NoSpace\n") == ""
++
++
++def test_seven_hashes_are_not_a_heading():
++    assert toc("####### Too deep\n") == ""
++
++
++@pytest.mark.parametrize(
++    ("title", "anchor"),
++    [
++        ("Hello, World!", "hello-world"),
++        ("snake_case stays", "snake_case-stays"),
++        ("dash-ed words", "dash-ed-words"),
++        ("Version 2.0 (beta)", "version-20-beta"),
++        ("Café", "café"),
++    ],
++)
++def test_anchor_follows_github_style(title, anchor):
++    assert toc(f"# {title}\n") == f"- [{title}](#{anchor})\n"
++
++
++def test_duplicate_anchors_get_numeric_suffixes():
++    markdown = "# Intro\n# Intro\n# Intro\n"
++    assert toc(markdown) == (
++        "- [Intro](#intro)\n"
++        "- [Intro](#intro-1)\n"
++        "- [Intro](#intro-2)\n"
++    )
++
++
++def test_duplicate_suffix_skips_anchors_already_taken():
++    markdown = "# A\n# A\n# A 1\n# A\n"
++    assert toc(markdown) == (
++        "- [A](#a)\n"
++        "- [A](#a-1)\n"
++        "- [A 1](#a-1-1)\n"
++        "- [A](#a-2)\n"
++    )
++
++
++def test_skipped_headings_do_not_consume_anchors():
++    markdown = "# Dup\n#### Dup\n# Dup\n"
++    assert toc(markdown, max_level=3) == "- [Dup](#dup)\n- [Dup](#dup-1)\n"
++
++
++def test_crlf_line_endings_are_handled():
++    assert toc("# A\r\n## B\r\n") == "- [A](#a)\n  - [B](#b)\n"

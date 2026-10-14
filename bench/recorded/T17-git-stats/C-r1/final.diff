@@ -1,0 +1,228 @@
+diff --git a/scripts/git-stats.sh b/scripts/git-stats.sh
+index efba8c1..2c005f6 100755
+--- a/scripts/git-stats.sh
++++ b/scripts/git-stats.sh
+@@ -1,3 +1,75 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++# Byte-order collation for sorting and awk comparisons.
++export LC_ALL=C
++
++usage() {
++  echo "usage: git-stats.sh [--since DATE] [REPO]" >&2
++}
++
++since=""
++has_since=0
++positional=()
++while [[ $# -gt 0 ]]; do
++  case "$1" in
++    --since)
++      if [[ $# -lt 2 ]]; then
++        usage
++        exit 2
++      fi
++      since="$2"
++      has_since=1
++      shift 2
++      ;;
++    --since=*)
++      since="${1#--since=}"
++      has_since=1
++      shift
++      ;;
++    --)
++      shift
++      while [[ $# -gt 0 ]]; do
++        positional+=("$1")
++        shift
++      done
++      ;;
++    -*)
++      usage
++      exit 2
++      ;;
++    *)
++      positional+=("$1")
++      shift
++      ;;
++  esac
++done
++
++if [[ ${#positional[@]} -gt 1 ]]; then
++  usage
++  exit 2
++fi
++repo="${positional[0]:-.}"
++
++since_args=()
++if [[ $has_since -eq 1 ]]; then
++  since_args=("--since=$since")
++fi
++
++if ! git -C "$repo" rev-parse --git-dir >/dev/null 2>&1; then
++  echo "git-stats.sh: not a git repository: $repo" >&2
++  exit 1
++fi
++
++if ! git -C "$repo" rev-parse --verify --quiet HEAD >/dev/null; then
++  echo "total: 0"
++  exit 0
++fi
++
++git -C "$repo" log --format='%an' ${since_args[@]+"${since_args[@]}"} HEAD |
++  awk '{ count[$0]++ } END { for (name in count) printf "%d\t%s\n", count[name], name }' |
++  sort -t $'\t' -k1,1nr -k2 |
++  sed 's/\t/ /'
++
++total=$(git -C "$repo" rev-list --count ${since_args[@]+"${since_args[@]}"} HEAD)
++echo "total: $total"
+diff --git a/tests/test_git_stats_output.py b/tests/test_git_stats_output.py
+new file mode 100644
+index 0000000..041bb6c
+--- /dev/null
++++ b/tests/test_git_stats_output.py
+@@ -0,0 +1,140 @@
++import os
++import subprocess
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "git-stats.sh"
++
++
++def git(repo, *args, author=None, date=None):
++    env = dict(os.environ)
++    if author is not None:
++        env.update(
++            GIT_AUTHOR_NAME=author,
++            GIT_AUTHOR_EMAIL="author@example.com",
++            GIT_COMMITTER_NAME=author,
++            GIT_COMMITTER_EMAIL="author@example.com",
++        )
++    if date is not None:
++        env.update(GIT_AUTHOR_DATE=date, GIT_COMMITTER_DATE=date)
++    subprocess.run(
++        ["git", "-c", "commit.gpgsign=false", "-C", str(repo), *args],
++        check=True,
++        capture_output=True,
++        env=env,
++    )
++
++
++def commit(repo, author, date="2026-01-01T00:00:00Z"):
++    git(repo, "commit", "--allow-empty", "-q", "-m", "c", author=author, date=date)
++
++
++def make_repo(path):
++    path.mkdir(parents=True, exist_ok=True)
++    git(path, "init", "-q")
++    return path
++
++
++def run_stats(*args, cwd=None):
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args],
++        capture_output=True,
++        text=True,
++        cwd=cwd,
++    )
++
++
++def test_counts_per_author_sorted_by_count_then_name(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    for name in ["Bob", "Alice", "Bob", "Carol", "Bob", "Alice"]:
++        commit(repo, name)
++    result = run_stats(str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "3 Bob\n2 Alice\n1 Carol\ntotal: 6\n"
++
++
++def test_ties_sorted_by_name_in_byte_order(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    for name in ["Émile", "Zoë", "Ana"]:
++        commit(repo, name)
++    result = run_stats(str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "1 Ana\n1 Zoë\n1 Émile\ntotal: 3\n"
++
++
++def test_author_names_with_spaces(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    commit(repo, "Jane Q Doe")
++    commit(repo, "Jane Q Doe")
++    commit(repo, "John Smith")
++    result = run_stats(str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "2 Jane Q Doe\n1 John Smith\ntotal: 3\n"
++
++
++def test_since_limits_counted_commits(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    commit(repo, "Old", date="2020-01-01T00:00:00Z")
++    commit(repo, "Old", date="2021-01-01T00:00:00Z")
++    commit(repo, "New", date="2026-02-01T00:00:00Z")
++    commit(repo, "New", date="2026-03-01T00:00:00Z")
++    result = run_stats("--since", "2025-01-01", str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "2 New\ntotal: 2\n"
++
++
++def test_since_equals_form(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    commit(repo, "Old", date="2020-01-01T00:00:00Z")
++    commit(repo, "New", date="2026-02-01T00:00:00Z")
++    result = run_stats("--since=2025-01-01", str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "1 New\ntotal: 1\n"
++
++
++def test_only_current_branch_is_counted(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    commit(repo, "Alice")
++    git(repo, "checkout", "-q", "-b", "other")
++    commit(repo, "Mallory")
++    git(repo, "checkout", "-q", "-")
++    result = run_stats(str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "1 Alice\ntotal: 1\n"
++
++
++def test_empty_repository_prints_only_total_zero(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    result = run_stats(str(repo))
++    assert result.returncode == 0
++    assert result.stdout == "total: 0\n"
++    assert result.stderr == ""
++
++
++def test_defaults_to_current_directory(tmp_path):
++    repo = make_repo(tmp_path / "repo")
++    commit(repo, "Alice")
++    result = run_stats(cwd=repo)
++    assert result.returncode == 0
++    assert result.stdout == "1 Alice\ntotal: 1\n"
++
++
++def test_not_a_repository_prints_error_to_stderr(tmp_path):
++    result = run_stats(str(tmp_path))
++    assert result.returncode == 1
++    assert result.stdout == ""
++    assert "not a git repository" in result.stderr
++
++
++def test_unknown_option_prints_usage_and_exits_2(tmp_path):
++    result = run_stats("--bogus", str(tmp_path))
++    assert result.returncode == 2
++    assert result.stdout == ""
++    assert "usage: git-stats.sh" in result.stderr
++
++
++def test_since_without_value_prints_usage_and_exits_2(tmp_path):
++    result = run_stats("--since")
++    assert result.returncode == 2
++    assert "usage: git-stats.sh" in result.stderr

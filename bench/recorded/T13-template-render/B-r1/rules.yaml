@@ -1,0 +1,141 @@
+version: 1
+rules:
+- id: B-SH-STRICT
+  title: Shell script without strict mode
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: file
+    mode: require
+    pattern: ^set -euo pipefail$
+    flags:
+    - m
+  message: Add 'set -euo pipefail' near the top of the script.
+  fixtures:
+    fail:
+    - '#!/usr/bin/env bash
+
+      echo hi
+
+      '
+    pass:
+    - '#!/usr/bin/env bash
+
+      set -euo pipefail
+
+      echo hi
+
+      '
+- id: B-SH-JQ
+  title: Python one-liner for JSON in a shell script
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    pattern: python3?\s+-c\b.*\b(json|loads|load)\b
+  message: Use jq for JSON, e.g. jq -r '.key' file.json.
+  fixtures:
+    fail:
+    - 'python3 -c ''import json,sys; print(json.load(sys.stdin)["k"])'' < f.json
+
+      '
+    pass:
+    - 'jq -r ''.k'' f.json
+
+      '
+- id: B-SH-SUDO
+  title: sudo in a script
+  severity: critical
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: (^|[;&|]\s*|\s)sudo\s
+  message: Remove sudo; the script must run as the invoking user.
+  fixtures:
+    fail:
+    - 'sudo rm -f /var/log/x
+
+      '
+    pass:
+    - 'rm -f "$tmp/x"
+
+      '
+- id: B-SH-EVAL
+  title: eval in a shell script
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: (^|[;&|]\s*|\s)eval\s
+  message: Avoid eval; use arrays or explicit parsing.
+  fixtures:
+    fail:
+    - 'eval "$cmd"
+
+      '
+    pass:
+    - '"${cmd[@]}"
+
+      '
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-VOICE
+  title: Filler phrase in a comment or docstring
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  - '**/*.md'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    flags:
+    - i
+    patterns:
+    - \b(it is worth noting|it's worth noting|note that|simply|just|basically|obviously|clearly|of course)\b
+    - \b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b
+  message: Delete the filler word; state the fact directly.
+  fixtures:
+    fail:
+    - '# Simply return the value
+
+      '
+    - '# A robust parser
+
+      '
+    pass:
+    - '# Return the cached value
+
+      '

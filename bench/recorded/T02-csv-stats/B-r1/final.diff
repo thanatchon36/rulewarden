@@ -1,0 +1,206 @@
+diff --git a/src/csvstats/stats.py b/src/csvstats/stats.py
+index c455bfb..8beb348 100644
+--- a/src/csvstats/stats.py
++++ b/src/csvstats/stats.py
+@@ -1,5 +1,64 @@
++import csv
++import logging
++import math
++import statistics
+ from pathlib import Path
+ 
++logger = logging.getLogger(__name__)
++
+ 
+ def column_stats(path: str | Path, column: str) -> dict[str, float]:
+-    raise NotImplementedError
++    """Return count, mean, median, min, max and sample stdev for a CSV column.
++
++    Empty cells are ignored. Raises KeyError if the column is missing,
++    and ValueError if a non-empty cell is not a finite number or the
++    column has no non-empty cells.
++    """
++    values = _read_column(path, column)
++    if not values:
++        raise ValueError(f"column {column!r} has no non-empty cells")
++    return {
++        "count": len(values),
++        "mean": statistics.fmean(values),
++        "median": statistics.median(values),
++        "min": min(values),
++        "max": max(values),
++        # stdev needs at least two points; a single value has no spread.
++        "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
++    }
++
++
++def _read_column(path: str | Path, column: str) -> list[float]:
++    with open(path, newline="", encoding="utf-8") as fh:
++        reader = csv.reader(fh)
++        try:
++            header = next(reader)
++        except StopIteration:
++            raise KeyError(column) from None
++        if column not in header:
++            raise KeyError(column)
++        index = header.index(column)
++        values = []
++        skipped = 0
++        for row_number, row in enumerate(reader, start=1):
++            # Short rows lack the cell entirely; treat that as empty.
++            cell = row[index].strip() if index < len(row) else ""
++            if not cell:
++                skipped += 1
++                continue
++            values.append(_parse_number(cell, row_number))
++    logger.debug("column %r: skipped %d empty cells", column, skipped)
++    return values
++
++
++def _parse_number(cell: str, row_number: int) -> float:
++    try:
++        value = float(cell)
++    except ValueError as exc:
++        raise ValueError(
++            f"data row {row_number}: {cell!r} is not a number"
++        ) from exc
++    # float() accepts "nan" and "inf", which are not usable statistics.
++    if not math.isfinite(value):
++        raise ValueError(f"data row {row_number}: {cell!r} is not a finite number")
++    return value
+diff --git a/tests/test_column_stats.py b/tests/test_column_stats.py
+new file mode 100644
+index 0000000..eb15b19
+--- /dev/null
++++ b/tests/test_column_stats.py
+@@ -0,0 +1,130 @@
++import statistics
++
++import pytest
++
++from csvstats import column_stats
++
++
++def test_all_statistics(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n1,x\n2,y\n3,z\n4,w\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 4
++    assert isinstance(s["count"], int)
++    assert s["mean"] == 2.5
++    assert s["median"] == 2.5
++    assert s["min"] == 1.0
++    assert s["max"] == 4.0
++    assert s["stdev"] == pytest.approx(statistics.stdev([1, 2, 3, 4]))
++
++
++def test_values_are_floats(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a\n3\n1\n")
++    s = column_stats(p, "a")
++    assert all(isinstance(s[k], float) for k in ("mean", "median", "min", "max", "stdev"))
++
++
++def test_single_value_stdev_is_zero(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a\n7\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 1
++    assert s["stdev"] == 0.0
++    assert s["mean"] == s["median"] == s["min"] == s["max"] == 7.0
++
++
++def test_empty_and_whitespace_cells_are_ignored(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n1,x\n,y\n   ,z\n 3 ,w\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 2
++    assert s["mean"] == 2.0
++
++
++def test_short_row_counts_as_empty(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n1,x\n2\n3,y\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 3
++    assert s["mean"] == 2.0
++
++
++def test_quoted_fields_and_commas(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text('name,value\n"Smith, J",1.5\n"Doe, A","2.5"\n')
++    s = column_stats(p, "value")
++    assert s["count"] == 2
++    assert s["mean"] == 2.0
++
++
++def test_embedded_newline_in_other_column(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text('note,n\n"line one\nline two",10\n"x",20\n')
++    s = column_stats(p, "n")
++    assert s["count"] == 2
++    assert s["mean"] == 15.0
++
++
++def test_negative_and_scientific_values(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a\n-2\n1e2\n0.5\n")
++    s = column_stats(p, "a")
++    assert s["min"] == -2.0
++    assert s["max"] == 100.0
++
++
++def test_missing_column_raises_key_error(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n1,2\n")
++    with pytest.raises(KeyError):
++        column_stats(p, "nope")
++
++
++def test_empty_file_raises_key_error(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("")
++    with pytest.raises(KeyError):
++        column_stats(p, "a")
++
++
++def test_non_numeric_cell_names_data_row(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n1,x\n2,y\nabc,z\n4,w\n")
++    with pytest.raises(ValueError, match="data row 3"):
++        column_stats(p, "a")
++
++
++def test_row_number_ignores_header_and_counts_empty_rows(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a\n\n5\nbad\n")
++    with pytest.raises(ValueError, match="data row 3"):
++        column_stats(p, "a")
++
++
++@pytest.mark.parametrize("cell", ["nan", "inf", "-inf"])
++def test_non_finite_values_are_rejected(tmp_path, cell):
++    p = tmp_path / "d.csv"
++    p.write_text(f"a\n1\n{cell}\n")
++    with pytest.raises(ValueError, match="data row 2"):
++        column_stats(p, "a")
++
++
++def test_all_empty_column_raises_value_error(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n,x\n  ,y\n")
++    with pytest.raises(ValueError):
++        column_stats(p, "a")
++
++
++def test_header_only_raises_value_error(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a,b\n")
++    with pytest.raises(ValueError):
++        column_stats(p, "a")
++
++
++def test_accepts_str_path(tmp_path):
++    p = tmp_path / "d.csv"
++    p.write_text("a\n2\n4\n")
++    assert column_stats(str(p), "a")["mean"] == 3.0
