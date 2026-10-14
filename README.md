@@ -50,18 +50,64 @@ is needed to enforce rules.
 
 ## Quickstart
 
-```bash
-cd your-repo
-rulewarden init                     # vendor starter packs, compile CLAUDE.md/AGENTS.md, install git hooks
-# review rules/ (a human), then:
-rulewarden test-rules               # every fixture must pass
-rulewarden init --hooks-only --lock # lock, install Claude Code hooks, lock again
-rulewarden doctor                   # wiring, lock, audit chain, determinism self-test
+The outputs below are from a real run on a small repository whose `CLAUDE.md` has four rules.
+
+**1. Set up.** `init` copies the seven starter packs into `rules/packs/`, reads `CLAUDE.md` / `AGENTS.md`, and
+installs the git hooks. It also tells you which of your rules it can *not* check:
+
+```console
+$ rulewarden init
+vendored pack protected-set
+...
+CLAUDE.md: 4 rule-like lines — 3 compiled into 3 rules, 1 heuristic candidates, 0 undecidable, 0 rejected
+Lines NOT enforced by rulewarden (review these; they stay advisory text for the agent):
+  L5    heuristic-candidate  Keep functions small and readable.
+3 already enforced by the vendored packs: HYG-002, NAE-001, SH-001
+installed git hook pre-commit
+installed git hook commit-msg
+installed git hook pre-push
+agent hooks not installed: they deny every tool call until a lock exists
+next: review rules/, then a human runs `rulewarden init --hooks-only --lock`
 ```
 
-Order matters. Agent hooks are fail-closed, so `init` installs them only together with a lock. Otherwise every tool
-call would be denied. See [`docs/integrations.md`](docs/integrations.md) for Claude Code, git hooks, pre-commit,
-GitHub Actions, OpenCode, Codex and Gemini CLI.
+Here "No `print()` in `src/`", "Never edit existing tests" and "Use jq for JSON in shell scripts" map to existing
+pack rules. "Keep functions small" needs judgement, so it stays advice for the agent and is listed as such.
+
+**2. Review and lock (a human).** Read `rules/` and delete or edit what does not fit your project; the
+[rule catalogue](https://thanatchon36.github.io/rulewarden/rules/) explains every rule. Then:
+
+```console
+$ rulewarden test-rules
+PASS — 122 fixtures across 26 rules (0 undecidable rules listed, not evaluated)
+$ rulewarden init --hooks-only --lock   # lock, install the Claude Code hooks, lock again
+$ rulewarden doctor                     # wiring, lock, audit chain, determinism self-test
+```
+
+Until the lock exists, every check fails closed. This is deliberate:
+
+```console
+$ rulewarden check
+BLOCKED — 1 critical, 0 advisory
+[RW-LOCK critical] rule set is not locked by a human (rules.lock not found; a human must review the rules and run `rulewarden lock`) — Fix: a human must review the rule change and run `rulewarden lock`
+```
+
+Order matters for the same reason: agent hooks are fail-closed, so `init` installs them only together with a lock.
+
+**3. Work as usual.** From now on the agent's edits are checked before they reach the disk, commits and pushes are
+checked by the git hooks, and `rulewarden check` checks the working tree on demand. Exit code `1` means blocked.
+Each finding has one `Fix:` line, which is what the agent reads to correct itself; the next section shows a
+recorded example.
+
+**4. Pick the layers you need.**
+
+| You use | Run | What gets checked |
+|---|---|---|
+| Claude Code (or OpenCode, with `--opencode`) | steps 1–2 above | every edit, commit and push |
+| Any agent, or none: git hooks only | `rulewarden init --no-claude`, review, `rulewarden lock` | every commit and push |
+| CI only | commit `rules/` and `rules.lock`, then run `rulewarden hook ci origin/main` in the pipeline | every pull request |
+
+See [`docs/integrations.md`](docs/integrations.md) for Claude Code, git hooks, pre-commit, GitHub Actions,
+OpenCode, Codex and Gemini CLI.
 
 ### A block and a self-correction (recorded)
 
