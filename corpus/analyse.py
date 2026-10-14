@@ -252,41 +252,135 @@ def write_tables(df: pd.DataFrame, summary: dict[str, object], has_model: bool) 
     (TABLES / "corpus_categories.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def write_figures(df: pd.DataFrame, has_model: bool) -> None:
-    FIGURES.mkdir(parents=True, exist_ok=True)
-    plt.rcParams.update({"svg.hashsalt": "rulewarden", "font.size": 9})
-    colors = {"deterministic": "#1b7837", "heuristic": "#dfc27d", "undecidable": "#8c510a"}
-    cols = ["decidability"] + (["decidability_p1"] if has_model else [])
-    fig, axes = plt.subplots(
-        1, len(cols), figsize=(3.6 * len(cols), 2.8), sharey=True, squeeze=False
+COLORS = {"deterministic": "#1f4e79", "heuristic": "#8fb3d9", "undecidable": "#d9d9d9"}
+INK, MUTED, RULE = "#1a1a1a", "#5f5f5f", "#bdbdbd"
+TEXT_WIDTH_IN = 6.4
+
+
+def _style() -> None:
+    plt.rcParams.update(
+        {
+            "svg.hashsalt": "rulewarden",
+            "font.family": "DejaVu Sans",
+            "font.size": 8,
+            "text.color": INK,
+            "axes.labelcolor": INK,
+            "axes.edgecolor": RULE,
+            "axes.linewidth": 0.6,
+            "axes.titlesize": 8.5,
+            "axes.titleweight": "bold",
+            "axes.titlelocation": "left",
+            "xtick.color": MUTED,
+            "ytick.color": INK,
+            "xtick.major.size": 0,
+            "ytick.major.size": 0,
+            "xtick.major.pad": 4,
+            "ytick.major.pad": 6,
+            "legend.frameon": False,
+            "legend.fontsize": 8,
+        }
     )
-    for ax, col in zip(axes[0], cols, strict=True):
-        sub = df[df[col] != ""] if col != "decidability" else df
-        shares = pd.crosstab(sub["stratum"], sub[col], normalize="index").reindex(
-            index=[s for s in STRATA if s in set(sub["stratum"])], columns=TIERS, fill_value=0
-        )
-        left = np.zeros(len(shares))
-        for t in TIERS:
-            ax.barh(shares.index, shares[t], left=left, color=colors[t], label=t)
-            left += shares[t].to_numpy()
-        ax.set_xlim(0, 1)
-        ax.set_title("rubric" if col == "decidability" else "model (pass 1)")
-        ax.invert_yaxis()
-    axes[0][0].legend(
-        loc="lower center", bbox_to_anchor=(0.5 * len(cols), -0.42), ncol=3, frameon=False
-    )
-    fig.tight_layout()
-    fig.savefig(FIGURES / "corpus_decidability.png", dpi=200, metadata={"Software": None})
+
+
+def _clean(ax: plt.Axes) -> None:
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.set_axisbelow(True)
+    ax.grid(axis="x", color="#ececec", linewidth=0.6)
+
+
+def _save(fig: plt.Figure, name: str) -> None:
+    fig.savefig(FIGURES / name, dpi=300, metadata={"Software": None}, facecolor="white")
     plt.close(fig)
 
-    counts = df["category"].value_counts().reindex(CATEGORIES, fill_value=0)
-    fig, ax = plt.subplots(figsize=(3.6, 2.6))
-    ax.bar(counts.index, counts.to_numpy(), color="#4d4d4d")
-    ax.set_ylabel("rule-like lines")
-    ax.tick_params(axis="x", rotation=45)
+
+def write_figures(df: pd.DataFrame, has_model: bool) -> None:
+    FIGURES.mkdir(parents=True, exist_ok=True)
+    _style()
+    cols = ["decidability"] + (["decidability_p1"] if has_model else [])
+    strata = [s for s in STRATA if s in set(df["stratum"])]
+    n_lines = df["stratum"].value_counts()
+    labels = [f"{s}  (n = {int(n_lines[s]):,})" for s in strata] + [f"All files  (n = {len(df):,})"]
+    fig, axes = plt.subplots(1, len(cols), figsize=(TEXT_WIDTH_IN, 2.5), sharey=True, squeeze=False)
+    for ax, col in zip(axes[0], cols, strict=True):
+        sub = df[df[col] != ""]
+        shares = pd.crosstab(sub["stratum"], sub[col], normalize="index").reindex(
+            index=strata, columns=TIERS, fill_value=0
+        )
+        overall = sub[col].value_counts(normalize=True).reindex(TIERS, fill_value=0)
+        shares.loc["All files"] = overall
+        y = np.arange(len(shares), dtype=float)
+        y[-1] += 0.45
+        left = np.zeros(len(shares))
+        for t in TIERS:
+            ax.barh(y, shares[t], left=left, height=0.72, color=COLORS[t], label=t, linewidth=0)
+            left += shares[t].to_numpy()
+        for yi, share in zip(y, shares["deterministic"], strict=True):
+            inside = share >= 0.08
+            ax.text(
+                share - 0.015 if inside else share + 0.015,
+                yi,
+                f"{share:.0%}",
+                ha="right" if inside else "left",
+                va="center",
+                color="white" if inside else INK,
+                fontsize=7.5,
+                fontweight="bold",
+            )
+        ax.axhline(y[-1] - 0.72, color=RULE, linewidth=0.6)
+        ax.set_yticks(y)
+        for tick in ax.set_yticklabels(labels)[-1:]:
+            tick.set_fontweight("bold")
+        ax.set_xlim(0, 1)
+        ax.set_xticks([0, 0.25, 0.5, 0.75, 1], ["0%", "25%", "50%", "75%", "100%"])
+        ax.set_title("Rubric" if col == "decidability" else "Model, pass 1", pad=6)
+        ax.invert_yaxis()
+        _clean(ax)
+    handles, names = axes[0][0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        names,
+        loc="upper center",
+        ncol=3,
+        bbox_to_anchor=(0.6, 1.0),
+        handlelength=1.1,
+        handleheight=1.1,
+        columnspacing=1.6,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.9), w_pad=1.8)
+    _save(fig, "corpus_decidability.png")
+
+    ct = pd.crosstab(df["category"], df["decidability"]).reindex(
+        index=CATEGORIES, columns=TIERS, fill_value=0
+    )
+    named = ct.drop(index="other").sum(axis=1).sort_values(ascending=True)
+    order = ["other", *named.index]
+    ct = ct.loc[order]
+    totals = ct.sum(axis=1)
+    fig, ax = plt.subplots(figsize=(TEXT_WIDTH_IN, 2.35))
+    left = np.zeros(len(ct))
+    for t in TIERS:
+        ax.barh(ct.index, ct[t], left=left, height=0.66, color=COLORS[t], label=t, linewidth=0)
+        left += ct[t].to_numpy()
+    xmax = float(totals.max())
+    for yi, total in enumerate(totals):
+        ax.text(
+            total + xmax * 0.012,
+            yi,
+            f"{int(total):,}  ({total / len(df):.0%})",
+            va="center",
+            ha="left",
+            color=MUTED,
+            fontsize=7.5,
+        )
+    ax.axhline(0.5, color=RULE, linewidth=0.6)
+    ax.set_xlim(0, xmax * 1.16)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{int(v):,}"))
+    ax.set_xlabel("Rule-like lines (coloured by rubric decidability)", color=MUTED)
+    _clean(ax)
+    ax.legend(loc="upper right", ncol=1, handlelength=1.1, handleheight=1.1)
     fig.tight_layout()
-    fig.savefig(FIGURES / "corpus_categories.png", dpi=200, metadata={"Software": None})
-    plt.close(fig)
+    _save(fig, "corpus_categories.png")
 
 
 if __name__ == "__main__":

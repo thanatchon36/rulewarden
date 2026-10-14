@@ -358,8 +358,8 @@ th { font-weight: 500; color: var(--ink-2); border-bottom-color: var(--ink-2); }
 </table>
 <p><em>Table 3. Rubric (rows) against model pass 1 (columns).</em></p>
 <figure>
-<img src="figures/corpus_decidability.png" alt="Decidability per file type under the rubric (left) and model pass 1 (right)." />
-<figcaption aria-hidden="true">Decidability per file type under the rubric (left) and model pass 1 (right).</figcaption>
+<img src="figures/corpus_decidability.png" alt="Decidability per file type under the rubric (left) and model pass 1 (right). Bars show the share of each file type’s rule-like lines in each tier; the figure inside the dark segment is the deterministic share, and n is the number of lines." />
+<figcaption aria-hidden="true">Decidability per file type under the rubric (left) and model pass 1 (right). Bars show the share of each file type’s rule-like lines in each tier; the figure inside the dark segment is the deterministic share, and n is the number of lines.</figcaption>
 </figure>
 <p><strong>Results.</strong> Deterministically checkable rules are a minority under every labelling: the rubric gives 34.1% (31.3–37.2%), the model 19.3% (17.2–21.7%), and the two in agreement only 9.1%. Restricting attention to lines the model classifies as rules in both passes (81.6% of lines) barely alters the picture (rubric 37.3%, model 19.1%). The remainder divides differently by labeller: the rubric deems most of it undecidable (60.4%), whereas the model calls 41.1% heuristic and 39.6% undecidable. Per file, the median share of rubric-deterministic lines is 33.3%, and 44 files contain no deterministic rule at all. The shipped <code>compile</code> templates match only 4.5% of lines (174 lines), most often tool substitutions such as “use pnpm, not npm” and forbidden tokens. Style (29.9% by the model), process (17.5%), tooling (17.7%) and testing (10.8%) predominate; security (3.4%) and scope (4.9%) rules are rare but are the categories most often deterministic (Table 4, Figure 2).</p>
 <table>
@@ -442,8 +442,8 @@ th { font-weight: 500; color: var(--ink-2); border-bottom-color: var(--ink-2); }
 </table>
 <p><em>Table 4. Rubric category against rubric decidability.</em></p>
 <figure>
-<img src="figures/corpus_categories.png" alt="Rule-like lines per rubric category." />
-<figcaption aria-hidden="true">Rule-like lines per rubric category.</figcaption>
+<img src="figures/corpus_categories.png" alt="Rule-like lines per rubric category, ordered by size with the residual category last, and coloured by rubric decidability. Labels give the count and the share of all lines." />
+<figcaption aria-hidden="true">Rule-like lines per rubric category, ordered by size with the residual category last, and coloured by rubric decidability. Labels give the count and the share of all lines.</figcaption>
 </figure>
 <p><strong>Implications.</strong> A deterministic enforcer can cover at most about a third of what developers write into instruction files, and plausibly nearer a tenth. That fraction is what rulewarden guarantees, which is why it reports the remainder rather than purporting to enforce it (<code>compile</code> lists every line it could not compile). The low rubric–model agreement is itself a result of consequence. Whether a rule is “checkable” depends on whether the checker must confirm compliance or need only detect violation, and instruction files rarely say which. Any claim that a tool “enforces your CLAUDE.md” should be read against this boundary.</p>
 <h1 data-number="5" id="evaluation"><span class="header-section-number">5</span> Evaluation</h1>

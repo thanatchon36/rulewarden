@@ -179,7 +179,7 @@ everywhere. We therefore report both labellings and treat their spread as the un
 
 *Table 3. Rubric (rows) against model pass 1 (columns).*
 
-![Decidability per file type under the rubric (left) and model pass 1 (right).](figures/corpus_decidability.png)
+![Decidability per file type under the rubric (left) and model pass 1 (right). Bars show the share of each file type's rule-like lines in each tier; the figure inside the dark segment is the deterministic share, and n is the number of lines.](figures/corpus_decidability.png)
 
 **Results.** Deterministically checkable rules are a minority under every labelling: the rubric gives
 {{corpus:rubric_decidability.deterministic.share|pct}} ({{corpus:rubric_decidability.deterministic.ci95|ci}}), the
@@ -205,7 +205,7 @@ but are the categories most often deterministic (Table 4, Figure 2).
 
 *Table 4. Rubric category against rubric decidability.*
 
-![Rule-like lines per rubric category.](figures/corpus_categories.png)
+![Rule-like lines per rubric category, ordered by size with the residual category last, and coloured by rubric decidability. Labels give the count and the share of all lines.](figures/corpus_categories.png)
 
 **Implications.** A deterministic enforcer can cover at most about a third of what developers write into
 instruction files, and plausibly nearer a tenth. That fraction is what rulewarden guarantees, which is why it reports

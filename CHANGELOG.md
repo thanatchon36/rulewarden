@@ -3,6 +3,12 @@
 All notable changes to this project are documented here. The format follows Keep a Changelog, and the project uses
 semantic versioning.
 
+## [Unreleased]
+
+### Changed
+- Paper figures redrawn at text width: percentage axes, labelled deterministic shares, an all-files row, line counts,
+  categories ordered by size and split by decidability, and a palette that survives greyscale printing.
+
 ## [0.1.1] — 2026-10-14
 
 ### Added
