@@ -318,6 +318,16 @@ heredoc that documents a human-only command is denied (kept, as a fail-closed fa
 transcripts with very long lines could not be scanned for secrets, so they were stored in a chunked, scannable form
 rather than compressed out of the rule's reach. Every one of these came from running the tool on itself.
 
+**Independent verification.** Following DO-178C's independence principle, a fresh agent that had not seen the
+implementation tried to make a required rule pass without satisfying it, working from a clean clone. Edits to
+rules, the lock and the approvers file, `--no-verify`, hook redirection and history rewrites were all denied by the
+agent-hook layer. A violating `git commit` was refused, an agent-authored deviation was rejected, and oversized or
+malformed inputs failed closed. The verifier did find two real bypasses. A single NUL byte (or UTF-16, later UTF-32)
+made a file "binary", and content rules skipped it, so a plaintext credential passed the secrets rule in the git
+hook. A bare `--diff` that edited protected files was exempted whenever the checked-out tree still matched the lock.
+Both were fixed and re-verified. Neither would have been found by our own test suite, because both live in the gap
+between how git classifies content and how the engine reads it.
+
 **The monitor's own fragility.** Twice the monitor stopped the agent because of the monitor's own state, not the
 agent's change: once when hooks were installed before a lock existed, and once when an edit to rulewarden's source
 broke the running hook, because the repository's hooks ran the editable development copy. Fail-closed turned both
@@ -421,9 +431,11 @@ decisions; {{dogfood:prevented_before_actuation|int}} changes prevented before t
 SEC-001 {{dogfood:rule_fires.SEC-001|int}} (unscannable benchmark transcripts, §6), NAE-001
 {{dogfood:rule_fires.NAE-001|int}} (advisory: test files changed), SH-002 {{dogfood:rule_fires.SH-002|int}} (a rule's
 own fixture), PRT-002 {{dogfood:rule_fires.PRT-002|int}}, PRT-003 {{dogfood:rule_fires.PRT-003|int}}, SCP-001
-{{dogfood:rule_fires.SCP-001|int}}, SCP-003 {{dogfood:rule_fires.SCP-003|int}}, SCP-006 {{dogfood:rule_fires.SCP-006|int}},
-HYG-004 {{dogfood:rule_fires.HYG-004|int}}. The log has no entries for the edits made while the hooks were disabled
-(§6), and none from before the human lock.
+{{dogfood:rule_fires.SCP-001|int}}, SCP-003 {{dogfood:rule_fires.SCP-003|int}}, SCP-004 {{dogfood:rule_fires.SCP-004|int}}, SCP-006
+{{dogfood:rule_fires.SCP-006|int}}, HYG-004 {{dogfood:rule_fires.HYG-004|int}}. {{dogfood:by_status.error|int}}
+entry records an engine error, the hook crash described in §6, which failed closed. Commands issued by the
+independent verifier ran under the same hooks and are included (for example its `--no-verify` attempt, SCP-004). The
+log has no entries for the edits made while the hooks were disabled (§6), and none from before the human lock.
 
 ## B. Reproducing this paper
 

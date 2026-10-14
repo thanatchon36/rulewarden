@@ -268,3 +268,10 @@ Also reported, not a bypass: an 8,000-file diff took 88 s against `total_budget_
 bounds evaluation, not diff reading. It is listed as a known issue.
 
 Neither fix changes any benchmark score (`bench/replay.py --check`: 0 mismatches).
+
+**Re-verification (same verifier, commit 0980174).** Both defects were confirmed fixed: the earlier bypass commit now
+fails `--range`, and a real commit is refused. The verifier found one remaining in-scope miss, UTF-32 text, which is
+now decoded as well (BOM and 4-byte NUL pattern; three more test cases). Recorded as **design limits**, not defects:
+credentials inside compressed streams (gzip) or base64, keys split by a NUL byte inside the key, and NUL bytes at
+irregular intervals. In each of these the file no longer contains the credential as readable text. A secrets scanner
+that decodes archives and encodings is out of scope for a diff-level enforcer and belongs in a dedicated tool.

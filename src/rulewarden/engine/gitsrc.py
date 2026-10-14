@@ -85,9 +85,18 @@ def _cap(text: str, config: Config) -> str:
 
 def binary_text(data: bytes) -> str:
     """Scannable text from content git treats as binary: UTF-16 decoded, NUL bytes as newlines."""
+    if data[:4] in (b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff"):
+        return data.decode("utf-32", errors="replace")
     if data[:2] in (b"\xff\xfe", b"\xfe\xff"):
         return data.decode("utf-16", errors="replace")
     sample = data[:4096]
+    quarter = len(sample) // 4
+    if quarter >= 2:
+        zeros = [sample[i::4].count(0) for i in range(4)]
+        if min(zeros[1:]) > 0.8 * quarter and zeros[0] < 0.2 * quarter:
+            return data.decode("utf-32-le", errors="replace")
+        if min(zeros[:3]) > 0.8 * quarter and zeros[3] < 0.2 * quarter:
+            return data.decode("utf-32-be", errors="replace")
     half = len(sample) // 2
     if half >= 2:
         even, odd = sample[0::2].count(0), sample[1::2].count(0)

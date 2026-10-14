@@ -28,7 +28,7 @@ semantic versioning.
   selection (ADR-012).
 
 ### Fixed
-- Files that git treats as binary (a NUL byte, UTF-16) were skipped by content rules, so a credential could pass the
+- Files that git treats as binary (a NUL byte, UTF-16, UTF-32) were skipped by content rules, so a credential could pass the
   secrets rule. Binary content is now scanned as extracted text by regex rules (ADR-016).
 - A bare `check --diff` touching a protected file was exempted when the disk still matched the lock (ADR-016).
 - The jq engine refuses a `jq` binary that resolves inside the repository.

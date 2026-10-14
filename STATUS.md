@@ -67,3 +67,9 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
 - [x] `paper/build.sh` (`make paper`: live reference check 58/59; `make paper-ci`: `--no-network`) → HTML via pandoc
 - [x] README demo: genuine docstring block + self-correction (T01/C-r1) and the A1 false positive (T06/C-r1)
 ## Phase 7 — Hardening, verification, release prep
+- [x] Security review of engines → `docs/security.md`; jq planted-binary hole fixed (db01116)
+- [x] Independent verification subagent from a clean clone: make check, paper-ci, replay pass; 2 bypasses found
+      (binary-looking content hides credentials; bare --diff exempts protected edits), fixed (0980174), re-verified;
+      residual UTF-32 miss fixed; design limits recorded (ADR-016)
+- [x] README demo, CHANGELOG, trusted-publishing workflow (unpublished, gated), FINAL_REPORT.md
+- [ ] Push (NEEDS_HUMAN H4); public repo (H2); PyPI (H3)

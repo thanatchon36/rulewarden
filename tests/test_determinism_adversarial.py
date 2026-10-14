@@ -251,6 +251,9 @@ def _secret_repo(repo: Path, lock_fn) -> Path:  # type: ignore[no-untyped-def]
         b'k="' + KEY.encode() + b'"\n\x00',
         f'k="{KEY}"\n'.encode("utf-16"),
         f'k="{KEY}"\n'.encode("utf-16-le"),
+        f'k="{KEY}"\n'.encode("utf-32"),
+        f'k="{KEY}"\n'.encode("utf-32-le"),
+        f'k="{KEY}"\n'.encode("utf-32-be"),
         b"\x89PNG\r\n\x1a\n\x00\x00" + KEY.encode() + b"\x00\xff",
     ],
 )
