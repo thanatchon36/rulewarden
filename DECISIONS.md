@@ -191,3 +191,24 @@ deletion of `tests/test_smoke.py` (SCP-003). The test was restored, not exempted
 The commit-msg hook then blocked with SCP-001 on the synthetic `:commit-msg` target, because a default
 `applies_to: ["**"]` matched it. Synthetic targets (paths starting with `:`) are now selected only by rules that name
 them explicitly in `applies_to` (`globs.selected`; test `test_synthetic_targets_need_explicit_selection`).
+
+## ADR-013 — Agent hooks are installed only together with a lock (2026-10-14)
+
+Claude Code applies hooks written to `.claude/settings.json` mid-session (observed, `research/harness-apis.md`), and
+agent hooks are fail-closed, so hooks without a valid lock freeze the agent (ADR-010). Therefore:
+
+1. `rulewarden init` without `--lock` vendors packs, compiles, and installs git hooks, but not agent hooks (Claude
+   Code, OpenCode). It tells the human to run `rulewarden init --hooks-only --lock` after reviewing `rules/`.
+2. With `--lock`: lock (qualification must pass, or init stops with nothing agent-facing written), install the agent
+   hooks, lock again. The second lock is needed because the hook files are protected paths that the lock records.
+3. Git hooks are still installed before the lock. They only block a human's commit (with RW-LOCK), which is a prompt
+   to lock rather than a lockout.
+4. `doctor` reports `FAIL` when agent hooks exist but the lock is invalid.
+
+The earlier `test_compile_init_report_stats_doctor` expected `init` without `--lock` to write `settings.json`. That
+expectation encoded the behaviour this ADR removes. The test now asserts the new contract, and two tests cover
+`--lock` (lock covers hooks; a failed lock writes no agent hook).
+
+Also observed: PRT-003 denies a Bash command whose *text* contains a human-only command, even inside a heredoc that
+writes documentation. That is a false positive of command-string matching. The rule stays as it is (fail-closed). Prose
+that quotes those commands is written with the Edit/Write tools, which are checked as diffs instead.

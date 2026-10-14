@@ -35,7 +35,10 @@ Source: <https://code.claude.com/docs/en/hooks> (markdown at `…/hooks.md`), re
 - **Bash edits**: PostToolUse for Bash may carry `tool_response.bashEditDiff` (beta, best-effort; docs say not to
   enforce on it). We therefore compute the diff ourselves from git.
 - **Settings reload**: the docs do not promise that hooks added to `.claude/settings.json` mid-session take effect in a
-  running session. We record empirically what happened in this repository (see `STATUS.md`).
+  running session. **Observed 2026-10-14 (2.1.299): they do.** Hooks written mid-session applied to the next tool call
+  of the same session, and so did a rename of `settings.json` and its restoration (`STATUS.md` incident log). The
+  Stop hook re-fired until the continuation cap. Consequence: `rulewarden init` installs agent hooks only together
+  with a lock (ADR-013).
 
 ## Codex CLI (Could)
 

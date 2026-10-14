@@ -98,7 +98,7 @@ def opencode(cfg: Config, payload: Mapping[str, Any]) -> claude_code.Reply:
     return claude_code.Reply(json.dumps({"block": True, "reason": reason}, ensure_ascii=False))
 
 
-OPENCODE_PLUGIN = """// Installed by `rulewarden init --opencode`. Blocks tool calls that rulewarden rejects.
+OPENCODE_PLUGIN = """// Installed by `rulewarden init --hooks-only --lock --opencode`. Blocks tool calls that rulewarden rejects.
 import { spawnSync } from "node:child_process";
 
 export const Rulewarden = async ({ directory }) => ({

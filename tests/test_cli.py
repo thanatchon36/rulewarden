@@ -97,8 +97,20 @@ def test_compile_init_report_stats_doctor(repo: Path, run) -> None:  # type: ign
     assert data["counts"]["compiled"] == 3 and (repo / "p.yaml").exists()
     r = run(repo, "init", "--binary", "/usr/local/bin/rulewarden", "--opencode")
     assert r.exit_code == 0, r.output
+    assert "agent hooks not installed" in r.output
+    assert not (repo / ".claude/settings.json").exists()
     assert (repo / "rules/packs/voice.yaml").exists()
     assert (repo / "rules/compiled-claude-md.yaml").exists()
+    r = run(
+        repo,
+        "init",
+        "--hooks-only",
+        "--lock",
+        "--binary",
+        "/usr/local/bin/rulewarden",
+        "--opencode",
+    )
+    assert r.exit_code == 0, r.output
     settings = json.loads((repo / ".claude/settings.json").read_text())
     assert settings["hooks"]["PreToolUse"][0]["hooks"][0]["onFailure"] == "block"
     assert (repo / ".git/hooks/pre-commit").read_text().count("hook git pre-commit") == 1
@@ -125,6 +137,29 @@ def test_init_with_lock_flag(repo: Path, run) -> None:  # type: ignore[no-untype
     assert r.exit_code == 0 and "locked" in r.output
 
 
+def test_init_lock_covers_agent_hooks(repo: Path, run) -> None:  # type: ignore[no-untyped-def]
+    r = run(repo, "init", "--packs", "secrets", "--no-git-hooks", "--lock")
+    assert r.exit_code == 0, r.output
+    assert (repo / ".claude/settings.json").exists()
+    assert run(repo, "lock", "--check").exit_code == 0
+    assert run(repo, "check").exit_code == 0
+
+
+def test_init_failed_lock_installs_no_agent_hooks(repo: Path, run) -> None:  # type: ignore[no-untyped-def]
+    rules = repo / "rules/basic.yaml"
+    rules.write_text(rules.read_text().replace('pass: ["log.info', 'pass: ["print(1)", "log.info'))
+    r = run(repo, "init", "--packs", "secrets", "--no-git-hooks", "--lock")
+    assert r.exit_code != 0
+    assert not (repo / ".claude/settings.json").exists()
+
+
 def test_version(run, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
     assert "rulewarden, version" in run(tmp_path, "--version").output
     assert os.getcwd() == str(tmp_path) or True
+
+
+def test_doctor_flags_agent_hooks_without_lock(repo: Path, run) -> None:  # type: ignore[no-untyped-def]
+    (repo / ".claude").mkdir()
+    (repo / ".claude/settings.json").write_text("{}\n")
+    r = run(repo, "doctor")
+    assert r.exit_code != 0 and "agent hooks are installed without a valid lock" in r.output

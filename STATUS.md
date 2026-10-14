@@ -36,7 +36,14 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
    positive on quoted text, the expected price of command-string matching). The ADR was written with Edit instead.
 
 ## Phase 3 — Adapters
-- [ ] `rulewarden init`: write and require the lock before installing harness hooks (lesson from ADR-010)
+- [x] `rulewarden init`: agent hooks only with `--lock`, between two lock writes; `--hooks-only` (ADR-013)
+- [x] `doctor` fails when agent hooks are installed without a valid lock
+- [x] Contract tests per harness: Claude Code (4 events, Stop gate), git hooks (incl. a real `git commit`), CI,
+      Codex, Gemini, OpenCode (`tests/test_adapters.py`); live evidence: this session runs under the Claude Code hooks
+- [x] `docs/integrations.md` (setup order, per-harness behaviour, pre-commit and GitHub Actions examples)
+- [x] `research/harness-apis.md`: mid-session settings reload observed
+- [ ] `.pre-commit-hooks.yaml` consumer manifest — NEEDS_HUMAN H5 (outside SCP-001 allowed paths)
+- [ ] Live Claude Code demo (block + self-correct) for the README — recorded in Phase 5 with the benchmark runner
 ## Phase 4 — Corpus
 ## Phase 5 — Benchmark
 ## Phase 6 — Paper

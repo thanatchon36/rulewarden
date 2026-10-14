@@ -404,6 +404,11 @@ PACKS = (
     default=False,
     help="Also lock (human action; needs a TTY or --ci).",
 )
+@click.option(
+    "--hooks-only",
+    is_flag=True,
+    help="Only install hooks (after locking); do not vendor packs or compile.",
+)
 def init(
     root: str | None,
     packs: str,
@@ -412,17 +417,63 @@ def init(
     opencode: bool,
     binary: str | None,
     do_lock: bool,
+    hooks_only: bool,
 ) -> None:
-    """Detect instruction files, vendor packs, compile rules, install hooks."""
-    from importlib import resources
+    """Detect instruction files, vendor packs, compile rules, install hooks.
 
+    Agent-harness hooks (Claude Code, OpenCode) are installed only together with
+    --lock, between two lock writes, so they never run without a lock (ADR-013).
+    """
     from rulewarden.adapters import claude_code, git_hook
     from rulewarden.adapters.other_harnesses import OPENCODE_PLUGIN
-    from rulewarden.compile.compiler import compile_file, report_text, to_yaml
-    from rulewarden.compile.templates import pack_rules
 
     cfg = _config(root)
     bin_path = binary or git_hook.default_binary(cfg.root)
+    if not hooks_only:
+        _scaffold(cfg, packs)
+    if git_hooks:
+        for p in git_hook.install(cfg.root, bin_path):
+            click.echo(f"installed git hook {p.name}")
+    agent_hooks = claude or opencode
+    if not do_lock:
+        if agent_hooks:
+            click.echo("agent hooks not installed: they deny every tool call until a lock exists")
+            click.echo(
+                "next: review rules/, then a human runs `rulewarden init --hooks-only --lock`"
+            )
+        else:
+            click.echo("next: review rules/, then a human runs `rulewarden lock`")
+        return
+    ctx = click.get_current_context()
+    noninteractive = not sys.stdin.isatty()
+    ctx.invoke(lock, root=str(cfg.root), noninteractive=noninteractive, verify_only=False)
+    if not agent_hooks:
+        return
+    if claude:
+        settings = cfg.root / ".claude" / "settings.json"
+        settings.parent.mkdir(exist_ok=True)
+        existing = json.loads(settings.read_text(encoding="utf-8")) if settings.exists() else {}
+        settings.write_text(
+            _json_dump(claude_code.merge_settings(existing, bin_path)) + "\n", encoding="utf-8"
+        )
+        click.echo("installed Claude Code hooks in .claude/settings.json")
+    if opencode:
+        d = cfg.root / ".opencode" / "plugins"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "rulewarden.js").write_text(
+            OPENCODE_PLUGIN.replace("{bin}", bin_path), encoding="utf-8"
+        )
+        click.echo("installed OpenCode plugin")
+    # The hook files are protected paths, so the lock must also record them.
+    ctx.invoke(lock, root=str(cfg.root), noninteractive=noninteractive, verify_only=False)
+
+
+def _scaffold(cfg: Config, packs: str) -> None:
+    from importlib import resources
+
+    from rulewarden.compile.compiler import compile_file, report_text, to_yaml
+    from rulewarden.compile.templates import pack_rules
+
     rules_dir = cfg.root / "rules"
     (rules_dir / "packs").mkdir(parents=True, exist_ok=True)
     for name in [p.strip() for p in packs.split(",") if p.strip()]:
@@ -461,30 +512,6 @@ def init(
         if entry not in lines:
             lines.append(entry)
     gi.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    if claude:
-        settings = cfg.root / ".claude" / "settings.json"
-        settings.parent.mkdir(exist_ok=True)
-        existing = json.loads(settings.read_text(encoding="utf-8")) if settings.exists() else {}
-        settings.write_text(
-            _json_dump(claude_code.merge_settings(existing, bin_path)) + "\n", encoding="utf-8"
-        )
-        click.echo("installed Claude Code hooks in .claude/settings.json")
-    if git_hooks:
-        for p in git_hook.install(cfg.root, bin_path):
-            click.echo(f"installed git hook {p.name}")
-    if opencode:
-        d = cfg.root / ".opencode" / "plugins"
-        d.mkdir(parents=True, exist_ok=True)
-        (d / "rulewarden.js").write_text(
-            OPENCODE_PLUGIN.replace("{bin}", bin_path), encoding="utf-8"
-        )
-        click.echo("installed OpenCode plugin")
-    click.echo("next: review rules/, then a human runs `rulewarden lock`")
-    if do_lock:
-        ctx = click.get_current_context()
-        ctx.invoke(
-            lock, root=str(cfg.root), noninteractive=not sys.stdin.isatty(), verify_only=False
-        )
 
 
 @main.command()

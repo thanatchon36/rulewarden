@@ -119,6 +119,13 @@ def run_doctor(cfg: Config, determinism_only: bool = False) -> tuple[bool, list[
     except RulewardenError as exc:
         lines.append(f"FAIL lock: {exc}")
         ok = False
+        if (cfg.root / ".claude" / "settings.json").exists() or (
+            cfg.root / ".opencode" / "plugins" / "rulewarden.js"
+        ).exists():
+            lines.append(
+                "FAIL agent hooks are installed without a valid lock: every agent tool call "
+                "will be denied until a human locks (ADR-013)"
+            )
     intact, n, msg = audit.verify_chain(cfg.root)
     lines.append(f"{'ok  ' if intact else 'FAIL'} audit log: {n} entries, {msg}")
     ok &= intact
