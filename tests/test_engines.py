@@ -315,3 +315,18 @@ def test_hygiene_and_answers_plugins() -> None:
     assert not answers.literal_lookup(tgt("a.py", fake), {"min_branches": 3})
     assert not answers.literal_lookup(tgt("a.py", "def (:\n"), {})
     assert not answers.literal_lookup(tgt("a.txt", fake), {})
+
+
+def test_jq_planted_inside_repo_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    marker = tmp_path / "ran"
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    fake = bindir / "jq"
+    fake.write_text(f"#!/bin/sh\ntouch {marker}\necho true\n")
+    fake.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bindir}:/usr/bin:/bin")
+    ctx = EngineContext(root=tmp_path, limits=Limits())
+    prep = jqc.prepare({"filter": ".a"}, On.FILE, ctx)
+    with pytest.raises(EngineError, match="inside the repository"):
+        jqc.run(prep, On.FILE, Target("x.json", content='{"a": 1}'), ctx)
+    assert not marker.exists()

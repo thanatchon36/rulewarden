@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from pathlib import Path
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -36,6 +37,8 @@ def run(prep: Prepared, on: On, target: Target, ctx: EngineContext) -> list[Hit]
     jq = shutil.which("jq")
     if jq is None:
         raise EngineError("jq engine: 'jq' is not on PATH")
+    if ctx.root.resolve() in Path(jq).resolve().parents:
+        raise EngineError(f"jq engine: refusing {jq}, which is inside the repository")
     try:
         proc = subprocess.run(
             [jq, "-c", prep.filter],
