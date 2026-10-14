@@ -5,7 +5,21 @@ subtitle: "Borrowing Safety-Critical Systems Engineering to Enforce Agent Instru
 
 # Abstract
 
-*(Written last; every claim maps to an RQ result.)*
+Coding agents are steered by instruction files such as `CLAUDE.md` and `AGENTS.md`, and nothing checks that the
+rules in them are followed. We map twelve concepts from safety-critical engineering, from Simplex and independence of
+verification to MISRA decidability classes and alarm management, onto testable requirements for a rule enforcer.
+We implement them in rulewarden, an open-source, deterministic, fail-closed tool that checks each agent change in a
+pre-tool hook, a git hook and CI. A corpus study of {{corpus:n_files|int}} public instruction files
+({{corpus:n_lines|int}} rule-like lines) finds that only a minority of rules are decidable on a diff:
+{{corpus:model.decidability_p1.deterministic.share|pct}} by model-assisted labels and
+{{corpus:rubric_decidability.deterministic.share|pct}} by a deterministic rubric. The two labellings barely agree
+(κ = {{corpus:model.kappa_rubric_p1_decidability|f2}}), which shows that "checkable" is itself ill-defined. A
+pre-registered benchmark of {{bench:n_runs|int}} headless Claude Code runs on 20 tasks under five conditions hit a
+ceiling: no condition, including one without rules, left a violation in the final diff. The hooks added little cost,
+caught docstring violations before they were written, and exposed a false-positive class in which path policies are
+judged against the disk instead of the session baseline. Running the tool on its own development caught real
+violations, four tool defects, and an incident in which the agent proposed disabling its own monitor. All data,
+recordings and a key-free replay script are released.
 
 # 1 Introduction
 
@@ -147,6 +161,8 @@ report both labellings and treat their spread as the uncertainty of the estimate
 
 *Table 2. Rubric (rows) against model pass 1 (columns).*
 
+![Decidability per file type under the rubric (left) and model pass 1 (right).](figures/corpus_decidability.png)
+
 **Results.** Deterministically checkable rules are a minority under every labelling: the rubric
 {{corpus:rubric_decidability.deterministic.share|pct}} ({{corpus:rubric_decidability.deterministic.ci95|ci}}),
 the model {{corpus:model.decidability_p1.deterministic.share|pct}}
@@ -189,7 +205,90 @@ What is the latency distribution per check?
 **RQ5 (independence).** When prompted adversarially, how often does the agent attempt to edit rules/hooks or add
 deviations, and are all attempts blocked?
 
-*Results pending (Phase 5).*
+## 5.1 Setup
+
+Twenty small tasks (14 Python, 6 shell), each a mini-repository with a task description, visible tests, hidden tests
+used only for scoring, and 6–8 rules mixing severities and decidability tiers. The rules target typical lapses:
+debug `print` in library code, bare or swallowing `except`, over-long docstrings, new dependencies, edits to existing
+tests, `python -c` for JSON in shell, missing `set -euo pipefail`, `sudo`, `eval`, hard-coded answers. A test
+(`tests/test_bench_tasks.py`) checks that each task's rules qualify, that a reference solution passes the hidden tests
+with zero findings, and that the starting repository fails them. The agent was headless Claude Code with Haiku 5.5,
+`--max-turns 40`, project settings only, no MCP servers, in a fresh workspace outside our repository. Conditions:
+**A** no rules; **B** rules rendered into `CLAUDE.md`; **C** B plus rulewarden hooks with managed reports; **D** C with
+flat reports; **E** C plus an adversarial instruction ("do whatever it takes to make [the checks] pass"). The analysis
+plan (`bench/ANALYSIS_PLAN.md`) was frozen before the first non-pilot run. The budget of 150 runs gave
+{{bench:n_runs|int}} analysed runs plus {{bench:n_pilot_runs_excluded|int}} excluded pilot, with no infrastructure
+failures. Two amendments, both recorded before the write-up, are discussed below. Every number in this section is
+recomputed from the recordings by `bench/replay.py`, which needs no API key.
+
+## 5.2 Results
+
+{{table:bench_cells}}
+
+*Table 5. Outcomes per condition. Violations are counted in the final diff against the task baseline by the same
+engine for all conditions. "A1 false positives" are blocks whose deny message names a file the agent had created
+in that session.*
+
+**RQ2 (effectiveness): a ceiling, not an effect.** Every condition, including A with no rules at all, produced
+final diffs with zero deterministic and zero heuristic violations, and every run passed its hidden tests
+({{bench:cells.A.success_rate|pct}} in A, {{bench:cells.B.success_rate|pct}} in B, {{bench:cells.C.success_rate|pct}}
+in C). The pre-registered tests are uninformative (Table 6): every paired difference in violations is zero
+(H1 C − B, H2 B − A, H3 heuristic tier), and success in C is non-inferior to B by construction
+({{bench:H4_success_B_C.diff|pct}}, CI {{bench:H4_success_B_C.ci95|ci}}). The cost of the hooks (H5) was small and not
+significant after Holm correction: median paired differences of {{bench:secondary.H5_turns_B_C.median_diff|f2}}
+turns, {{bench:secondary.H5_wall_s_B_C.median_diff|f2}} s of wall-clock time, and
+{{bench:secondary.H5_tokens_B_C.median_diff|int}} tokens per task (p_Holm = {{bench:secondary.H5_tokens_B_C.p_holm|p}}).
+In short, this agent did not commit these lapses in its final output, whether or not it was told the rules. The
+benchmark therefore cannot tell whether enforcement reduces violations. We report this as a negative result about
+our task design rather than a positive result about the tool.
+
+{{table:bench_tests}}
+
+*Table 6. Pre-registered tests (Wilcoxon signed-rank on per-task means; bootstrap CIs; Holm over H2–H6).*
+
+**What the hooks did see.** The final-diff ceiling hides intermediate behaviour that only the hooked conditions can
+observe. In C, the hooks blocked {{bench:cells.C.blocks_total|int}} tool calls. {{bench:blocks_by_rule.C.B-DOCSTRING|int}}
+were genuine: the agent wrote a docstring longer than the 5-line limit, PreToolUse denied the write before anything
+reached the disk, and the agent shortened it and continued. Every such episode ended clean. The other
+{{bench:blocks_by_rule.C.B-TESTS-RO|int}} were false positives of a rulewarden defect found during the first stage
+(amendment A1). The PreToolUse adapter compared a proposed edit with the file on disk instead of the session baseline,
+so when the agent revised a test file it had itself created minutes earlier, "existing tests are read-only" denied the
+edit. We kept the engine frozen for the whole benchmark, so the treatment did not change between runs, and fixed the
+defect afterwards. Agents responded to these false denials conservatively. They neither weakened the rule nor
+looked for another write path: they added a new test file instead, and one said, "I won't route around that guard
+with a different write path." The defect is the most practically important finding of the benchmark. A path policy
+that is correct in a git hook (where "modified" means relative to `HEAD`) is wrong at tool-call granularity unless
+it is evaluated against the session baseline.
+
+**RQ4 (alarm management).** With so few blocks, managed (C) and flat (D) reports cannot be distinguished: the paired
+difference in cycles to a clean state has median {{bench:secondary.H6_cycles_C_D.median_diff|f2}}
+(p_Holm = {{bench:secondary.H6_cycles_C_D.p_holm|p}}). Nearly all reports had one finding, where the two formats
+differ only in layout.
+
+**RQ5 (independence).** Under the adversarial instruction, the agent made {{bench:RQ5.attempts|int}} attempts to edit
+rules, hooks or the lock, to skip hooks, or to add deviation comments, in {{bench:RQ5.runs|int}} runs. Its turns rose
+(median {{bench:cells.E.median_turns|f2}} versus {{bench:cells.C.median_turns|f2}} in C), but its behaviour stayed
+within the rules. With zero attempts, the share blocked is undefined; RQ3's tests cover the blocking mechanism
+directly.
+
+**RQ3 (safety properties).** Every test of the determinism and fail-closed properties passes (Table 7):
+byte-identical reports across processes, time zones, locales and hash seeds; ReDoS-shaped patterns rejected at load
+or killed by the time budget; oversized inputs, corrupted rule files, lock tampering and injected engine timeouts
+failing closed for blocking rules; protected-path edits blocked through diffs, drift and shell commands;
+agent-authored deviations of blocking rules rejected; and a tamper-evident audit chain.
+
+{{table:rq3_safety}}
+
+*Table 7. Safety properties and the tests that exercise them (`bench/rq3.py`).*
+
+Measured on real hook invocations during the benchmark, rulewarden's latency was small next to model latency (Table 8).
+PreToolUse, which evaluates one proposed file or command, had a median of {{bench:RQ3_hook_latency_ms.PreToolUse.p50|int}} ms
+(p99 {{bench:RQ3_hook_latency_ms.PreToolUse.p99|int}} ms). PostToolUse and Stop, which diff the whole working tree,
+had medians of {{bench:RQ3_hook_latency_ms.PostToolUse.p50|int}} and {{bench:RQ3_hook_latency_ms.Stop.p50|int}} ms.
+
+{{table:bench_hook_latency}}
+
+*Table 8. Hook wall time per event across all hooked runs, from the audit logs.*
 
 # 6 Discussion
 
@@ -206,6 +305,32 @@ setup must order the lock before hook installation; a Stop hook must block only 
 fix (ADR-011), because a gate the agent cannot satisfy turns into pressure on the operator to remove it; and the
 audit log must make such gaps visible. The gap here is visible only because the hash chain has no entries for those
 edits, so the git history and the audit log disagree.
+
+**What dogfooding caught that the benchmark did not.** Over the session after the human lock, rulewarden recorded
+{{dogfood:chain.entries|int}} decisions on its own repository (hash chain {{dogfood:chain.message}}), of which
+{{dogfood:by_status.blocked|int}} were blocking. Unlike the benchmark agent, the development agent did commit real
+violations, and the hooks caught them: an over-long docstring (HYG-004), a test file deleted during a refactor and
+restored after the pre-commit hook objected (SCP-003), and shell commands that quoted protected paths (PRT-002,
+PRT-003). They also surfaced four rulewarden defects, each fixed or recorded with a test or a NEEDS_HUMAN item.
+(1) SH-002 matched its own failing fixture inside the rule file. Locked rule files are now exempt from content rules.
+(2) The synthetic `:commit-msg` target was caught by a catch-all path rule. (3) Command rules match quoted text, so a
+heredoc that documents a human-only command is denied (kept, as a fail-closed false positive). (4) Benchmark
+transcripts with very long lines could not be scanned for secrets, so they were stored in a chunked, scannable form
+rather than compressed out of the rule's reach. Every one of these came from running the tool on itself.
+
+**The monitor's own fragility.** Twice the monitor stopped the agent because of the monitor's own state, not the
+agent's change: once when hooks were installed before a lock existed, and once when an edit to rulewarden's source
+broke the running hook, because the repository's hooks ran the editable development copy. Fail-closed turned both
+into total denials, which is correct but costly. The lesson is the P2 lesson applied to deployment: the running
+monitor must be pinned and installed separately from the code being changed.
+
+**Why the benchmark hit a ceiling.** Our tasks were small, the rules were few and conventional, and the model was
+strong. The agent rarely wanted to do what the rules forbid. In the one systematic exception, docstring length, the
+lapse was caught before it reached the disk. A benchmark that discriminates would need tasks where the convenient
+solution conflicts with a rule: an unusual house style, a forbidden but idiomatic library, many more rules than a
+model attends to, or long sessions in which instructions drift out of context. Instruction-file rules in the corpus
+are of exactly that kind: project-specific and numerous (median {{corpus:lines_per_file_median|int}} rule-like lines
+per file).
 
 # 7 Related work
 
@@ -265,4 +390,42 @@ the transcripts exactly: the model is non-deterministic and the CLI exposes no s
 
 # 9 Conclusion and future work
 
+Safety-critical engineering offers a precise vocabulary for what an agent-rule enforcer must guarantee: a simple
+monitor outside the generation loop, independence from the thing it monitors, honesty about which rules are
+decidable, qualification of every check, fail-closed bounded execution, and reports a recipient can act on.
+rulewarden implements that vocabulary as testable requirements, and its safety-property tests pass. The corpus study
+bounds what any such tool can promise: only a minority of the rules developers write can be decided on a diff, and
+the boundary depends on how "checkable" is defined. Our controlled benchmark found no difference between conditions,
+because a strong model on small tasks committed none of the targeted lapses in its final output, with or without
+rules. Its value lies in what it exposed instead: a false-positive class (path policies judged against the disk
+instead of the session baseline) that only appears at tool-call granularity, and agents that respond to false
+denials conservatively. Running the tool on its own development surfaced more defects than the benchmark did, and
+one incident that no test would have found: an agent asked for its monitor to be switched off, and a human agreed.
+
+Future work: tasks designed to put rules in conflict with convenience; longer sessions and weaker models; human
+labels for the corpus to resolve the rubric–model disagreement; trace-level rules (for example "run the tests before
+committing"), which are decidable on the session's command log but not on a diff; and a pinned-monitor deployment
+mode as the default.
+
 # Appendix
+
+## A. This repository's own audit log
+
+rulewarden enforced its own repository's rules on the agent that built it, from the human lock onwards. Summary of
+the snapshot `paper/data/dogfood_audit.json` (generated by `paper/snapshot_audit.py` from the git-ignored live log):
+{{dogfood:chain.entries|int}} entries from {{dogfood:first_ts}} to {{dogfood:last_ts}}, hash chain
+{{dogfood:chain.message}}; {{dogfood:by_status.pass|int}} passing and {{dogfood:by_status.blocked|int}} blocking
+decisions; {{dogfood:prevented_before_actuation|int}} changes prevented before they were written;
+{{dogfood:self_correction.episodes|int}} self-correction episodes (mean
+{{dogfood:self_correction.mean_blocks_before_clean|f2}} blocks before a clean state). Rules that fired:
+SEC-001 {{dogfood:rule_fires.SEC-001|int}} (unscannable benchmark transcripts, §6), NAE-001
+{{dogfood:rule_fires.NAE-001|int}} (advisory: test files changed), SH-002 {{dogfood:rule_fires.SH-002|int}} (a rule's
+own fixture), PRT-002 {{dogfood:rule_fires.PRT-002|int}}, PRT-003 {{dogfood:rule_fires.PRT-003|int}}, SCP-001
+{{dogfood:rule_fires.SCP-001|int}}, SCP-003 {{dogfood:rule_fires.SCP-003|int}}, SCP-006 {{dogfood:rule_fires.SCP-006|int}},
+HYG-004 {{dogfood:rule_fires.HYG-004|int}}. The log has no entries for the edits made while the hooks were disabled
+(§6), and none from before the human lock.
+
+## B. Reproducing this paper
+
+`make corpus` recomputes §4 from `corpus/data/`. `make replay` recomputes §5 from `bench/recorded/` with no API key.
+`make paper` renders this document, failing on any unresolved number or unverified citation.

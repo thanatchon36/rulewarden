@@ -19,8 +19,10 @@ ROOT = PAPER.parent
 SOURCES = {
     "corpus": ROOT / "corpus" / "data" / "summary.json",
     "bench": ROOT / "bench" / "results" / "summary.json",
+    "rq3": ROOT / "bench" / "results" / "rq3.json",
+    "dogfood": PAPER / "data" / "dogfood_audit.json",
 }
-_PH = re.compile(r"\{\{(corpus|bench|table):([A-Za-z0-9_.\-]+)(?:\|(\w+))?\}\}")
+_PH = re.compile(r"\{\{(corpus|bench|rq3|dogfood|table):([A-Za-z0-9_.\-]+)(?:\|(\w+))?\}\}")
 
 
 def _get(data: Any, dotted: str) -> Any:
@@ -79,10 +81,25 @@ def render(text: str) -> tuple[str, list[str]]:
     return _PH.sub(sub, text), missing
 
 
+_CITE = re.compile(r"@([A-Za-z0-9_:\-]+)")
+_BIBKEY = re.compile(r"^@\w+\{([^,]+),", re.MULTILINE)
+
+
+def unverified_citations(text: str) -> list[str]:
+    """Cited keys missing from refs.verified.bib (only verified references may be cited)."""
+    verified = set(_BIBKEY.findall((PAPER / "refs.verified.bib").read_text(encoding="utf-8")))
+    cited: set[str] = set()
+    for group in re.findall(r"\[([^\]]*@[^\]]*)\]", text):
+        cited.update(_CITE.findall(group))
+    return sorted(cited - verified)
+
+
 def main() -> int:
     out_dir = PAPER / "build"
     out_dir.mkdir(exist_ok=True)
     text, missing = render((PAPER / "main.md").read_text(encoding="utf-8"))
+    for key in unverified_citations(text):
+        missing.append(f"citation @{key} is not in refs.verified.bib")
     if missing:
         for m in missing:
             print(f"unresolved: {m}", file=sys.stderr)

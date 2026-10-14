@@ -16,8 +16,23 @@ Status: alpha (0.1.0.dev0). Research prototype accompanying the paper in `paper/
 
 ## Demo: a block and a self-correction (recorded)
 
-From the benchmark recording `bench/recorded/T06-backup-rotate/C-r1` (headless Claude Code, Haiku 5.5). The agent
-tried to edit a test file, and the PreToolUse hook denied the edit before anything was written:
+From the benchmark recording `bench/recorded/T01-slugify/C-r1` (headless Claude Code, Haiku 5.5). The task's rules
+limit docstrings to 5 lines. The agent's first Write of `src/textkit/slug.py` had a 6-line docstring on `slugify`,
+and the PreToolUse hook denied it before anything reached the disk:
+
+```
+PreToolUse:Write hook error: rulewarden rejected this edit; nothing was written.
+BLOCKED — 1 required, 0 advisory
+[B-DOCSTRING required] src/textkit/slug.py:37 Docstring longer than 5 lines (docstring has 6 lines (max 5)) — Fix: Shorten the docstring to at most 5 lines.
+```
+
+The agent's next tool call wrote the same file with a 5-line docstring, which passed. The run ended with a clean
+final diff and all hidden tests passing. Across the benchmark, 13 such docstring violations were caught at the
+tool-call boundary, and every one was corrected (`bench/results/summary.json`, `blocks_by_rule`).
+
+### A false positive, kept for honesty
+
+From `bench/recorded/T06-backup-rotate/C-r1`: the agent tried to edit a test file, and the hook denied it:
 
 ```
 PreToolUse:Edit hook error: rulewarden rejected this edit; nothing was written.
@@ -29,9 +44,9 @@ The agent's next message: *"The file is untracked, so it's new, not an existing 
 edit, and I won't route around that guard with a different write path."* It put the corrected checks in a new test
 file and reported what was left. The hidden tests passed and the final diff had no violations.
 
-The file was one the agent had created itself in that session, so this particular block was a **false positive**
-in rulewarden (amendment A1 in `bench/ANALYSIS_PLAN.md`). It is kept here unedited because it shows both the
-mechanism and a limitation.
+The file was one the agent had created itself in that session, so this block was a **false positive** in rulewarden
+(amendment A1 in `bench/ANALYSIS_PLAN.md`). The benchmark ran with the defect; it was fixed afterwards, and the fix
+is covered by a regression test.
 
 ## Install and set up
 

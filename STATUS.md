@@ -61,4 +61,9 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
       positive (B-TESTS-RO on files the agent created itself). The defect was fixed after the last run (ADR-015)
 - [x] RQ3: 28/28 safety-property tests pass; hook latency p50 PreToolUse 9 ms, PostToolUse 51 ms, Stop 53 ms
 ## Phase 6 — Paper
+- [x] All sections written (abstract, 1–9, appendices); every number is a placeholder filled by `paper/render.py`
+      from `corpus/data/summary.json`, `bench/results/summary.json`, `bench/results/rq3.json` and
+      `paper/data/dogfood_audit.json`; unresolved numbers or unverified citations fail the build
+- [x] `paper/build.sh` (`make paper`: live reference check 58/59; `make paper-ci`: `--no-network`) → HTML via pandoc
+- [x] README demo: genuine docstring block + self-correction (T01/C-r1) and the A1 false positive (T06/C-r1)
 ## Phase 7 — Hardening, verification, release prep

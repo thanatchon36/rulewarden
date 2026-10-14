@@ -171,6 +171,29 @@ def hook_latency(run_dirs: list[Path]) -> dict[str, Any]:
     return out
 
 
+def blocks_by_rule(run_dirs: list[Path]) -> dict[str, dict[str, int]]:
+    """Rule ids named by blocking hook decisions, per condition (from audit logs)."""
+    out: dict[str, dict[str, int]] = {}
+    for run in run_dirs:
+        path = run / "audit.jsonl"
+        if not path.exists():
+            continue
+        cond = run.name.split("-", 1)[0]
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            e = json.loads(line)
+            ev = str(e.get("event", ""))
+            pre_post = ev.startswith(("PreToolUse", "PostToolUse"))
+            if (pre_post and e.get("status") in ("blocked", "error")) or e.get(
+                "outcome"
+            ) == "stop_blocked":
+                for rid in e.get("findings", []):
+                    out.setdefault(cond, {}).setdefault(rid, 0)
+                    out[cond][rid] += 1
+    return {c: dict(sorted(v.items())) for c, v in sorted(out.items())}
+
+
 def per_run(run: Path, scratch: Path) -> dict[str, Any]:
     meta = json.loads((run / "meta.json").read_text(encoding="utf-8"))
     rules = (run / "rules.yaml").read_text(encoding="utf-8")
@@ -205,6 +228,55 @@ def per_run(run: Path, scratch: Path) -> dict[str, Any]:
     return row
 
 
+def _pct(x: float | None) -> str:
+    return "n/a" if x is None else f"{100 * x:.0f}%"
+
+
+def write_tables(summary: dict[str, Any]) -> None:
+    TABLES.mkdir(parents=True, exist_ok=True)
+    rows = [
+        "| Condition | Runs | Tasks | Hidden tests pass | Clean diff | Violations (det/heur) | Median turns |"
+        " Median wall s | Blocks (of which A1 false positives) | Circumvention attempts |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for c, v in summary["cells"].items():
+        rows.append(
+            f"| {c} | {v['runs']} | {v['tasks']} | {_pct(v['success_rate'])} | {_pct(v['clean_rate'])} |"
+            f" {v['viol_det_total']}/{v['viol_heur_total']} | {v['median_turns']:g} | {v['median_wall_s']:.1f} |"
+            f" {v['blocks_total']} ({v['blocks_on_session_files_total']}) | {v['circumvention_attempts']} |"
+        )
+    (TABLES / "bench_cells.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    def fmt_p(p: float | None) -> str:
+        return "n/a" if p is None else ("< 0.001" if p < 0.001 else f"{p:.3f}")
+
+    tests = [("H1", summary["H1_viol_det_B_C"])]
+    tests += [(k.split("_")[0], v) for k, v in summary["secondary"].items()]
+    rows = [
+        "| Hypothesis | Metric, comparison | n tasks | Median paired diff (95% CI) | p | p (Holm) |",
+        "|---|---|---|---|---|---|",
+    ]
+    for h, v in tests:
+        ci = v.get("median_diff_ci95") or [None, None]
+        diff = (
+            "n/a"
+            if v.get("median_diff") is None
+            else f"{v['median_diff']:g} ({ci[0]:g} to {ci[1]:g})"
+        )
+        rows.append(
+            f"| {h} | {v['metric']}, {v['comparison']} | {v['n_tasks']} | {diff} | {fmt_p(v.get('p'))} |"
+            f" {fmt_p(v.get('p_holm')) if 'p_holm' in v else '—'} |"
+        )
+    (TABLES / "bench_tests.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+    lat = summary["RQ3_hook_latency_ms"]
+    rows = ["| Hook event | n | p50 ms | p95 ms | p99 ms | max ms |", "|---|---|---|---|---|---|"]
+    rows += [
+        f"| {k} | {v['n']} | {v['p50']} | {v['p95']} | {v['p99']} | {v['max']} |"
+        for k, v in lat.items()
+    ]
+    (TABLES / "bench_hook_latency.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true", help="fail if recorded scores differ")
@@ -232,6 +304,8 @@ def main() -> int:
 
     summary = analyse(rows, n_pilots=len(pilots()))
     summary["RQ3_hook_latency_ms"] = hook_latency(runs())
+    summary["blocks_by_rule"] = blocks_by_rule(runs())
+    write_tables(summary)
     (RESULTS / "summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
