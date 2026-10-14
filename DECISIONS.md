@@ -246,3 +246,25 @@ the engine therefore changes the monitor immediately. Two consequences were obse
 Running the monitor from its own working copy makes it fragile in exactly the way P2 warns about, even though
 `protect_package_source: false` is right for development. Recommendation (NEEDS_HUMAN H7): point the hooks at a
 pinned, separately installed binary, so that editing the source cannot change the running monitor.
+
+## ADR-016 — Defects from independent verification (2026-10-14)
+
+A fresh verifier subagent that had not seen the implementation worked from a clean clone (Phase 7). `make check`,
+`make paper-ci` and replay passed. It found two defects; both are fixed with regression tests.
+
+1. **Binary-looking content hid credentials.** A single NUL byte (or UTF-16 encoding) made git and the engine treat
+   a file as binary. Content rules skipped it with no finding and no "unverifiable" report, so a plaintext AWS key
+   passed SEC-001 in `check --staged`, the pre-commit hook and `--range`. Every diff source now attaches binary
+   content as extracted text (UTF-16 decoded; NUL bytes as line breaks), and **regex** rules scan it. Other engines
+   still skip binary files: an AST or jq check of an image is meaningless, and treating every binary as unverifiable
+   would block all images. Tests: `test_binary_looking_files_are_still_scanned` (NUL, UTF-16 with and without BOM,
+   key inside a PNG; worktree, staged and range) and `test_clean_binary_file_passes`.
+2. **A bare `--diff` could edit protected files.** For a diff without attached content, the lock check compared the
+   *disk* with the lock, and for a path absent from both, `None == None` counted as locked. So `check --diff FILE`
+   accepted weakened rule files and new protected files whenever the checked-out tree was unchanged. An unknown
+   proposed content now never counts as locked. Test: `test_text_diff_of_protected_file_is_not_exempt_by_disk_state`.
+
+Also reported, not a bypass: an 8,000-file diff took 88 s against `total_budget_s: 60` and still blocked. The budget
+bounds evaluation, not diff reading. It is listed as a known issue.
+
+Neither fix changes any benchmark score (`bench/replay.py --check`: 0 mismatches).

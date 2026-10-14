@@ -28,10 +28,15 @@ semantic versioning.
   selection (ADR-012).
 
 ### Fixed
+- Files that git treats as binary (a NUL byte, UTF-16) were skipped by content rules, so a credential could pass the
+  secrets rule. Binary content is now scanned as extracted text by regex rules (ADR-016).
+- A bare `check --diff` touching a protected file was exempted when the disk still matched the lock (ADR-016).
+- The jq engine refuses a `jq` binary that resolves inside the repository.
 - PreToolUse evaluated path-status rules against the file on disk instead of the session baseline, so editing a test
   file the agent had created in the same session was denied as "existing test modified" (benchmark amendment A1).
   The benchmark ran with the defect, which was fixed after the last run.
 
 ### Known issues
+- The total time budget bounds evaluation, not diff reading; very large diffs can exceed it (they still block).
 - PRT-002's protected-path pattern also matches nested directories named `rules/` (NEEDS_HUMAN H6).
 - Command rules match command text, so a heredoc that quotes a protected command is denied (ADR-013).

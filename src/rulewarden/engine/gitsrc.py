@@ -83,19 +83,50 @@ def _cap(text: str, config: Config) -> str:
     return text
 
 
-def _read_worktree(root: Path, rel: str, config: Config) -> tuple[str | None, bool]:
+def binary_text(data: bytes) -> str:
+    """Scannable text from content git treats as binary: UTF-16 decoded, NUL bytes as newlines."""
+    if data[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        return data.decode("utf-16", errors="replace")
+    sample = data[:4096]
+    half = len(sample) // 2
+    if half >= 2:
+        even, odd = sample[0::2].count(0), sample[1::2].count(0)
+        if odd > 0.4 * half and even < 0.1 * half:
+            return data.decode("utf-16-le", errors="replace")
+        if even > 0.4 * half and odd < 0.1 * half:
+            return data.decode("utf-16-be", errors="replace")
+    return data.decode("utf-8", errors="replace").replace("\x00", "\n")
+
+
+def _is_binary(data: bytes) -> bool:
+    return b"\x00" in data[:8192]
+
+
+def _read_worktree(root: Path, rel: str, config: Config) -> tuple[str | None, bool, bool]:
+    """(content, too_large, binary); binary content is returned as `binary_text`."""
     p = root / rel
     try:
         if p.is_symlink() or not p.is_file():
-            return None, False
+            return None, False, False
         if p.stat().st_size > config.limits.max_file_bytes:
-            return None, True
+            return None, True, False
         data = p.read_bytes()
     except OSError:
-        return None, False
-    if b"\x00" in data[:8192]:
-        return None, False
-    return data.decode("utf-8", errors="replace"), False
+        return None, False, False
+    if _is_binary(data):
+        return binary_text(data), False, True
+    return data.decode("utf-8", errors="replace"), False, False
+
+
+def _attach_blob(config: Config, f: FileChange, spec: str) -> None:
+    data = git(config.root, "show", spec, check=False).encode("utf-8", "surrogateescape")
+    if len(data) > config.limits.max_file_bytes:
+        f.too_large = True
+    elif f.binary or _is_binary(data):
+        f.binary = True
+        f.new_content = binary_text(data)
+    else:
+        f.new_content = data.decode("utf-8", errors="surrogateescape")
 
 
 def sha256_file(path: Path) -> str | None:
@@ -156,10 +187,12 @@ def worktree_diff(config: Config, base: str | None = None, use_session: bool = T
             continue
         if rel in pre_existing and pre_existing[rel] == sha256_file(root / rel):
             continue
-        content, too_large = _read_worktree(root, rel, config)
+        content, too_large, binary = _read_worktree(root, rel, config)
         if content is None:
             fc = FileChange(path=rel, status="added", binary=not too_large, too_large=too_large)
             extra.append(fc)
+        elif binary:
+            extra.append(FileChange(path=rel, status="added", binary=True, new_content=content))
         else:
             extra.append(synthesize_added(rel, content))
     diff.files.extend(extra)
@@ -167,10 +200,11 @@ def worktree_diff(config: Config, base: str | None = None, use_session: bool = T
     if total > config.limits.max_diff_bytes:
         raise BudgetExceeded(f"change set larger than {config.limits.max_diff_bytes} bytes")
     for f in diff.files:
-        if f.status != "deleted" and not f.binary and f.new_content is None:
-            content, too_large = _read_worktree(root, f.path, config)
+        if f.status != "deleted" and f.new_content is None:
+            content, too_large, binary = _read_worktree(root, f.path, config)
             f.new_content = content
             f.too_large = too_large
+            f.binary = f.binary or binary
     raw = hashlib.sha256(
         (text + "\0" + "\0".join(f"{f.path}" for f in extra)).encode("utf-8", "surrogateescape")
     )
@@ -185,26 +219,16 @@ def staged_diff(config: Config) -> Diff:
     text = _cap(git(root, *_diff_args(["--cached", base])), config)
     diff = parse_diff(text)
     for f in diff.files:
-        if f.status == "deleted" or f.binary:
-            continue
-        blob = git(root, "show", f":{f.path}", check=False)
-        if len(blob.encode("utf-8", "surrogateescape")) > config.limits.max_file_bytes:
-            f.too_large = True
-        elif "\x00" not in blob[:8192]:
-            f.new_content = blob
+        if f.status != "deleted":
+            _attach_blob(config, f, f":{f.path}")
     diff.files.sort(key=lambda f: f.path)
     return diff
 
 
 def _attach_from_rev(config: Config, diff: Diff, rev: str) -> Diff:
     for f in diff.files:
-        if f.status == "deleted" or f.binary:
-            continue
-        blob = git(config.root, "show", f"{rev}:{f.path}", check=False)
-        if len(blob.encode("utf-8", "surrogateescape")) > config.limits.max_file_bytes:
-            f.too_large = True
-        elif "\x00" not in blob[:8192]:
-            f.new_content = blob
+        if f.status != "deleted":
+            _attach_blob(config, f, f"{rev}:{f.path}")
     diff.files.sort(key=lambda f: f.path)
     return diff
 
@@ -225,8 +249,8 @@ def text_diff(config: Config, text: str, attach_worktree: bool = False) -> Diff:
     diff = parse_diff(_cap(text, config))
     if attach_worktree:
         for f in diff.files:
-            if f.status != "deleted" and not f.binary:
-                f.new_content, too_large = _read_worktree(config.root, f.path, config)
-                f.too_large = too_large
+            if f.status != "deleted":
+                f.new_content, f.too_large, binary = _read_worktree(config.root, f.path, config)
+                f.binary = f.binary or binary
     diff.files.sort(key=lambda f: f.path)
     return diff

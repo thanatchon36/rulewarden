@@ -10,7 +10,7 @@ from rulewarden.engine import deviations as dev
 from rulewarden.engine.bounded import run_bounded
 from rulewarden.engine.checks import EngineContext, Hit, Target, engine
 from rulewarden.engine.checks import glob_check as globc
-from rulewarden.engine.diff import Diff, FileChange
+from rulewarden.engine.diff import Diff, FileChange, synthesize_added
 from rulewarden.engine.globs import selected
 from rulewarden.engine.loader import PreparedRule, RuleSet, engine_context, load_rules
 from rulewarden.engine.lock import Lock, protected_files, verify_lock
@@ -99,8 +99,13 @@ def _hits_for_file(
     mod = engine(r.check.engine)
     if on is On.PATH:
         return list(mod.run(pr.prepared, on, _target(fc, changeset), ctx))
-    if fc.status == "deleted" or (fc.binary and not fc.too_large):
+    if fc.status == "deleted":
         return []
+    if fc.binary and not fc.too_large:
+        # Binary content is scanned as extracted text, and only by regex rules (ADR-016).
+        if fc.new_content is None or r.check.engine is not EngineName.REGEX:
+            return []
+        fc = synthesize_added(fc.path, fc.new_content)
     if fc.too_large and on in (On.FILE, On.HUNKS, On.ADDED_LINES):
         return [Hit(None, "file too large to verify", True)]
     hits = list(mod.run(pr.prepared, on, _target(fc, changeset), ctx))
@@ -137,10 +142,13 @@ def _locked_ok(config: Config, lock: Lock | None, fc: FileChange) -> bool:
     disk = _hash(config.root / fc.path)
     if fc.status == "deleted":
         current = None
+    elif fc.binary:
+        current = disk
     elif fc.new_content is not None:
         current = hashlib.sha256(fc.new_content.encode("utf-8", "surrogateescape")).hexdigest()
     else:
-        current = disk
+        # The change's content is unknown (e.g. a bare --diff); it cannot be shown to match the lock.
+        return False
     if fc.path == config.lock_file:
         # rules.lock was already verified against the rules; accept it only as it is on disk.
         return current is not None and current == disk

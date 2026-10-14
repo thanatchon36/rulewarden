@@ -221,3 +221,58 @@ def test_duplicate_ids_rejected(tmp_path: Path) -> None:
             load_rule_text("version: 1\nrules:\n" + rule + rule, "t"),
             engine_context(Config(root=tmp_path)),
         )
+
+
+KEY = "AKIA" + "IOSFODNN7EXAMPLE"
+SECRET_RULE = """
+version: 1
+rules:
+  - id: S-1
+    title: AWS key
+    severity: critical
+    decidability: deterministic
+    check: {engine: regex, pattern: 'AKIA[0-9A-Z]{16}'}
+    message: Remove the key.
+    fixtures: {fail: ["KEY_PLACEHOLDER"], pass: ["nothing"]}
+""".replace("KEY_PLACEHOLDER", KEY)
+
+
+def _secret_repo(repo: Path, lock_fn) -> Path:  # type: ignore[no-untyped-def]
+    (repo / "rules/basic.yaml").write_text(SECRET_RULE)
+    lock_fn(repo)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "secret rule")
+    return repo
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b'k="' + KEY.encode() + b'"\n\x00',
+        f'k="{KEY}"\n'.encode("utf-16"),
+        f'k="{KEY}"\n'.encode("utf-16-le"),
+        b"\x89PNG\r\n\x1a\n\x00\x00" + KEY.encode() + b"\x00\xff",
+    ],
+)
+def test_binary_looking_files_are_still_scanned(repo: Path, lock_fn, payload: bytes) -> None:  # type: ignore[no-untyped-def]
+    root = _secret_repo(repo, lock_fn)
+    (root / "src/pkg/leak.bin").write_bytes(payload)
+    cfg = load_config(root)
+    assert "S-1" in {
+        f.rule_id for f in run_check(cfg, Request(diff=gitsrc.worktree_diff(cfg))).findings
+    }
+    git(root, "add", "src/pkg/leak.bin")
+    assert "S-1" in {
+        f.rule_id for f in run_check(cfg, Request(diff=gitsrc.staged_diff(cfg))).findings
+    }
+    git(root, "commit", "-q", "-m", "leak")
+    rng = gitsrc.range_diff(cfg, "HEAD~1", "HEAD")
+    res = run_check(cfg, Request(diff=rng, check_protected_drift=False))
+    assert "S-1" in {f.rule_id for f in res.findings}
+
+
+def test_clean_binary_file_passes(repo: Path, lock_fn) -> None:  # type: ignore[no-untyped-def]
+    root = _secret_repo(repo, lock_fn)
+    (root / "img.png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x01")
+    cfg = load_config(root)
+    assert run_check(cfg, Request(diff=gitsrc.worktree_diff(cfg))).findings == []
