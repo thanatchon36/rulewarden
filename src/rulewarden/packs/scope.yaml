@@ -1,0 +1,141 @@
+version: 1
+pack: scope
+description: >-
+  Where the agent may write and which git operations it may run. SCP-001's allowed paths are a
+  starting point; edit them for your project before locking.
+rules:
+  - id: SCP-001
+    title: Change outside the allowed paths
+    severity: required
+    decidability: deterministic
+    check:
+      engine: glob
+      mode: allow
+      paths: ["src/**", "tests/**", "docs/**", "*.md", "pyproject.toml", "uv.lock", "package.json", "package-lock.json"]
+    message: "Revert the change; this task may only modify the allowed paths."
+    fixtures:
+      fail: ["infra/main.tf", {path: "deploy/prod.env", status: added}]
+      pass: ["src/app.py", "README.md", "tests/test_app.py"]
+    tags: [scope]
+
+  - id: SCP-002
+    title: New or changed dependency without a recorded decision
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/pyproject.toml", "**/package.json", "**/Cargo.toml", "**/go.mod", "**/Gemfile"]
+    check:
+      engine: regex
+      on: added_lines
+      patterns:
+        - '^\s*"[A-Za-z0-9][A-Za-z0-9._-]*\s*(\[[^\]]*\])?\s*(([<>!~]=?|==)[^"]*)?",?\s*$'
+        - '^\s*"(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*"\s*:\s*"[\^~<>=]?\d'
+        - '^\s*[A-Za-z0-9_-]+\s*=\s*("[\^~<>=]?\d|\{\s*version\b)'
+        - '^\s*require\s+\S+\s+v\d'
+        - '^\s*\S+\s+v\d+\.\d+\.\d+'
+        - '^\s*gem\s+[''"]'
+      unless_changed: ["DECISIONS.md", "docs/decisions/**", "docs/adr/**"]
+    message: "Record why the dependency is needed in DECISIONS.md in the same change, or remove it."
+    fixtures:
+      fail:
+        - {path: "pyproject.toml", before: "dependencies = [\n]\n", content: "dependencies = [\n  \"httpx>=0.27\",\n]\n"}
+        - {path: "package.json", before: "{\n}\n", content: "{\n  \"left-pad\": \"^1.3.0\"\n}\n"}
+        - {path: "Cargo.toml", before: "[dependencies]\n", content: "[dependencies]\nserde = \"1.0\"\n"}
+      pass:
+        - {path: "pyproject.toml", before: "dependencies = [\n]\n", content: "dependencies = [\n  \"httpx>=0.27\",\n]\n", also_changed: ["DECISIONS.md"]}
+        - {path: "pyproject.toml", before: "name = \"x\"\n", content: "name = \"x\"\ndescription = \"tool\"\n"}
+        - {path: "package.json", before: "{\n}\n", content: "{\n  \"name\": \"app\"\n}\n"}
+    tags: [scope, dependencies]
+
+  - id: SCP-008
+    title: New or changed requirement without a recorded decision
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/requirements*.txt", "**/requirements/*.txt", "**/constraints*.txt"]
+    check:
+      engine: regex
+      on: added_lines
+      pattern: '^\s*[A-Za-z0-9][A-Za-z0-9._-]*'
+      unless_changed: ["DECISIONS.md", "docs/decisions/**", "docs/adr/**"]
+    message: "Record why the dependency is needed in DECISIONS.md in the same change, or remove it."
+    fixtures:
+      fail: [{path: "requirements.txt", content: "requests==2.32.3\n"}, {path: "requirements-dev.txt", content: "pytest\n"}]
+      pass: [{path: "requirements.txt", content: "requests==2.32.3\n", also_changed: ["DECISIONS.md"]}, {path: "requirements.txt", content: "# pinned below\n-r base.txt\n"}]
+    tags: [scope, dependencies]
+
+  - id: SCP-003
+    title: Test file deleted
+    severity: required
+    decidability: deterministic
+    check:
+      engine: glob
+      paths: ["tests/**", "test/**", "**/test_*.py", "**/*_test.py", "**/*_test.go", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"]
+      change: [deleted]
+    message: "Restore the deleted test; fix the code under test instead."
+    fixtures:
+      fail: [{path: "tests/test_parser.py", status: deleted}, {path: "pkg/util_test.go", status: deleted}]
+      pass: [{path: "tests/test_parser.py", status: modified}, {path: "src/parser.py", status: deleted}]
+    tags: [scope, tests]
+
+  - id: SCP-004
+    title: Git hooks bypassed with --no-verify
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      patterns: ['\bgit\b[^;&|\n]*\s--no-verify\b', '\bgit\b[^;&|\n]*\scommit\b[^;&|\n]*\s-[a-zA-Z]*n']
+    message: "Run the commit without --no-verify and fix what the hooks report."
+    fixtures:
+      fail: ["git commit --no-verify -m 'wip'", "git push --no-verify", "git commit -anm 'x'"]
+      pass: ["git commit -m 'feat: add parser'", "git status --no-renames"]
+    tags: [scope, git]
+
+  - id: SCP-005
+    title: Force push
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      patterns: ['\bgit\b[^;&|\n]*\spush\b[^;&|\n]*\s(--force(-with-lease)?\b|-[a-zA-Z]*f\b|\+\S)']
+    message: "Push without force; integrate the remote changes instead."
+    fixtures:
+      fail: ["git push --force origin main", "git push -f", "git push origin +main", "git push --force-with-lease"]
+      pass: ["git push origin feature/x", "git fetch --force"]
+    tags: [scope, git]
+
+  - id: SCP-006
+    title: Git history rewrite
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      patterns:
+        - '\bgit\b[^;&|\n]*\s(rebase|filter-branch|filter-repo|replace)\b'
+        - '\bgit\b[^;&|\n]*\sreset\b[^;&|\n]*\s--hard\b'
+        - '\bgit\b[^;&|\n]*\scommit\b[^;&|\n]*\s--amend\b'
+        - '\bgit\b[^;&|\n]*\supdate-ref\b[^;&|\n]*\s-d\b'
+    message: "Make a new commit instead of rewriting history."
+    fixtures:
+      fail: ["git rebase -i HEAD~3", "git reset --hard HEAD~1", "git commit --amend --no-edit", "git filter-branch --tree-filter x"]
+      pass: ["git commit -m 'fix: handle empty input'", "git reset HEAD file.txt", "git log --oneline"]
+    tags: [scope, git]
+
+  - id: SCP-007
+    title: Recursive delete outside the repository
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      pattern: '\brm\s[^;&|\n]*-[a-zA-Z]*[rR][^;&|\n]*\s(/|~|\$\{?HOME\b|\.\.(/|\s|$))'
+    message: "Delete only paths inside the repository, and name them explicitly."
+    fixtures:
+      fail: ["rm -rf /", "rm -rf ~/projects", "rm -fr ../other", "rm -r -f $HOME/.cache"]
+      pass: ["rm -rf build/", "rm -rf ./dist", "rm file.txt /tmp/x"]
+    tags: [scope, filesystem]

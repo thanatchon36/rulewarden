@@ -1,0 +1,70 @@
+version: 1
+pack: protected-set
+description: >-
+  P2 independence: the agent cannot change its own monitor. Protected paths come from the config
+  (defaults: rules/, rules.lock, .rulewarden/, .claude/settings*.json, .pre-commit-config.yaml,
+  .github/workflows/, .opencode/, .codex/, .gemini/, .git/hooks/). A change is allowed only when
+  its content is exactly what a human recorded with `rulewarden lock`.
+rules:
+  - id: PRT-001
+    source: CLAUDE.md:L3
+    title: Protected path changed
+    severity: critical
+    decidability: deterministic
+    check:
+      engine: glob
+      paths_from: protected
+      exempt_if_locked: true
+    message: "Revert this change; a human must apply it and run `rulewarden lock`."
+    fixtures:
+      fail: [".claude/settings.json", "rules/team.yaml", {path: ".github/workflows/ci.yml", status: deleted}, "rules.lock"]
+      pass: ["src/app.py", "docs/agents/reviewer.md", "docs/rules.md"]
+    deviations: forbidden
+    tags: [independence]
+
+  - id: PRT-002
+    source: CLAUDE.md:L3
+    title: Shell command writes to a protected path
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      pattern: '(>|\btee\b|\bsed\b[^;&|\n]*\s-i|\bperl\b[^;&|\n]*\s-[a-z]*i|\bcp\b|\bmv\b|\brm\b|\bln\b|\btruncate\b|\bchmod\b|\btouch\b|\binstall\b|\brsync\b|\bdd\b|\bgit\s+(checkout|restore|apply|am|stash)\b)[^;&|\n]*(\brules/|\brules\.lock\b|\.claude/settings|\.github/workflows|\.rulewarden/|\.pre-commit-config\.yaml|\.git/hooks|\.codex/|\.gemini/|\.opencode/)'
+    message: "Do not modify protected files from the shell; ask a human to make the change."
+    fixtures:
+      fail:
+        - "echo '{}' > .claude/settings.json"
+        - "sed -i 's/required/advisory/' rules/packs/voice.yaml"
+        - "rm rules.lock"
+        - "cat new.yml | tee .github/workflows/ci.yml"
+        - "git checkout -- rules/team.yaml"
+      pass:
+        - "cat rules/packs/voice.yaml"
+        - "grep -n R-012 rules/team.yaml"
+        - "echo done > build/out.txt"
+    deviations: forbidden
+    tags: [independence]
+
+  - id: PRT-003
+    source: CLAUDE.md:L3
+    title: Agent runs a human-only rulewarden command or disables hooks
+    severity: critical
+    decidability: deterministic
+    scope: command
+    check:
+      engine: regex
+      on: command
+      patterns:
+        - '\brulewarden\b[^;&|\n]*\slock\b(?![^;&|\n]*--check)'
+        - '\bcore\.hooksPath\b'
+        - '\bpre-commit\s+uninstall\b'
+        - '\bSKIP=[^\s;&|]*rulewarden'
+        - '\bCLAUDE_CODE_STOP_HOOK_BLOCK_CAP\b'
+    message: "Only a human may lock rules or change hook wiring; report the situation instead."
+    fixtures:
+      fail: ["uv run rulewarden lock --ci", "git config core.hooksPath /dev/null", "SKIP=rulewarden git commit -m x", "pre-commit uninstall"]
+      pass: ["uv run rulewarden lock --check", "uv run rulewarden check", "git config user.name x"]
+    deviations: forbidden
+    tags: [independence]

@@ -1,0 +1,51 @@
+version: 1
+pack: shell-tooling
+description: Tooling conventions for shell scripts.
+rules:
+  - id: SH-001
+    title: Use jq, not Python, for JSON in shell scripts
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.sh", "**/*.bash"]
+    check:
+      engine: regex
+      on: added_lines
+      within: code
+      pattern: '\bpython[23]?(\.\d+)?\s+-c\s.*\bjson\b'
+    message: "Replace the Python one-liner with jq. Example: jq -r '.key' file.json"
+    fixtures:
+      fail: ["python3 -c 'import json,sys; print(json.load(sys.stdin)[\"k\"])' < f.json\n", "v=$(python -c \"import json; print(json.loads('$x')['a'])\")\n"]
+      pass: ["jq -r '.k' f.json\n", "python3 -c 'print(1)'\n", "# python -c with json is banned here\n"]
+    tags: [shell, tooling]
+
+  - id: SH-002
+    title: Piping a download into a shell
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.sh", "**/*.bash", "**/Dockerfile", "**/Makefile", "**/*.mk", "**/*.yml", "**/*.yaml"]
+    check:
+      engine: regex
+      on: added_lines
+      pattern: '\b(curl|wget)\b[^|\n]*\|\s*(sudo\s+)?(ba|z|da)?sh\b'
+    message: "Download the script to a file, verify its checksum, then run it."
+    # \x7c is "|": the loaded fixtures are unchanged, but this source line does not match SH-002 itself.
+    fixtures:
+      fail: ["curl -fsSL https://example.com/install.sh \x7c sh\n", "wget -qO- https://x.test/i \x7c sudo bash\n"]
+      pass: ["curl -fsSLo install.sh https://example.com/install.sh\n", "curl -s https://api.test/x | jq .\n"]
+    tags: [shell, security]
+
+  - id: SH-003
+    title: sudo in a script
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.sh", "**/*.bash", "**/Makefile", "**/*.mk"]
+    check:
+      engine: regex
+      on: added_lines
+      within: code
+      pattern: '(^|[;&|(`]|\s)sudo\s'
+    message: "Remove sudo; document the privileged step for a human instead."
+    fixtures:
+      fail: ["sudo apt-get install -y jq\n", "make deps && sudo make install\n"]
+      pass: ["apt-get install -y jq  # run as root in the container\n", "pseudo_code=1\n"]
+    tags: [shell, security]

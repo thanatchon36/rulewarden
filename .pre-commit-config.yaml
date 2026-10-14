@@ -1,0 +1,17 @@
+# rulewarden as pre-commit framework hooks (for `pre-commit install`). This repository also
+# installs plain git hooks; both call the same entry point and must not be bypassed.
+repos:
+  - repo: local
+    hooks:
+      - id: rulewarden
+        name: rulewarden (staged changes)
+        entry: uv run --frozen rulewarden hook git pre-commit
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: rulewarden-commit-msg
+        name: rulewarden (commit message)
+        entry: uv run --frozen rulewarden hook git commit-msg
+        language: system
+        stages: [commit-msg]

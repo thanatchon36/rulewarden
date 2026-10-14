@@ -1,0 +1,13 @@
+version: 1
+rules: [rules]
+lock: rules.lock
+baseline: HEAD
+# Appendix A protects all of .claude/, not only settings files.
+protected: [".claude/**"]
+# This repository develops rulewarden itself; see DECISIONS.md ADR-010.
+protect_package_source: false
+report:
+  advisory_cap: 5
+  max_chars: 2000
+limits:
+  total_budget_s: 60

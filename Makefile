@@ -3,11 +3,18 @@ SHELL := /bin/bash
 UV ?= uv
 RUN := $(UV) run --frozen
 
-.PHONY: check ci lint fmt types test cov test-rules determinism selfcheck paper replay corpus bench-report clean
+.PHONY: check ci ci-gate paper-ci lint fmt types test cov test-rules determinism selfcheck paper replay corpus bench-report refs clean
 
 check: lint types cov test-rules determinism selfcheck
 
 ci: check replay
+
+# CI entry points (the workflow files only call these targets; see ADR-005).
+ci-gate:
+	$(RUN) rulewarden hook ci $${RULEWARDEN_BASE:-origin/main}
+
+paper-ci:
+	bash paper/build.sh --no-network
 
 lint:
 	$(RUN) ruff format --check .
@@ -27,13 +34,14 @@ cov:
 	$(RUN) pytest --cov --cov-report=term
 
 test-rules:
-	@if $(RUN) rulewarden --help 2>/dev/null | grep -q test-rules; then $(RUN) rulewarden test-rules; else echo "test-rules: not implemented yet"; fi
+	$(RUN) rulewarden test-rules
+	$(RUN) rulewarden test-rules --path src/rulewarden/packs
 
 determinism:
-	@if $(RUN) rulewarden --help 2>/dev/null | grep -q doctor; then $(RUN) rulewarden doctor --determinism-only; else echo "determinism: not implemented yet"; fi
+	$(RUN) rulewarden doctor --determinism-only
 
 selfcheck:
-	@if $(RUN) rulewarden --help 2>/dev/null | grep -q ' check '; then $(RUN) rulewarden check --working-tree; else echo "selfcheck: not implemented yet"; fi
+	$(RUN) rulewarden check --working-tree --harness make
 
 replay:
 	@if [ -f bench/replay.py ]; then $(RUN) --group research python bench/replay.py --check; else echo "replay: not implemented yet"; fi
@@ -43,6 +51,9 @@ corpus:
 
 paper:
 	bash paper/build.sh
+
+refs:
+	$(RUN) python paper/verify_refs.py
 
 clean:
 	rm -rf dist build .pytest_cache .mypy_cache .ruff_cache .coverage paper/build

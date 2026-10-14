@@ -1,0 +1,106 @@
+version: 1
+pack: hygiene-python
+description: Python code hygiene that agents commonly violate. Deterministic rules block; heuristics only warn.
+rules:
+  - id: HYG-001
+    source: CLAUDE.md:L8
+    title: No bare except
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: bare-except}
+    message: "Catch a specific exception type, e.g. `except ValueError:`."
+    fixtures:
+      fail: ["try:\n    run()\nexcept:\n    pass\n"]
+      pass: ["try:\n    run()\nexcept ValueError:\n    pass\n"]
+    tags: [python, errors]
+
+  - id: HYG-002
+    source: CLAUDE.md:L8
+    title: No print() in library code
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    exclude: ["**/__main__.py"]
+    check: {engine: ast, rule: call, names: [print]}
+    message: "Use the logging module instead of print(), e.g. `logger.info(...)`."
+    fixtures:
+      fail: ["def f(x):\n    print(x)\n"]
+      pass: ["import logging\nlogger = logging.getLogger(__name__)\ndef f(x):\n    logger.info(x)\n"]
+    tags: [python, logging]
+
+  - id: HYG-003
+    source: CLAUDE.md:L9
+    title: TODO without an issue reference
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py", "**/*.sh", "**/*.js", "**/*.ts", "**/*.go", "**/*.rs"]
+    check:
+      engine: regex
+      on: added_lines
+      within: comments
+      pattern: '\b(TODO|FIXME|XXX)\b'
+      unless: '\b(TODO|FIXME|XXX)\b\s*[(\[:]?\s*(#\d+|[A-Z][A-Z0-9]+-\d+|https?://)'
+    message: "Link the TODO to an issue, e.g. `# TODO(#123): ...`, or do the work now."
+    fixtures:
+      fail: ["x = 1  # TODO fix this later\n", "# FIXME: hack\n"]
+      pass: ["# TODO(#123): remove after the migration\n", "# TODO: https://example.com/issues/9\n", "todo_list = []\n"]
+    tags: [process]
+
+  - id: HYG-004
+    source: CLAUDE.md:L9
+    title: Docstring longer than 8 lines
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: docstring-max-lines, max: 8}
+    message: "Shorten the docstring to at most 8 lines; move detail to docs/."
+    fixtures:
+      fail: ["def f():\n    \"\"\"One.\n\n    2\n    3\n    4\n    5\n    6\n    7\n    8\n    \"\"\"\n"]
+      pass: ["def f():\n    \"\"\"Return one.\"\"\"\n    return 1\n"]
+    tags: [python, docs]
+
+  - id: HYG-005
+    source: CLAUDE.md:L9
+    title: Comment density too high in added code
+    severity: advisory
+    decidability: heuristic
+    applies_to: ["**/*.py", "**/*.sh", "**/*.js", "**/*.ts"]
+    check:
+      engine: python
+      on: added_lines
+      plugin: hygiene.comment_density
+      options: {max_ratio: 0.35, min_lines: 8}
+    message: "Remove comments that describe what the code does; keep the ones that say why."
+    fixtures:
+      fail: ["# set a\na = 1\n# set b\nb = 2\n# set c\nc = 3\n# add\nd = a + b + c\n"]
+      pass: ["a = 1\nb = 2\nc = 3\nd = a + b + c\ne = d * 2\nf = e - 1\n# the vendor API is off by one\ng = f + 1\nh = g\n"]
+    tags: [python, comments]
+
+  - id: HYG-006
+    source: CLAUDE.md:L9
+    title: Comment restates the code on the next line
+    severity: advisory
+    decidability: heuristic
+    applies_to: ["**/*.py"]
+    check:
+      engine: python
+      plugin: packs.hygiene.restating_comment
+      options: {threshold: 0.8}
+    message: "Delete the comment or make it say why, not what."
+    fixtures:
+      fail: ["# increment counter\ncounter += 1\n", "# return the result\nreturn result\n"]
+      pass: ["# compensate for the off-by-one in the vendor API\ncounter += 1\n"]
+    tags: [python, comments]
+
+  - id: HYG-007
+    title: Broad exception silently swallowed
+    severity: advisory
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: broad-except-pass}
+    message: "Handle or re-raise the exception; at minimum log it."
+    fixtures:
+      fail: ["try:\n    run()\nexcept Exception:\n    pass\n"]
+      pass: ["try:\n    run()\nexcept Exception:\n    log.exception('run failed')\n    raise\n"]
+    tags: [python, errors]

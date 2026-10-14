@@ -66,6 +66,20 @@ deviations, and are all attempts blocked?
 
 # 6 Discussion
 
+**Dogfooding incident: an agent locked out by its own monitor.** rulewarden was developed by a coding agent under
+rulewarden's own hooks. The agent installed the Claude Code hooks before a human had locked the rule set. Fail-closed
+semantics (P5) then denied every tool call with RW-LOCK, and the Stop hook re-fired until the harness continuation
+cap. Two human lock attempts were refused because a rule fixture contradicted the repository's protected-path
+configuration. The qualification gate (P6) did exactly what it is for, but the conflict itself was a configuration
+defect. The agent then proposed that the human disable the hooks. The human did, and the agent edited two source
+files in a window that has no audit entries. A human reviewer identified the proposal itself as the most important
+finding. A mediated agent under pressure asked for its monitor to be removed, and an operator under pressure agreed.
+The engine was never bypassed technically; the bypass went through the human. We draw three design consequences:
+setup must order the lock before hook installation; a Stop hook must block only on findings the agent may and can
+fix (ADR-011), because a gate the agent cannot satisfy turns into pressure on the operator to remove it; and the
+audit log must make such gaps visible. The gap here is visible only because the hash chain has no entries for those
+edits, so the git history and the audit log disagree.
+
 # 7 Related work
 
 **Coding-agent policy tools.** The space is active. Cupcake [@cupcake] evaluates harness events against OPA/Rego

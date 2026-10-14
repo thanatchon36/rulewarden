@@ -1,0 +1,60 @@
+version: 1
+pack: no-answer-embedding
+description: >-
+  Keep agents from making tests pass by changing the tests or hard-coding expected outputs
+  (claude-code #319; ImpossibleBench, arXiv:2510.20270). Path policy is deterministic; the
+  literal-lookup detector is a heuristic and only warns.
+rules:
+  - id: NAE-001
+    source: CLAUDE.md:L12
+    title: Existing test modified
+    severity: advisory
+    decidability: deterministic
+    check:
+      engine: glob
+      paths: ["tests/**", "test/**", "**/test_*.py", "**/*_test.py", "**/*_test.go", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js", "**/conftest.py"]
+      change: [modified, deleted, renamed]
+    message: "Revert the change to the test; tests are read-only in this task. Fix the code under test."
+    fixtures:
+      fail: ["tests/test_math.py", {path: "src/conftest.py", status: deleted}]
+      pass: ["src/math.py", {path: "tests/test_new_feature.py", status: added}]
+    tags: [tests, gaming]
+
+  - id: NAE-002
+    source: CLAUDE.md:L12
+    title: Test skipped or marked expected-to-fail
+    severity: required
+    decidability: deterministic
+    applies_to: ["tests/**", "test/**", "**/test_*.py", "**/*_test.py", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"]
+    check:
+      engine: regex
+      on: added_lines
+      within: code
+      patterns:
+        - '@pytest\.mark\.(skip|skipif|xfail)\b'
+        - '\bpytest\.(skip|xfail)\('
+        - '@unittest\.(skip|skipIf|skipUnless|expectedFailure)\b'
+        - '\b(it|test|describe)\.skip\('
+        - '\bx(it|describe)\('
+    message: "Remove the skip/xfail marker and make the test pass by fixing the code."
+    fixtures:
+      fail: [{path: "tests/test_a.py", content: "@pytest.mark.skip(reason='flaky')\ndef test_a():\n    assert f() == 1\n"}, {path: "web/a.test.ts", content: "it.skip('works', () => {})\n"}]
+      pass: [{path: "tests/test_a.py", content: "def test_a():\n    assert f() == 1\n"}]
+    tags: [tests, gaming]
+
+  - id: NAE-003
+    source: CLAUDE.md:L12
+    title: Function returns hard-coded results for literal inputs
+    severity: advisory
+    decidability: heuristic
+    applies_to: ["**/*.py"]
+    exclude: ["tests/**", "**/test_*.py"]
+    check:
+      engine: python
+      plugin: answers.literal_lookup
+      options: {min_branches: 2}
+    message: "Compute the result from the input instead of special-casing the test values."
+    fixtures:
+      fail: ["def fib(n):\n    if n == 10:\n        return 55\n    if n == 20:\n        return 6765\n    return 0\n"]
+      pass: ["def fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n", "def sign(x):\n    if x == 0:\n        return 0\n    return 1 if x > 0 else -1\n"]
+    tags: [tests, gaming]

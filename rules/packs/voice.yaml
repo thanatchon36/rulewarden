@@ -1,0 +1,44 @@
+version: 1
+pack: voice
+description: >-
+  Filler phrases and verbal tics in comments, docstrings, markdown and commit messages. The default
+  list is deliberately short and editable; see claude-code issues #53454 and #65961 for motivation.
+rules:
+  - id: VOI-001
+    source: CLAUDE.md:L15
+    title: Filler phrase in prose
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.md", "**/*.rst", "**/*.py", "**/*.sh", "**/*.js", "**/*.ts", "**/*.go", ":commit-msg"]
+    exclude: ["MISSION.md", "research/**", "corpus/**", "bench/recorded/**", "tests/**"]
+    check:
+      engine: regex
+      on: added_lines
+      within: comments
+      flags: [i]
+      patterns:
+        - '\bit(''s| is) (worth noting|important to note)\b'
+        - '\bload[- ]bearing\b'
+        - '\bdelv(e|es|ing) into\b'
+        - '\bin today''s (fast-paced|digital|ever-changing)\b'
+        - '\blet''s dive in\b'
+        - '\bI hope this helps\b'
+        - '\bgame[- ]changer\b'
+        - '\bleverag(e|es|ing) the power of\b'
+        - '\bseamless(ly)?\b'
+        - '\brest assured\b'
+        - '\bneedless to say\b'
+        - '\bat the end of the day\b'
+        - '\byou''re absolutely right\b'
+        - '\bas an AI\b'
+    message: "Delete the filler phrase and state the point directly."
+    fixtures:
+      fail:
+        - "# It is worth noting that the cache is per process.\n"
+        - {path: "docs/guide.md", content: "This is the load-bearing module.\n"}
+        - {path: ":commit-msg", content: "feat: seamlessly integrate the parser\n"}
+      pass:
+        - "# The cache is per process.\n"
+        - {path: "docs/guide.md", content: "This module carries the parsing logic.\n"}
+        - {path: "src/app.py", content: "message = 'it is worth noting'  # string literals in code are not prose\n"}
+    tags: [voice]

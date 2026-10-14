@@ -1,3 +1,4 @@
+# Protected file (P2). Behaviour lives in Makefile targets so this file rarely changes (ADR-005).
 name: ci
 on:
   push:
@@ -15,8 +16,30 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python }}
-      - run: uv sync --frozen
-      - run: make ci
+      - run: uv sync --frozen --all-groups
+      - name: make ci (lint, types, tests, fixtures, determinism, self-check, replay)
+        run: make ci
+      - name: rulewarden gate on the pull-request range
+        if: github.event_name == 'pull_request'
+        env:
+          RULEWARDEN_BASE: origin/${{ github.base_ref }}
+        run: make ci-gate
+  paper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --all-groups
+      - run: make paper-ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper
+          path: paper/build/
+          if-no-files-found: error
