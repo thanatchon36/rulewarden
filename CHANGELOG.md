@@ -27,9 +27,11 @@ semantic versioning.
 - Locked rule files are exempt from content rules, and synthetic targets such as `:commit-msg` need explicit
   selection (ADR-012).
 
+### Fixed
+- PreToolUse evaluated path-status rules against the file on disk instead of the session baseline, so editing a test
+  file the agent had created in the same session was denied as "existing test modified" (benchmark amendment A1).
+  The benchmark ran with the defect, which was fixed after the last run.
+
 ### Known issues
-- The PreToolUse adapter evaluates path-status rules against the file on disk rather than the session baseline, so
-  editing a test file the agent created in the same session is reported as modifying an existing test (benchmark
-  amendment A1). It was left unfixed while the benchmark ran, to keep the treatment constant.
 - PRT-002's protected-path pattern also matches nested directories named `rules/` (NEEDS_HUMAN H6).
 - Command rules match command text, so a heredoc that quotes a protected command is denied (ADR-013).

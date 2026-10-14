@@ -230,3 +230,19 @@ that quotes those commands is written with the Edit/Write tools, which are check
    the round trip is identical. Secrets are scrubbed from the full text before chunking, so splitting cannot hide a
    credential that the scrubber would have caught. Runs recorded before the change are migrated with
    `python -m bench.harness.transcripts migrate` (format only, verified lossless).
+
+## ADR-015 — The live hook runs the development source (2026-10-14)
+
+This repository's hooks call `.venv/bin/rulewarden`, which is an editable install of `src/rulewarden/`. Every edit to
+the engine therefore changes the monitor immediately. Two consequences were observed:
+
+1. During the benchmark, editing `src/` would have changed condition C between runs, so the engine was frozen
+   (amendment A1; `git diff 2593565 -- src` was empty at the end).
+2. While fixing A1, the agent made one Edit that referenced a helper before defining it. The next hook invocation
+   crashed with a NameError, and `onFailure: block` turned the crash into a denial of the following Edit
+   (fail-closed, as designed). Bash calls did not reach the broken code path. The agent inserted the missing helper
+   through Bash (`src/` is not a protected path), and the tests passed.
+
+Running the monitor from its own working copy makes it fragile in exactly the way P2 warns about, even though
+`protect_package_source: false` is right for development. Recommendation (NEEDS_HUMAN H7): point the hooks at a
+pinned, separately installed binary, so that editing the source cannot change the running monitor.

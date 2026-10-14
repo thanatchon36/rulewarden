@@ -487,3 +487,38 @@ def test_git_and_ci_cli(locked_repo: Path) -> None:
         check=False,
     )
     assert p.returncode == 1 and p.stdout.startswith("::error")
+
+
+def test_pretooluse_edit_of_file_created_this_session_is_not_a_modification(
+    locked_repo: Path,
+) -> None:
+    cc(locked_repo, {"hook_event_name": "SessionStart", "session_id": "s1"})
+    new_test = locked_repo / "tests/test_new.py"
+    new_test.write_text("def test_a():\n    assert 1\n")
+    r = cc(
+        locked_repo,
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {
+                "file_path": str(new_test),
+                "old_string": "assert 1",
+                "new_string": "assert 2",
+            },
+        },
+    )
+    assert r.stdout == ""
+    existing = locked_repo / "tests/test_mod.py"
+    r = cc(
+        locked_repo,
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {
+                "file_path": str(existing),
+                "old_string": "assert True",
+                "new_string": "assert False",
+            },
+        },
+    )
+    assert "T-003" in r.stdout

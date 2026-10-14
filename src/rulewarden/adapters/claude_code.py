@@ -89,6 +89,21 @@ def proposed_content(
     return rel, old, str(tool_input.get("new_source", ""))
 
 
+def _new_since_baseline(cfg: Config, rel: str) -> bool:
+    """True if `rel` was created after the session baseline (absent there, not pre-existing untracked)."""
+    session = gitsrc.load_session(cfg.root)
+    untracked = session.get("untracked")
+    if isinstance(untracked, dict) and rel in untracked:
+        return False
+    base = str(session.get("baseline") or cfg.baseline)
+    try:
+        base = gitsrc.resolve_base(cfg.root, base)
+        found = gitsrc.git(cfg.root, "ls-tree", "--name-only", base, "--", rel, check=False)
+    except RulewardenError:
+        return False
+    return not found.strip()
+
+
 def _deny(reason: str) -> Reply:
     out = {
         "hookSpecificOutput": {
@@ -207,6 +222,8 @@ def handle(cfg: Config, payload: Mapping[str, Any]) -> tuple[Reply, Result | Non
             return Reply(), res, event
         if tool in EDIT_TOOLS:
             rel, old, new = proposed_content(cfg, tool, tool_input)
+            if old is not None and new is not None and _new_since_baseline(cfg, rel):
+                old = None
             fc = diff_between(rel, old, new)
             res = run_check(
                 cfg,

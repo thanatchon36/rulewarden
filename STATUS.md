@@ -54,5 +54,11 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
 - Finding: rubric and model disagree on decidability (κ ≈ 0.09). Deterministic share is 19% (model) to 34% (rubric),
   9% by both; shipped compile templates match about 5% of lines.
 ## Phase 5 — Benchmark
+- [x] 20 validated tasks; harness; replay (no API key); analysis plan frozen in 2593565 before the first non-pilot run
+- [x] 150/150 runs used: 1 pilot + 149 (A 20, B 50, C 49, D 20, E 10); 0 infrastructure failures; replay 0 mismatches
+- [x] Result: ceiling in every condition (0 final-diff violations, 100% hidden-test success); H1–H6 null; RQ5 0 attempts
+- [x] Hooks caught 13 genuine violations mid-session (B-DOCSTRING), all self-corrected; 29 blocks were the A1 false
+      positive (B-TESTS-RO on files the agent created itself). The defect was fixed after the last run (ADR-015)
+- [x] RQ3: 28/28 safety-property tests pass; hook latency p50 PreToolUse 9 ms, PostToolUse 51 ms, Stop 53 ms
 ## Phase 6 — Paper
 ## Phase 7 — Hardening, verification, release prep
