@@ -30,6 +30,7 @@ make replay     # RQ2–RQ5 from bench/recorded/ — no API key needed
 make paper      # verifies references, renders paper/paper.md, the PDF and the web reader
 ```
 
-The manuscript was written by Claude Opus 5.5 (Anthropic) from the author's design, data and recordings, under
+The manuscript was drafted by Claude Opus 5.5 and revised by Claude Fable 5.1 (both Anthropic) from the author's
+design, data and recordings, under
 the constraint that every number is generated and every refuted expectation and tool defect is reported. The
 author is responsible for its content.

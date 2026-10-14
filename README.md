@@ -192,9 +192,10 @@ Enforce Agent Instruction Files.*
 | 🔢 Every number in it | filled from generated results (`corpus/data/summary.json`, `bench/results/summary.json`, `bench/results/rq3.json`, `paper/data/dogfood_audit.json`); an unresolved number or an unverified citation fails the build |
 | 🧪 Pre-registration | [`bench/ANALYSIS_PLAN.md`](https://github.com/thanatchon36/rulewarden/blob/main/bench/ANALYSIS_PLAN.md), fixed before the benchmark ran, with dated amendments |
 
-The manuscript, the tool, the corpus pipeline and the benchmark were written by Claude Opus 5.5 (Anthropic) under
-the author's specification, with the constraint that every number is generated and every null result and tool
-defect is reported. The author is responsible for the content (see the paper's acknowledgements).
+The tool, the corpus pipeline, the benchmark and the manuscript draft were produced by Claude Opus 5.5, and the
+prose was revised by Claude Fable 5.1 (both Anthropic), under the author's specification and the constraint that
+every number is generated and every null result and tool defect is reported. The author is responsible for the
+content (see the paper's acknowledgements).
 
 ### What it found
 

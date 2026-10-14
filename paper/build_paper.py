@@ -107,7 +107,8 @@ def build_reader() -> Path:
         "“null” means no detectable difference, here because every condition reached the ceiling."
     )
     colophon = (
-        "<p>Manuscript, tool, corpus pipeline and benchmark written by Claude Opus 5.5 (Anthropic) under the author's "
+        "<p>Tool, corpus pipeline, benchmark and manuscript draft by Claude Opus 5.5, prose revised by Claude Fable 5.1 "
+        "(both Anthropic), under the author's "
         "specification; the author is responsible for the content.</p>"
         "<p>Rendered from <code>paper/main.md</code>. Every number comes from generated results "
         "(<code>corpus/data/summary.json</code>, <code>bench/results/summary.json</code>, "

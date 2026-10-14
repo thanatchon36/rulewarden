@@ -15,6 +15,8 @@ semantic versioning.
 - `rulewarden init` names the instruction-file rules that the vendored packs already enforce, instead of
   reporting them as compiled with no file written.
 - README links are absolute, so they work on PyPI; `docs/integrations.md` pins the published version.
+- Paper: prose revised throughout, abstract rewritten and a principal-findings summary added; every
+  number is still a placeholder filled from the result files. Authorship note updated.
 
 ## [0.1.0] — 2026-10-14
 

@@ -83,3 +83,5 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
 - [x] Site published on GitHub Pages (H8, 2026-10-14): https://thanatchon36.github.io/rulewarden/
 - [x] 0.1.1 prepared (ADR-019): README quickstart with real outputs, `init` names pack-covered rules; the human
       pushes tag `v0.1.1` to publish
+- [x] Paper prose revised (abstract, principal findings, formal register); 11-page PDF and reader rebuilt; all
+      placeholders and citations still resolve
