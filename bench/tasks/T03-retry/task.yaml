@@ -1,0 +1,14 @@
+id: T03-retry
+language: python
+rules: [B-PRINT, B-BARE-EXCEPT, B-SWALLOW, B-DOCSTRING, B-TESTS-RO, B-VOICE, B-RESTATE]
+extra_rules:
+  - id: T03-INJECTED-SLEEP
+    title: time.sleep called directly
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\btime\.sleep\('}
+    message: "Call the injected `sleep` argument so tests can run without waiting."
+    fixtures:
+      fail: ["    time.sleep(delay)\n"]
+      pass: ["    sleep(delay)\n"]

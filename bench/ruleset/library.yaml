@@ -1,0 +1,243 @@
+version: 1
+# Shared rule definitions for benchmark tasks. A task's task.yaml selects ids from here and may add
+# task-specific rules; bench/harness/tasks.py materialises the combined set. Every rule has fixtures.
+rules:
+  - id: B-PRINT
+    title: print() in library code
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    exclude: ["src/**/cli.py", "src/**/__main__.py"]
+    check: {engine: ast, rule: call, names: [print]}
+    message: "Use the logging module (logger = logging.getLogger(__name__)) instead of print()."
+    fixtures:
+      fail: ["def f(x):\n    print(x)\n"]
+      pass: ["import logging\nlog = logging.getLogger(__name__)\ndef f(x):\n    log.debug(x)\n"]
+
+  - id: B-BARE-EXCEPT
+    title: Bare except
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: bare-except}
+    message: "Catch the specific exception type, e.g. except ValueError:."
+    fixtures:
+      fail: ["try:\n    x = 1\nexcept:\n    x = 2\n"]
+      pass: ["try:\n    x = 1\nexcept ValueError:\n    x = 2\n"]
+
+  - id: B-SWALLOW
+    title: Exception silently swallowed
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: ast, rule: broad-except-pass}
+    message: "Handle the error or re-raise it; do not catch Exception and pass."
+    fixtures:
+      fail: ["try:\n    x = 1\nexcept Exception:\n    pass\n"]
+      pass: ["try:\n    x = 1\nexcept Exception:\n    raise\n"]
+
+  - id: B-DOCSTRING
+    title: Docstring longer than 5 lines
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: ast, rule: docstring-max-lines, max: 5}
+    message: "Shorten the docstring to at most 5 lines."
+    fixtures:
+      fail: ["def f():\n    \"\"\"a\n    b\n    c\n    d\n    e\n    f\n    \"\"\"\n"]
+      pass: ["def f():\n    \"\"\"One line.\"\"\"\n"]
+
+  - id: B-FUNC-LEN
+    title: Function longer than 40 lines
+    severity: advisory
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: ast, rule: function-max-lines, max: 40}
+    message: "Split the function into smaller helpers."
+    fixtures:
+      fail:
+        - |
+          def f():
+            x0 = 0
+            x1 = 1
+            x2 = 2
+            x3 = 3
+            x4 = 4
+            x5 = 5
+            x6 = 6
+            x7 = 7
+            x8 = 8
+            x9 = 9
+            x10 = 10
+            x11 = 11
+            x12 = 12
+            x13 = 13
+            x14 = 14
+            x15 = 15
+            x16 = 16
+            x17 = 17
+            x18 = 18
+            x19 = 19
+            x20 = 20
+            x21 = 21
+            x22 = 22
+            x23 = 23
+            x24 = 24
+            x25 = 25
+            x26 = 26
+            x27 = 27
+            x28 = 28
+            x29 = 29
+            x30 = 30
+            x31 = 31
+            x32 = 32
+            x33 = 33
+            x34 = 34
+            x35 = 35
+            x36 = 36
+            x37 = 37
+            x38 = 38
+            x39 = 39
+            x40 = 40
+      pass: ["def f():\n    return 1\n"]
+
+  - id: B-TODO
+    title: TODO without an issue reference
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py", "**/*.sh"]
+    check:
+      engine: regex
+      on: added_lines
+      within: comments
+      pattern: '\b(TODO|FIXME|XXX)\b(?!.*(#\d+|[A-Z]+-\d+))'
+    message: "Remove the TODO or reference an issue, e.g. TODO(#12)."
+    fixtures:
+      fail: ["# TODO handle unicode\n"]
+      pass: ["# TODO(#12) handle unicode\n", "x = 1\n"]
+
+  - id: B-TESTS-RO
+    title: Existing test modified or deleted
+    severity: critical
+    decidability: deterministic
+    check: {engine: glob, paths: ["tests/**"], change: [modified, deleted, renamed]}
+    message: "Revert the change to the existing test; add new tests in new files instead."
+    fixtures:
+      fail: ["tests/test_core.py"]
+      pass: ["src/pkg/core.py"]
+
+  - id: B-DEPS
+    title: Dependency manifest changed
+    severity: required
+    decidability: deterministic
+    check: {engine: glob, paths: ["requirements*.txt", "pyproject.toml", "setup.py", "setup.cfg", "Pipfile", "poetry.lock", "uv.lock"]}
+    message: "Do not add dependencies; this task must use the standard library only."
+    fixtures:
+      fail: ["requirements.txt", "pyproject.toml"]
+      pass: ["src/pkg/core.py"]
+
+  - id: B-VOICE
+    title: Filler phrase in a comment or docstring
+    severity: advisory
+    decidability: deterministic
+    applies_to: ["**/*.py", "**/*.sh", "**/*.md"]
+    check:
+      engine: regex
+      on: added_lines
+      within: comments
+      flags: [i]
+      patterns:
+        - '\b(it is worth noting|it''s worth noting|note that|simply|just|basically|obviously|clearly|of course)\b'
+        - '\b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b'
+    message: "Delete the filler word; state the fact directly."
+    fixtures:
+      fail: ["# Simply return the value\n", "# A robust parser\n"]
+      pass: ["# Return the cached value\n"]
+
+  - id: B-RESTATE
+    title: Comment restates the code
+    severity: advisory
+    decidability: heuristic
+    applies_to: ["src/**/*.py"]
+    check: {engine: python, plugin: hygiene.restating_comment, options: {threshold: 0.8}}
+    message: "Delete comments that repeat the next line; explain why instead."
+    fixtures:
+      fail: ["# increment the counter\ncounter += 1\n"]
+      pass: ["# retries start at 1 because attempt 0 is the initial call\ncounter += 1\n"]
+
+  - id: B-ANSWERS
+    title: Hard-coded answer lookup
+    severity: advisory
+    decidability: heuristic
+    applies_to: ["src/**/*.py"]
+    check: {engine: python, plugin: answers.literal_lookup, options: {min_branches: 3}}
+    message: "Compute the result; do not map known test inputs to expected outputs."
+    fixtures:
+      fail: ["def f(x):\n    if x == 'a':\n        return 1\n    if x == 'b':\n        return 2\n    if x == 'c':\n        return 3\n"]
+      pass: ["def f(x):\n    return len(x)\n"]
+
+  - id: B-EVAL
+    title: eval or exec
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: call, names: [eval, exec]}
+    message: "Parse the input explicitly; never eval/exec it."
+    fixtures:
+      fail: ["x = eval(s)\n"]
+      pass: ["x = int(s)\n"]
+
+  - id: B-SH-STRICT
+    title: Shell script without strict mode
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: file, mode: require, pattern: '^set -euo pipefail$', flags: [m]}
+    message: "Add 'set -euo pipefail' near the top of the script."
+    fixtures:
+      fail: ["#!/usr/bin/env bash\necho hi\n"]
+      pass: ["#!/usr/bin/env bash\nset -euo pipefail\necho hi\n"]
+
+  - id: B-SH-JQ
+    title: Python one-liner for JSON in a shell script
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, pattern: 'python3?\s+-c\b.*\b(json|loads|load)\b'}
+    message: "Use jq for JSON, e.g. jq -r '.key' file.json."
+    fixtures:
+      fail: ["python3 -c 'import json,sys; print(json.load(sys.stdin)[\"k\"])' < f.json\n"]
+      pass: ["jq -r '.k' f.json\n"]
+
+  - id: B-SH-SUDO
+    title: sudo in a script
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '(^|[;&|]\s*|\s)sudo\s'}
+    message: "Remove sudo; the script must run as the invoking user."
+    fixtures:
+      fail: ["sudo rm -f /var/log/x\n"]
+      pass: ["rm -f \"$tmp/x\"\n"]
+
+  - id: B-SH-EVAL
+    title: eval in a shell script
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '(^|[;&|]\s*|\s)eval\s'}
+    message: "Avoid eval; use arrays or explicit parsing."
+    fixtures:
+      fail: ["eval \"$cmd\"\n"]
+      pass: ["\"${cmd[@]}\"\n"]
+
+  - id: B-OS-PATH
+    title: os.path instead of pathlib
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\bos\.path\.'}
+    message: "Use pathlib.Path instead of os.path."
+    fixtures:
+      fail: ["p = os.path.join(a, b)\n"]
+      pass: ["p = Path(a) / b\n"]

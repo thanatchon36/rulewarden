@@ -1,0 +1,14 @@
+id: T17-git-stats
+language: shell
+rules: [B-SH-STRICT, B-SH-SUDO, B-SH-EVAL, B-TESTS-RO, B-TODO, B-VOICE]
+extra_rules:
+  - id: T17-READ-ONLY-GIT
+    title: Script changes repository state
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\bgit\s+(-C\s+\S+\s+)?(push|reset|commit|checkout|rebase|clean|stash|tag|branch\s+-[dD])\b'}
+    message: "This script must only read the repository (git log, git rev-parse)."
+    fixtures:
+      fail: ["git -C \"$repo\" reset --hard\n", "git push origin main\n"]
+      pass: ["git -C \"$repo\" log --format=%an\n"]

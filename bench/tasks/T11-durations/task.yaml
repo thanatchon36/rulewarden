@@ -1,0 +1,14 @@
+id: T11-durations
+language: python
+rules: [B-PRINT, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-ANSWERS, B-TODO, B-VOICE]
+extra_rules:
+  - id: T11-NO-TIME-LIBS
+    title: Third-party time parsing library imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [dateutil, pytimeparse, humanize, pendulum, arrow]}
+    message: "Parse durations with the re module from the standard library."
+    fixtures:
+      fail: ["from pytimeparse import parse\n"]
+      pass: ["import re\n"]

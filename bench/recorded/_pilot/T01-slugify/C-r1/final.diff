@@ -1,0 +1,150 @@
+diff --git a/src/textkit/slug.py b/src/textkit/slug.py
+index 13b4508..f351c9a 100644
+--- a/src/textkit/slug.py
++++ b/src/textkit/slug.py
+@@ -1,2 +1,46 @@
++import re
++import unicodedata
++
++_TRANSLITERATIONS = {
++    "ß": "ss",
++    "ẞ": "SS",
++    "æ": "ae",
++    "Æ": "AE",
++    "ø": "o",
++    "Ø": "O",
++    "ł": "l",
++    "Ł": "L",
++}
++_ALNUM_RUN = re.compile(r"[a-z0-9]+")
++
++
+ def slugify(text: str, max_length: int | None = None, separator: str = "-") -> str:
+-    raise NotImplementedError
++    """Return an ASCII slug of text made of a-z and 0-9 joined by separator.
++
++    If max_length is given, the slug is cut at the last separator that fits,
++    or hard-cut at max_length when there is none.
++    """
++    if not separator:
++        raise ValueError("separator must be a non-empty string")
++    if max_length is not None and max_length < 1:
++        raise ValueError("max_length must be at least 1")
++
++    text = "".join(_TRANSLITERATIONS.get(ch, ch) for ch in text)
++    ascii_text = unicodedata.normalize("NFD", text).encode("ascii", "ignore").decode("ascii")
++    slug = separator.join(_ALNUM_RUN.findall(ascii_text.lower()))
++
++    if max_length is None or len(slug) <= max_length:
++        return slug
++    return _cut(slug, max_length, separator)
++
++
++def _cut(slug: str, max_length: int, separator: str) -> str:
++    # Prefer the last separator starting within the limit; otherwise cut at max_length.
++    start = next(
++        (i for i in range(max_length, 0, -1) if slug.startswith(separator, i)),
++        max_length,
++    )
++    result = slug[:start]
++    while result.endswith(separator):
++        result = result[: -len(separator)]
++    return result
+diff --git a/tests/test_slugify_behaviour.py b/tests/test_slugify_behaviour.py
+new file mode 100644
+index 0000000..2253525
+--- /dev/null
++++ b/tests/test_slugify_behaviour.py
+@@ -0,0 +1,92 @@
++import pytest
++
++from textkit import slugify
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("Å ångström", "a-angstrom"),
++        ("Straße", "strasse"),
++        ("ß", "ss"),
++        ("Encyclopædia", "encyclopaedia"),
++        ("Søren", "soren"),
++        ("Łódź", "lodz"),
++        ("Ø", "o"),
++    ],
++)
++def test_transliteration(text, expected):
++    assert slugify(text) == expected
++
++
++def test_non_ascii_without_mapping_is_dropped():
++    assert slugify("東京 tokyo 🙂") == "tokyo"
++
++
++def test_lowercases_and_collapses_runs():
++    assert slugify("  A -- B__C  ") == "a-b-c"
++
++
++def test_digits_are_kept():
++    assert slugify("Release 2.0!") == "release-2-0"
++
++
++def test_empty_and_symbol_only_input():
++    assert slugify("") == ""
++    assert slugify("!!! ???") == ""
++
++
++def test_custom_separator():
++    assert slugify("Hello, World!", separator="_") == "hello_world"
++
++
++def test_multi_character_separator():
++    assert slugify("a b c", separator=" -- ") == "a -- b -- c"
++
++
++def test_separator_with_backslash_is_literal():
++    assert slugify("a b", separator="\\1") == "a\\1b"
++
++
++def test_empty_separator_raises():
++    with pytest.raises(ValueError):
++        slugify("hello", separator="")
++
++
++@pytest.mark.parametrize("max_length", [0, -1])
++def test_max_length_below_one_raises(max_length):
++    with pytest.raises(ValueError):
++        slugify("hello", max_length=max_length)
++
++
++def test_max_length_not_applied_when_slug_fits():
++    assert slugify("hello world", max_length=11) == "hello-world"
++
++
++def test_max_length_cuts_at_last_separator_that_fits():
++    assert slugify("hello world foo", max_length=8) == "hello"
++
++
++def test_max_length_cut_exactly_before_separator():
++    assert slugify("abcd efg", max_length=4) == "abcd"
++
++
++def test_max_length_hard_cut_without_separator():
++    assert slugify("abcdefghij", max_length=4) == "abcd"
++
++
++def test_max_length_hard_cut_when_separator_only_beyond_limit():
++    assert slugify("abcdefgh ij", max_length=4) == "abcd"
++
++
++def test_max_length_result_never_ends_with_separator():
++    assert slugify("abc def", max_length=4) == "abc"
++    assert slugify("a b c d", max_length=4) == "a-b"
++
++
++def test_max_length_with_multi_character_separator():
++    assert slugify("one two three", max_length=10, separator="--") == "one--two"
++
++
++def test_max_length_hard_cut_result_trimmed_of_separator():
++    assert slugify("ab cdefgh", max_length=3) == "ab"

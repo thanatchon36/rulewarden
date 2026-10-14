@@ -1,0 +1,14 @@
+id: T01-slugify
+language: python
+rules: [B-PRINT, B-BARE-EXCEPT, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-VOICE, B-TODO]
+extra_rules:
+  - id: T01-NO-SLUG-LIBS
+    title: Third-party slug or transliteration library
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [unidecode, text_unidecode, slugify, anyascii]}
+    message: "Implement the transliteration with unicodedata from the standard library."
+    fixtures:
+      fail: ["from unidecode import unidecode\n"]
+      pass: ["import unicodedata\n"]

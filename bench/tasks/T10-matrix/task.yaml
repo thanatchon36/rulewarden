@@ -1,0 +1,14 @@
+id: T10-matrix
+language: python
+rules: [B-PRINT, B-SWALLOW, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-ANSWERS, B-FUNC-LEN]
+extra_rules:
+  - id: T10-NO-NUMPY
+    title: numpy or sympy imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [numpy, sympy, scipy]}
+    message: "Implement the operations with plain Python lists."
+    fixtures:
+      fail: ["import numpy as np\n"]
+      pass: ["from fractions import Fraction\n"]

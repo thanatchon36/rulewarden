@@ -1,0 +1,14 @@
+id: T20-cleanup-old
+language: shell
+rules: [B-SH-STRICT, B-SH-SUDO, B-SH-EVAL, B-TESTS-RO, B-VOICE, B-TODO]
+extra_rules:
+  - id: T20-NO-RM-RF
+    title: Recursive forced delete in a script
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|-r\s+-f|-f\s+-r)\b'}
+    message: "Delete only regular files, one by one (find ... -type f -delete or rm -f -- \"$f\")."
+    fixtures:
+      fail: ["rm -rf \"$dir\"/*\n", "rm -r -f $x\n"]
+      pass: ["find \"$dir\" -type f -name '*.tmp' -delete\n"]

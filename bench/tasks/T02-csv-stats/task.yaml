@@ -1,0 +1,14 @@
+id: T02-csv-stats
+language: python
+rules: [B-PRINT, B-SWALLOW, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-RESTATE, B-FUNC-LEN]
+extra_rules:
+  - id: T02-NO-DATAFRAME
+    title: pandas or numpy imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [pandas, numpy, polars]}
+    message: "Use the csv and statistics modules from the standard library."
+    fixtures:
+      fail: ["import pandas as pd\n"]
+      pass: ["import csv\n"]

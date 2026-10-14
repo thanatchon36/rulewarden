@@ -1,0 +1,14 @@
+id: T06-backup-rotate
+language: shell
+rules: [B-SH-STRICT, B-SH-SUDO, B-SH-EVAL, B-TESTS-RO, B-VOICE, B-TODO]
+extra_rules:
+  - id: T06-NO-RM-RF
+    title: Recursive forced delete in a script
+    severity: critical
+    decidability: deterministic
+    applies_to: ["**/*.sh"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|-r\s+-f|-f\s+-r)\b'}
+    message: "Delete only the specific archive files with rm -f -- \"$file\"."
+    fixtures:
+      fail: ["rm -rf \"$dest\"/old\n", "rm -fr $x\n"]
+      pass: ["rm -f -- \"$old\"\n"]

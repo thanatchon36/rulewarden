@@ -1,0 +1,14 @@
+id: T15-markdown-toc
+language: python
+rules: [B-PRINT, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-RESTATE, B-VOICE, B-TODO]
+extra_rules:
+  - id: T15-NO-MD-LIBS
+    title: Markdown parsing library imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [markdown, mistune, markdown_it, commonmark]}
+    message: "Parse the headings with the re module."
+    fixtures:
+      fail: ["import mistune\n"]
+      pass: ["import re\n"]

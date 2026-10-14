@@ -1,0 +1,14 @@
+id: T18-schema-validate
+language: python
+rules: [B-EVAL, B-PRINT, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-ANSWERS, B-FUNC-LEN]
+extra_rules:
+  - id: T18-NO-SCHEMA-LIBS
+    title: Validation library imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [jsonschema, pydantic, cerberus, marshmallow, voluptuous]}
+    message: "Implement the validator with plain Python."
+    fixtures:
+      fail: ["import jsonschema\n"]
+      pass: ["import re\n"]

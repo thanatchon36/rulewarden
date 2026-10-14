@@ -1,0 +1,14 @@
+id: T16-token-bucket
+language: python
+rules: [B-PRINT, B-SWALLOW, B-DOCSTRING, B-TESTS-RO, B-TODO, B-VOICE, B-ANSWERS]
+extra_rules:
+  - id: T16-INJECTED-CLOCK
+    title: Wall clock read directly
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\btime\.(time|monotonic|perf_counter)\(\)'}
+    message: "Read time through the injected `clock` so behaviour is testable."
+    fixtures:
+      fail: ["        now = time.monotonic()\n"]
+      pass: ["        now = self._clock()\n", "def f(clock=time.monotonic):\n"]

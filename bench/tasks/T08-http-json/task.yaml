@@ -1,0 +1,14 @@
+id: T08-http-json
+language: python
+rules: [B-PRINT, B-BARE-EXCEPT, B-SWALLOW, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-VOICE]
+extra_rules:
+  - id: T08-STDLIB-HTTP
+    title: Third-party HTTP client imported
+    severity: required
+    decidability: deterministic
+    applies_to: ["**/*.py"]
+    check: {engine: ast, rule: import, names: [requests, httpx, aiohttp, urllib3]}
+    message: "Use urllib.request from the standard library."
+    fixtures:
+      fail: ["import requests\n"]
+      pass: ["from urllib.request import Request, urlopen\n"]

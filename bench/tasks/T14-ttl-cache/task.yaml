@@ -1,0 +1,14 @@
+id: T14-ttl-cache
+language: python
+rules: [B-PRINT, B-BARE-EXCEPT, B-DOCSTRING, B-TESTS-RO, B-DEPS, B-FUNC-LEN, B-RESTATE]
+extra_rules:
+  - id: T14-OWN-CACHE
+    title: Ready-made cache used instead of an implementation
+    severity: required
+    decidability: deterministic
+    applies_to: ["src/**/*.py"]
+    check: {engine: regex, on: added_lines, within: code, pattern: '\b(lru_cache|cachetools|TTLCache\s*=\s*\w+\.)'}
+    message: "Implement the cache yourself (collections.OrderedDict is fine)."
+    fixtures:
+      fail: ["from functools import lru_cache\n", "import cachetools\n"]
+      pass: ["from collections import OrderedDict\n"]
