@@ -8,7 +8,7 @@ PyPI). The benchmark budget (`BENCH_MAX_RUNS=150`) was used in full.
 
 | Item | Status |
 |---|---|
-| `make check` green on a clean clone (Linux and macOS in CI) | Green locally and on a clean clone (verifier). CI on Linux/macOS is configured but has not run, because nothing is pushed (H4) |
+| `make check` green on a clean clone (Linux and macOS in CI) | Yes: locally, on a clean clone (verifier), and in CI run 38540593133 (Ubuntu and macOS × Python 3.11/3.12, plus the paper job) |
 | Determinism, fail-closed and fixture suites pass; every shipped rule has fixtures | Yes (26 rules, 120 fixtures; RQ3 28/28) |
 | Claude Code hook blocks a required violation and the agent self-corrects (README) | Yes, recorded in `bench/recorded/T01-slugify/C-r1` and quoted in the README |
 | pre-commit/git hook path works with no harness | Yes (`test_real_git_commit_is_blocked`; verifier's real commit was refused) |
@@ -17,7 +17,7 @@ PyPI). The benchmark budget (`BENCH_MAX_RUNS=150`) was used in full.
 | Paper builds from scripts; numbers traceable; references verified; limitations; fair competitors | Yes (`make paper`; 58/59 references) |
 | The repo's audit log shows enforcement during development | Yes (Appendix A; 600+ entries, chain intact) |
 | Independent verifier found no unfixed bypass | Yes, after fixes (ADR-016) |
-| FINAL_REPORT, NEEDS_HUMAN, CHANGELOG written; committed and pushed; PyPI left to the human | Written and committed. **Not pushed** (git push is denied by session permissions: H4) |
+| FINAL_REPORT, NEEDS_HUMAN, CHANGELOG written; committed and pushed; PyPI left to the human | Yes: pushed by the human at 9ca58ee (H4); PyPI left to the human (H3) |
 
 ## What shipped
 

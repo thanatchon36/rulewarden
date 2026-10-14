@@ -29,7 +29,7 @@ rules:
     check:
       engine: regex
       on: command
-      pattern: '(>|\btee\b|\bsed\b[^;&|\n]*\s-i|\bperl\b[^;&|\n]*\s-[a-z]*i|\bcp\b|\bmv\b|\brm\b|\bln\b|\btruncate\b|\bchmod\b|\btouch\b|\binstall\b|\brsync\b|\bdd\b|\bgit\s+(checkout|restore|apply|am|stash)\b)[^;&|\n]*(\brules/|\brules\.lock\b|\.claude/settings|\.github/workflows|\.rulewarden/|\.pre-commit-config\.yaml|\.git/hooks|\.codex/|\.gemini/|\.opencode/)'
+      pattern: '(>|\btee\b|\bsed\b[^;&|\n]*\s-i|\bperl\b[^;&|\n]*\s-[a-z]*i|\bcp\b|\bmv\b|\brm\b|\bln\b|\btruncate\b|\bchmod\b|\btouch\b|\binstall\b|\brsync\b|\bdd\b|\bgit\s+(checkout|restore|apply|am|stash)\b)[^;&|\n]*((?<![\w./-])(\./)?rules/|\brules\.lock\b|\.claude/settings|\.github/workflows|\.rulewarden/|\.pre-commit-config\.yaml|\.git/hooks|\.codex/|\.gemini/|\.opencode/)'
     message: "Do not modify protected files from the shell; ask a human to make the change."
     fixtures:
       fail:
@@ -42,6 +42,8 @@ rules:
         - "cat rules/packs/voice.yaml"
         - "grep -n R-012 rules/team.yaml"
         - "echo done > build/out.txt"
+        - "cp a.yaml bench/rules/x.yaml"
+        - "echo x >rules.txt"
     deviations: forbidden
     tags: [independence]
 

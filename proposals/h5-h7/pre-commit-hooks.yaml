@@ -1,0 +1,14 @@
+- id: rulewarden
+  name: rulewarden (staged changes)
+  description: Enforce the repository's locked rules on staged changes.
+  entry: rulewarden hook git pre-commit
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit]
+- id: rulewarden-commit-msg
+  name: rulewarden (commit message)
+  description: Enforce prose rules on the commit message.
+  entry: rulewarden hook git commit-msg
+  language: python
+  stages: [commit-msg]

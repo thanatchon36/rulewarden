@@ -1,0 +1,90 @@
+diff --git a/rules/packs/protected-set.yaml b/rules/packs/protected-set.yaml
+--- a/rules/packs/protected-set.yaml
++++ b/rules/packs/protected-set.yaml
+@@ -31,7 +31,7 @@
+     check:
+       engine: regex
+       on: command
+-      pattern: '(>|\btee\b|\bsed\b[^;&|\n]*\s-i|\bperl\b[^;&|\n]*\s-[a-z]*i|\bcp\b|\bmv\b|\brm\b|\bln\b|\btruncate\b|\bchmod\b|\btouch\b|\binstall\b|\brsync\b|\bdd\b|\bgit\s+(checkout|restore|apply|am|stash)\b)[^;&|\n]*(\brules/|\brules\.lock\b|\.claude/settings|\.github/workflows|\.rulewarden/|\.pre-commit-config\.yaml|\.git/hooks|\.codex/|\.gemini/|\.opencode/)'
++      pattern: '(>|\btee\b|\bsed\b[^;&|\n]*\s-i|\bperl\b[^;&|\n]*\s-[a-z]*i|\bcp\b|\bmv\b|\brm\b|\bln\b|\btruncate\b|\bchmod\b|\btouch\b|\binstall\b|\brsync\b|\bdd\b|\bgit\s+(checkout|restore|apply|am|stash)\b)[^;&|\n]*((?<![\w./-])(\./)?rules/|\brules\.lock\b|\.claude/settings|\.github/workflows|\.rulewarden/|\.pre-commit-config\.yaml|\.git/hooks|\.codex/|\.gemini/|\.opencode/)'
+     message: "Do not modify protected files from the shell; ask a human to make the change."
+     fixtures:
+       fail:
+@@ -44,6 +44,7 @@
+         - "cat rules/packs/voice.yaml"
+         - "grep -n R-012 rules/team.yaml"
+         - "echo done > build/out.txt"
++        - "cp a.yaml bench/rules/x.yaml"
+     deviations: forbidden
+     tags: [independence]
+ 
+diff --git a/rules/packs/scope.yaml b/rules/packs/scope.yaml
+--- a/rules/packs/scope.yaml
++++ b/rules/packs/scope.yaml
+@@ -12,7 +12,7 @@
+     check:
+       engine: glob
+       mode: allow
+-      paths: ["src/**", "tests/**", "bench/**", "corpus/**", "paper/**", "research/**", "docs/**", "proposals/**", "*.md", "pyproject.toml", "uv.lock", "Makefile", ".gitignore", ".python-version", "LICENSE", "CITATION.cff", "rules/**", "rules.lock", ".rulewarden/**", ".claude/**", ".github/**", ".pre-commit-config.yaml"]
++      paths: ["src/**", "tests/**", "bench/**", "corpus/**", "paper/**", "research/**", "docs/**", "proposals/**", "*.md", "pyproject.toml", "uv.lock", "Makefile", ".gitignore", ".python-version", "LICENSE", "CITATION.cff", "rules/**", "rules.lock", ".rulewarden/**", ".claude/**", ".github/**", ".pre-commit-config.yaml", ".pre-commit-hooks.yaml"]
+     message: "Revert the change; this task may only modify the allowed paths."
+     fixtures:
+       fail: ["infra/main.tf", {path: "deploy/prod.env", status: added}]
+diff --git a/.pre-commit-hooks.yaml b/.pre-commit-hooks.yaml
+new file mode 100644
+--- /dev/null
++++ b/.pre-commit-hooks.yaml
+@@ -0,0 +1,14 @@
++- id: rulewarden
++  name: rulewarden (staged changes)
++  description: Enforce the repository's locked rules on staged changes.
++  entry: rulewarden hook git pre-commit
++  language: python
++  pass_filenames: false
++  always_run: true
++  stages: [pre-commit]
++- id: rulewarden-commit-msg
++  name: rulewarden (commit message)
++  description: Enforce prose rules on the commit message.
++  entry: rulewarden hook git commit-msg
++  language: python
++  stages: [commit-msg]
+diff --git a/.claude/settings.json b/.claude/settings.json
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -5,7 +5,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "${CLAUDE_PROJECT_DIR}/.venv/bin/rulewarden",
++            "command": "/Users/thanatchon36/.local/bin/rulewarden",
+             "args": [
+               "hook",
+               "claude-code",
+@@ -23,7 +23,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "${CLAUDE_PROJECT_DIR}/.venv/bin/rulewarden",
++            "command": "/Users/thanatchon36/.local/bin/rulewarden",
+             "args": [
+               "hook",
+               "claude-code",
+@@ -42,7 +42,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "${CLAUDE_PROJECT_DIR}/.venv/bin/rulewarden",
++            "command": "/Users/thanatchon36/.local/bin/rulewarden",
+             "args": [
+               "hook",
+               "claude-code",
+@@ -60,7 +60,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "${CLAUDE_PROJECT_DIR}/.venv/bin/rulewarden",
++            "command": "/Users/thanatchon36/.local/bin/rulewarden",
+             "args": [
+               "hook",
+               "claude-code",
