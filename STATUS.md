@@ -7,14 +7,14 @@ Resume: read `MISSION.md`, this file and `DECISIONS.md`, then continue from the 
 - [x] git init, LICENSE (Apache-2.0), pyproject, uv env, Makefile stub, CI skeleton
 - [x] CLAUDE.md / AGENTS.md = Appendix A
 - [x] STATUS / DECISIONS / NEEDS_HUMAN, research/, paper/ skeleton
-- [ ] GitHub repo (private, ADR-004) + first push
+- [x] GitHub repo (private, ADR-004) + first push
 
 ## Phase 1 — Research sprint
-- [ ] research/evidence.md (§2 leads verified)
-- [ ] research/related-work.md (competitors + literature, verified refs only)
-- [ ] research/harness-apis.md (Claude Code hooks contract, URLs + dates)
-- [ ] bench/ANALYSIS_PLAN.md draft; corpus/README.md query plan
-- [ ] paper Background + Related work skeletons
+- [x] research/evidence.md (§2 leads verified; HN lead corrected, ADR-007)
+- [x] research/related-work.md (14 tools, 8 empirical papers; refs verified 58/59, ADR-008)
+- [x] research/harness-apis.md (Claude Code 2.1.299 contract incl. onFailure:block; Codex, Gemini, OpenCode)
+- [x] bench/ANALYSIS_PLAN.md draft (freeze before first run); corpus/README.md query plan
+- [x] paper Background + Related work drafts (paper/main.md)
 
 ## Phase 2 — Core engine
 ## Phase 3 — Adapters

@@ -71,3 +71,19 @@ developing packs there would require human approval for every edit.
 **Choice.** Canonical packs live in `src/rulewarden/packs/*.yaml` (package data). `rulewarden init` vendors selected packs
 into a project's `rules/packs/`. This repo's `rules/packs/` is such a vendored copy, locked by `rules.lock`; pack edits in
 `src/` do not silently change the enforced rule set (a human re-vendors and re-locks). **Reversibility.** High.
+
+## ADR-007 — HN lead re-scoped; replacement evidence for answer-embedding (2026-10-14)
+
+**Context.** §2 describes a ~542-point HN post as "a skill that stops agents from embedding answers". The post (HN
+49610631) is *"A skill to stop coding agents from **burying** the answer"*: response style, not test gaming.
+**Choice.** Cite it only for voice/verbosity demand. Ground the `no-answer-embedding` pack in claude-code #319 (agent
+rewrites tests so they pass) and ImpossibleBench (arXiv:2510.20270). Details in `research/evidence.md`. Also: #77136 was
+closed by its reporter, not by the vendor, and the paper says so. **Reversibility.** Text-only.
+
+## ADR-008 — Citation verification is automated and fail-closed (2026-10-14)
+
+`paper/verify_refs.py` resolves every `refs.bib` entry by DOI (Crossref), arXiv id (export API) or URL (fetch +
+title-token match ≥ 0.8). Results go to `paper/refs_verified.json`. Only verified entries are written to
+`refs.verified.bib`, and the paper build fails on any citation of an unverified key. The EU AI Act (EUR-Lex blocks
+automated fetches) is currently dropped. URL verification of a project page proves that the page exists and carries
+the title, not the content of any claim. Claims about competitors were checked by reading their READMEs (2026-10-14).
