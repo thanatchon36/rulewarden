@@ -7,6 +7,7 @@ change an agent makes, and measure how far that is possible.**
 [![PyPI](https://img.shields.io/pypi/v/rulewarden.svg)](https://pypi.org/project/rulewarden/)
 [![Python](https://img.shields.io/pypi/pyversions/rulewarden.svg)](https://pypi.org/project/rulewarden/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/thanatchon36/rulewarden/blob/main/LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23368991.svg)](https://doi.org/10.5281/zenodo.23368991)
 
 📄 **[Read the paper on the web](https://thanatchon36.github.io/rulewarden/paper/)** ·
 ⬇️ **[Download the PDF](https://github.com/thanatchon36/rulewarden/raw/main/paper/paper.pdf)** ·
@@ -259,11 +260,13 @@ for more agent harnesses, and reports of false positives (with the diff that tri
   title   = {rulewarden: Deterministic Runtime Assurance for AI Coding Agents},
   year    = {2026},
   url     = {https://github.com/thanatchon36/rulewarden},
+  doi     = {10.5281/zenodo.23368991},
   version = {0.1.1}
 }
 ```
 
-See [CITATION.cff](https://github.com/thanatchon36/rulewarden/blob/main/CITATION.cff). Release notes are in [CHANGELOG.md](https://github.com/thanatchon36/rulewarden/blob/main/CHANGELOG.md).
+Every release is archived on Zenodo; the DOI [10.5281/zenodo.23368991](https://doi.org/10.5281/zenodo.23368991) always resolves to the latest
+version, and each version also has its own DOI on that page. See [CITATION.cff](https://github.com/thanatchon36/rulewarden/blob/main/CITATION.cff). Release notes are in [CHANGELOG.md](https://github.com/thanatchon36/rulewarden/blob/main/CHANGELOG.md).
 
 ## Licence
 

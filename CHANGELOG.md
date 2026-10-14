@@ -5,6 +5,10 @@ semantic versioning.
 
 ## [Unreleased]
 
+### Added
+- Zenodo archive: DOI badge in the README and on the docs home page; the concept DOI
+  10.5281/zenodo.23368991 in `CITATION.cff`, the BibTeX entry, the paper's appendix and the web reader.
+
 ### Changed
 - Paper figures redrawn at text width: percentage axes, labelled deterministic shares, an all-files row, line counts,
   categories ordered by size and split by decidability, and a palette that survives greyscale printing.

@@ -525,3 +525,4 @@ log has no entries for the edits made while the hooks were disabled (§6), and n
 
 `make corpus` recomputes §4 from `corpus/data/`. `make replay` recomputes §5 from `bench/recorded/` with no API key.
 `make paper` renders this document, failing on any unresolved number or unverified citation.
+The source code, data and recordings are archived on Zenodo at <https://doi.org/10.5281/zenodo.23368991>.

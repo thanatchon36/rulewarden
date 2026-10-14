@@ -4,6 +4,9 @@
 `AGENTS.md` into checks that run on every change an agent makes, in a pre-tool hook, a git hook and CI.
 It fails closed.
 
+[![PyPI](https://img.shields.io/pypi/v/rulewarden.svg)](https://pypi.org/project/rulewarden/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23368991.svg)](https://doi.org/10.5281/zenodo.23368991)
+
 [Get started](getting-started.md){ .md-button .md-button--primary }
 [Read the paper](paper/index.html){ .md-button }
 [Rule catalogue](rules.md){ .md-button }

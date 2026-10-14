@@ -25,6 +25,7 @@ PDF = PAPER / "paper.pdf"
 READER_DIR = ROOT / "docs" / "pages" / "paper"
 BIB = PAPER / "refs.verified.bib"
 REPO_URL = "https://github.com/thanatchon36/rulewarden"
+ZENODO_DOI = "10.5281/zenodo.23368991"
 
 
 def _pandoc() -> str:
@@ -99,6 +100,7 @@ def build_reader() -> Path:
     actions = (
         '<li><a href="paper.pdf">Download PDF</a></li>'
         f'<li><a href="{REPO_URL}">Source code</a></li>'
+        f'<li><a href="https://doi.org/{ZENODO_DOI}">DOI {ZENODO_DOI}</a></li>'
         '<li><a href="../">Documentation</a></li>'
         f'<li><a href="{REPO_URL}/blob/main/bench/ANALYSIS_PLAN.md">Pre-registered plan</a></li>'
     )
