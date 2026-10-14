@@ -1,0 +1,242 @@
+diff --git a/src/minischema/validate.py b/src/minischema/validate.py
+index f8ebf9d..dccb8af 100644
+--- a/src/minischema/validate.py
++++ b/src/minischema/validate.py
+@@ -1,2 +1,75 @@
++import re
++
++_TYPE_CHECKS = {
++    "object": lambda v: isinstance(v, dict),
++    "array": lambda v: isinstance(v, list),
++    "string": lambda v: isinstance(v, str),
++    "integer": lambda v: isinstance(v, int) and not isinstance(v, bool),
++    "number": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
++    "boolean": lambda v: isinstance(v, bool),
++    "null": lambda v: v is None,
++}
++
++
+ def validate(data: object, schema: dict) -> list[str]:
+-    raise NotImplementedError
++    """Return error messages for data against schema, in document order.
++
++    An empty list means the data is valid. Each message has the form
++    "<path>: <problem>", where the path starts at "$".
++    """
++    errors: list[str] = []
++    _check(data, schema, "$", errors)
++    return errors
++
++
++def _check(value, schema: dict, path: str, errors: list[str]) -> None:
++    expected = schema.get("type")
++    if expected is not None:
++        if expected not in _TYPE_CHECKS:
++            raise ValueError(f"unknown type {expected!r}")
++        if not _TYPE_CHECKS[expected](value):
++            errors.append(f"{path}: expected {expected}")
++            return
++    if isinstance(value, dict):
++        _check_object(value, schema, path, errors)
++    elif isinstance(value, list):
++        _check_array(value, schema, path, errors)
++    elif isinstance(value, str):
++        _check_string(value, schema, path, errors)
++    elif _TYPE_CHECKS["number"](value):
++        _check_range(value, schema, path, errors)
++
++
++def _check_object(value: dict, schema: dict, path: str, errors: list[str]) -> None:
++    for name in schema.get("required", []):
++        if name not in value:
++            errors.append(f"{path}: missing required property {name}")
++    for name, sub_schema in schema.get("properties", {}).items():
++        if name in value:
++            _check(value[name], sub_schema, f"{path}.{name}", errors)
++
++
++def _check_array(value: list, schema: dict, path: str, errors: list[str]) -> None:
++    item_schema = schema.get("items")
++    if item_schema is None:
++        return
++    for index, item in enumerate(value):
++        _check(item, item_schema, f"{path}[{index}]", errors)
++
++
++def _check_string(value: str, schema: dict, path: str, errors: list[str]) -> None:
++    min_length = schema.get("min_length")
++    if min_length is not None and len(value) < min_length:
++        errors.append(f"{path}: shorter than {min_length}")
++    pattern = schema.get("pattern")
++    if pattern is not None and re.fullmatch(pattern, value) is None:
++        errors.append(f"{path}: does not match {pattern}")
++
++
++def _check_range(value: float, schema: dict, path: str, errors: list[str]) -> None:
++    minimum = schema.get("minimum")
++    if minimum is not None and value < minimum:
++        errors.append(f"{path}: less than {minimum}")
++    maximum = schema.get("maximum")
++    if maximum is not None and value > maximum:
++        errors.append(f"{path}: greater than {maximum}")
+diff --git a/tests/test_validate_keywords.py b/tests/test_validate_keywords.py
+new file mode 100644
+index 0000000..e0af012
+--- /dev/null
++++ b/tests/test_validate_keywords.py
+@@ -0,0 +1,155 @@
++import pytest
++
++from minischema import validate
++
++
++@pytest.mark.parametrize(
++    "value, type_name",
++    [
++        ({}, "object"),
++        ([], "array"),
++        ("x", "string"),
++        (3, "integer"),
++        (1.5, "number"),
++        (2, "number"),
++        (True, "boolean"),
++        (None, "null"),
++    ],
++)
++def test_matching_type_is_valid(value, type_name):
++    assert validate(value, {"type": type_name}) == []
++
++
++@pytest.mark.parametrize(
++    "value, type_name",
++    [
++        (True, "integer"),
++        (False, "number"),
++        (1.0, "integer"),
++        ("1", "number"),
++        (None, "boolean"),
++        ([], "object"),
++        ({}, "array"),
++        (0, "null"),
++    ],
++)
++def test_wrong_type_reports_expected_type(value, type_name):
++    assert validate(value, {"type": type_name}) == [f"$: expected {type_name}"]
++
++
++def test_wrong_type_skips_other_keywords():
++    schema = {"type": "object", "required": ["a"], "properties": {"a": {"type": "string"}}}
++    assert validate(5, schema) == ["$: expected object"]
++
++
++def test_unknown_type_name_raises():
++    with pytest.raises(ValueError):
++        validate("x", {"type": "date"})
++
++
++def test_missing_required_reported_in_required_order():
++    schema = {"type": "object", "required": ["b", "a"]}
++    assert validate({}, schema) == [
++        "$: missing required property b",
++        "$: missing required property a",
++    ]
++
++
++def test_missing_required_comes_before_property_errors():
++    schema = {
++        "type": "object",
++        "required": ["name"],
++        "properties": {"age": {"type": "integer"}, "name": {"type": "string"}},
++    }
++    data = {"age": "old"}
++    assert validate(data, schema) == [
++        "$: missing required property name",
++        "$.age: expected integer",
++    ]
++
++
++def test_property_errors_follow_properties_order():
++    schema = {
++        "type": "object",
++        "properties": {"b": {"type": "string"}, "a": {"type": "string"}},
++    }
++    assert validate({"a": 1, "b": 2}, schema) == [
++        "$.b: expected string",
++        "$.a: expected string",
++    ]
++
++
++def test_unknown_properties_are_allowed():
++    schema = {"type": "object", "properties": {"a": {"type": "string"}}}
++    assert validate({"a": "x", "extra": [1, 2]}, schema) == []
++
++
++def test_absent_optional_property_is_not_checked():
++    schema = {"type": "object", "properties": {"a": {"type": "integer"}}}
++    assert validate({}, schema) == []
++
++
++def test_nested_path_uses_dot_and_brackets():
++    schema = {
++        "type": "object",
++        "properties": {
++            "users": {
++                "type": "array",
++                "items": {
++                    "type": "object",
++                    "required": ["email"],
++                    "properties": {"email": {"type": "string"}},
++                },
++            }
++        },
++    }
++    data = {"users": [{"email": "a@x"}, {"email": "b@x"}, {}]}
++    assert validate(data, schema) == ["$.users[2]: missing required property email"]
++
++
++def test_array_item_type_error_uses_index_path():
++    schema = {"type": "array", "items": {"type": "integer"}}
++    assert validate([1, "two", 3], schema) == ["$[1]: expected integer"]
++
++
++def test_array_items_absent_accepts_anything():
++    assert validate([1, "a", None], {"type": "array"}) == []
++
++
++def test_min_length():
++    schema = {"type": "string", "min_length": 3}
++    assert validate("ab", schema) == ["$: shorter than 3"]
++    assert validate("abc", schema) == []
++
++
++def test_pattern_must_match_whole_string():
++    schema = {"type": "string", "pattern": "[a-z]+"}
++    assert validate("abc", schema) == []
++    assert validate("abc1", schema) == ["$: does not match [a-z]+"]
++
++
++def test_minimum_and_maximum_are_inclusive():
++    schema = {"type": "integer", "minimum": 1, "maximum": 10}
++    assert validate(1, schema) == []
++    assert validate(10, schema) == []
++    assert validate(0, schema) == ["$: less than 1"]
++    assert validate(11, schema) == ["$: greater than 10"]
++
++
++def test_number_bounds_apply_to_floats():
++    schema = {"type": "number", "minimum": 0.5}
++    assert validate(0.25, schema) == ["$: less than 0.5"]
++    assert validate(2, schema) == []
++
++
++def test_string_keywords_in_document_order():
++    schema = {
++        "type": "object",
++        "properties": {
++            "code": {"type": "string", "min_length": 4, "pattern": "[A-Z]+"},
++        },
++    }
++    assert validate({"code": "ab1"}, schema) == [
++        "$.code: shorter than 4",
++        "$.code: does not match [A-Z]+",
++    ]

@@ -1,0 +1,170 @@
+version: 1
+rules:
+- id: B-SH-STRICT
+  title: Shell script without strict mode
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: file
+    mode: require
+    pattern: ^set -euo pipefail$
+    flags:
+    - m
+  message: Add 'set -euo pipefail' near the top of the script.
+  fixtures:
+    fail:
+    - '#!/usr/bin/env bash
+
+      echo hi
+
+      '
+    pass:
+    - '#!/usr/bin/env bash
+
+      set -euo pipefail
+
+      echo hi
+
+      '
+- id: B-SH-SUDO
+  title: sudo in a script
+  severity: critical
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: (^|[;&|]\s*|\s)sudo\s
+  message: Remove sudo; the script must run as the invoking user.
+  fixtures:
+    fail:
+    - 'sudo rm -f /var/log/x
+
+      '
+    pass:
+    - 'rm -f "$tmp/x"
+
+      '
+- id: B-SH-EVAL
+  title: eval in a shell script
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: (^|[;&|]\s*|\s)eval\s
+  message: Avoid eval; use arrays or explicit parsing.
+  fixtures:
+    fail:
+    - 'eval "$cmd"
+
+      '
+    pass:
+    - '"${cmd[@]}"
+
+      '
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-TODO
+  title: TODO without an issue reference
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    pattern: \b(TODO|FIXME|XXX)\b(?!.*(#\d+|[A-Z]+-\d+))
+  message: Remove the TODO or reference an issue, e.g. TODO(#12).
+  fixtures:
+    fail:
+    - '# TODO handle unicode
+
+      '
+    pass:
+    - '# TODO(#12) handle unicode
+
+      '
+    - 'x = 1
+
+      '
+- id: B-VOICE
+  title: Filler phrase in a comment or docstring
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  - '**/*.md'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    flags:
+    - i
+    patterns:
+    - \b(it is worth noting|it's worth noting|note that|simply|just|basically|obviously|clearly|of course)\b
+    - \b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b
+  message: Delete the filler word; state the fact directly.
+  fixtures:
+    fail:
+    - '# Simply return the value
+
+      '
+    - '# A robust parser
+
+      '
+    pass:
+    - '# Return the cached value
+
+      '
+- id: T17-READ-ONLY-GIT
+  title: Script changes repository state
+  severity: critical
+  decidability: deterministic
+  applies_to:
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: \bgit\s+(-C\s+\S+\s+)?(push|reset|commit|checkout|rebase|clean|stash|tag|branch\s+-[dD])\b
+  message: This script must only read the repository (git log, git rev-parse).
+  fixtures:
+    fail:
+    - 'git -C "$repo" reset --hard
+
+      '
+    - 'git push origin main
+
+      '
+    pass:
+    - 'git -C "$repo" log --format=%an
+
+      '

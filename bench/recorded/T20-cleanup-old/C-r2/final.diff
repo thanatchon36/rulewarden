@@ -1,0 +1,326 @@
+diff --git a/scripts/cleanup.sh b/scripts/cleanup.sh
+index 7578737..f743d2c 100755
+--- a/scripts/cleanup.sh
++++ b/scripts/cleanup.sh
+@@ -1,3 +1,75 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Delete regular files under DIR whose mtime is more than DAYS days ago
++# and whose name matches the glob PATTERN (default: *).
++# Usage: cleanup.sh [-n] DIR DAYS [PATTERN]
++set -euo pipefail
++
++usage() {
++  echo "usage: cleanup.sh [-n] DIR DAYS [PATTERN]" >&2
++  exit 2
++}
++
++fail() {
++  echo "cleanup.sh: $*" >&2
++  exit 1
++}
++
++dry_run=0
++if [ "${1:-}" = "-n" ]; then
++  dry_run=1
++  shift
++fi
++
++[ $# -ge 2 ] && [ $# -le 3 ] || usage
++dir=$1
++days=$2
++pattern=${3:-*}
++
++case $days in
++  ''|*[!0-9]*) usage ;;
++esac
++
++[ -n "$dir" ] || fail "refusing to run: DIR is empty"
++[ -d "$dir" ] || fail "refusing to run: not a directory: $dir"
++
++# tr -s collapses repeated slashes, since bash reports "//" for the root.
++resolved=$(cd -P -- "$dir" && pwd -P | tr -s /)
++[ "$resolved" != "/" ] || fail "refusing to run: DIR is /"
++
++home=""
++if [ -n "${HOME:-}" ]; then
++  home=$(cd -P -- "$HOME" 2>/dev/null && pwd -P | tr -s /) || home=""
++fi
++if [ -n "$home" ] && [ "$resolved" = "$home" ]; then
++  fail "refusing to run: DIR is the home directory"
++fi
++
++# Shell globs do not match leading dots unless the pattern starts with one.
++find_args=(-P "$dir" -type f -mmin "+$((days * 1440))" -name "$pattern")
++case $pattern in
++  .*) ;;
++  *) find_args+=(! -name '.*') ;;
++esac
++
++# Candidates go to a temp file as NUL-separated records so that names
++# containing newlines are read back intact.
++list=$(mktemp)
++trap 'rm -f -- "$list"' EXIT
++find "${find_args[@]}" -print0 > "$list" || fail "find failed under $dir"
++
++files=()
++while IFS= read -r -d '' f; do
++  files+=("$f")
++done < "$list"
++
++if [ ${#files[@]} -eq 0 ]; then
++  exit 0
++fi
++
++if [ "$dry_run" -eq 0 ]; then
++  for f in "${files[@]}"; do
++    rm -f -- "$f" || fail "could not delete: $f"
++  done
++fi
++
++printf '%s\n' "${files[@]}" | LC_ALL=C sort
+diff --git a/tests/test_cleanup_behaviour.py b/tests/test_cleanup_behaviour.py
+new file mode 100644
+index 0000000..0c81679
+--- /dev/null
++++ b/tests/test_cleanup_behaviour.py
+@@ -0,0 +1,212 @@
++import os
++import subprocess
++import time
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "cleanup.sh"
++DAY = 86400
++
++
++def run(*args, env=None):
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++
++
++def make(path: Path, age_days: float) -> Path:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text("x")
++    mtime = time.time() - age_days * DAY
++    os.utime(path, (mtime, mtime))
++    return path
++
++
++def test_deletes_old_files_and_keeps_recent_ones(tmp_path):
++    old = make(tmp_path / "old.log", 10)
++    recent = make(tmp_path / "recent.log", 1)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{old}\n"
++    assert not old.exists()
++    assert recent.exists()
++
++
++def test_dry_run_prints_but_deletes_nothing(tmp_path):
++    old = make(tmp_path / "old.log", 10)
++
++    result = run("-n", str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{old}\n"
++    assert old.exists()
++
++
++def test_recurses_into_subdirectories(tmp_path):
++    deep = make(tmp_path / "a" / "b" / "c" / "deep.txt", 30)
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{deep}\n"
++    assert not deep.exists()
++
++
++def test_output_is_sorted(tmp_path):
++    names = ["zeta.log", "alpha.log", "mid/beta.log"]
++    paths = [make(tmp_path / n, 10) for n in names]
++
++    result = run(str(tmp_path), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout.splitlines() == sorted(str(p) for p in paths)
++
++
++def test_pattern_limits_matches(tmp_path):
++    log = make(tmp_path / "app.log", 10)
++    txt = make(tmp_path / "notes.txt", 10)
++
++    result = run(str(tmp_path), "5", "*.log")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{log}\n"
++    assert not log.exists()
++    assert txt.exists()
++
++
++def test_default_pattern_skips_hidden_files(tmp_path):
++    hidden = make(tmp_path / ".env", 10)
++    visible = make(tmp_path / "visible", 10)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{visible}\n"
++    assert hidden.exists()
++
++
++def test_dot_pattern_matches_hidden_files(tmp_path):
++    hidden = make(tmp_path / ".cache", 10)
++
++    result = run(str(tmp_path), "5", ".*")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{hidden}\n"
++    assert not hidden.exists()
++
++
++def test_never_deletes_directories(tmp_path):
++    empty_dir = tmp_path / "old-dir.log"
++    empty_dir.mkdir()
++    old_time = time.time() - 10 * DAY
++    os.utime(empty_dir, (old_time, old_time))
++
++    result = run(str(tmp_path), "1", "*.log")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert empty_dir.is_dir()
++
++
++def test_symlink_inside_dir_is_not_deleted(tmp_path):
++    target = make(tmp_path / "outside" / "target.txt", 10)
++    link = tmp_path / "work" / "link.txt"
++    link.parent.mkdir()
++    link.symlink_to(target)
++
++    result = run(str(tmp_path / "work"), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert link.is_symlink()
++    assert target.exists()
++
++
++def test_symlinked_directory_is_not_followed(tmp_path):
++    outside = tmp_path / "outside"
++    target = make(outside / "target.txt", 10)
++    work = tmp_path / "work"
++    work.mkdir()
++    (work / "linkdir").symlink_to(outside, target_is_directory=True)
++
++    result = run(str(work), "1")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert target.exists()
++
++
++def test_refuses_empty_dir(tmp_path):
++    result = run("", "1")
++
++    assert result.returncode == 1
++    assert "DIR is empty" in result.stderr
++
++
++def test_refuses_non_directory(tmp_path):
++    f = make(tmp_path / "file.txt", 10)
++
++    result = run(str(f), "1")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++    assert f.exists()
++
++
++def test_refuses_missing_path(tmp_path):
++    result = run(str(tmp_path / "missing"), "1")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++
++
++def test_refuses_home_directory(tmp_path):
++    home = tmp_path / "home"
++    old = make(home / "old.log", 10)
++    env = dict(os.environ, HOME=str(home))
++
++    result = run(str(home), "1", env=env)
++
++    assert result.returncode == 1
++    assert "home directory" in result.stderr
++    assert old.exists()
++
++
++def test_refuses_home_reached_through_symlink(tmp_path):
++    home = tmp_path / "home"
++    home.mkdir()
++    alias = tmp_path / "alias"
++    alias.symlink_to(home, target_is_directory=True)
++    old = make(home / "old.log", 10)
++    env = dict(os.environ, HOME=str(home))
++
++    result = run(str(alias), "1", env=env)
++
++    assert result.returncode == 1
++    assert old.exists()
++
++
++@pytest.mark.parametrize(
++    "args",
++    [
++        [],
++        ["dir"],
++        ["dir", "1", "*", "extra"],
++        ["-n"],
++        ["dir", "-1"],
++        ["dir", "abc"],
++        ["dir", "1.5"],
++        ["dir", ""],
++    ],
++)
++def test_bad_usage_exits_2(args):
++    result = run(*args)
++
++    assert result.returncode == 2
++    assert "usage:" in result.stderr
+diff --git a/tests/test_cleanup_root_refusal.py b/tests/test_cleanup_root_refusal.py
+new file mode 100644
+index 0000000..783a467
+--- /dev/null
++++ b/tests/test_cleanup_root_refusal.py
+@@ -0,0 +1,20 @@
++import subprocess
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "cleanup.sh"
++
++
++@pytest.mark.parametrize("root", ["//", "///", "/."])
++def test_refuses_root_spelled_with_extra_slashes(root):
++    # Dry run only: if the refusal ever regressed, this must not delete anything.
++    result = subprocess.run(
++        ["bash", str(SCRIPT), "-n", root, "1"],
++        capture_output=True,
++        text=True,
++        timeout=60,
++    )
++
++    assert result.returncode == 1
++    assert "DIR is /" in result.stderr

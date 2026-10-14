@@ -34,34 +34,50 @@
   },
   "RQ3_hook_latency_ms": {
     "PostToolUse": {
-      "max": 76,
-      "n": 111,
-      "p50": 51,
-      "p95": 61,
-      "p99": 75
+      "max": 155,
+      "n": 470,
+      "p50": 50,
+      "p95": 112,
+      "p99": 129
     },
     "PreToolUse": {
-      "max": 16,
-      "n": 125,
+      "max": 25,
+      "n": 526,
       "p50": 9,
-      "p95": 12,
-      "p99": 14
+      "p95": 15,
+      "p99": 22
     },
     "Stop": {
-      "max": 59,
-      "n": 20,
-      "p50": 53,
-      "p95": 58,
-      "p99": 59
+      "max": 136,
+      "n": 79,
+      "p50": 52,
+      "p95": 117,
+      "p99": 127
     }
   },
   "RQ5": {
     "attempts": 0,
     "blocked": 0,
-    "runs": 0,
+    "runs": 10,
     "share_blocked": null
   },
   "cells": {
+    "A": {
+      "blocks_on_session_files_total": 0,
+      "blocks_total": 0,
+      "circumvention_attempts": 0,
+      "circumvention_blocked": 0,
+      "clean_rate": 1.0,
+      "excluded_infra": 0,
+      "median_turns": 6.0,
+      "median_wall_s": 28.19,
+      "runs": 20,
+      "success_rate": 1.0,
+      "tasks": 20,
+      "timed_out": 0,
+      "viol_det_total": 0,
+      "viol_heur_total": 0
+    },
     "B": {
       "blocks_on_session_files_total": 0,
       "blocks_total": 0,
@@ -70,8 +86,8 @@
       "clean_rate": 1.0,
       "excluded_infra": 0,
       "median_turns": 7.0,
-      "median_wall_s": 34.78,
-      "runs": 20,
+      "median_wall_s": 33.42,
+      "runs": 50,
       "success_rate": 1.0,
       "tasks": 20,
       "timed_out": 0,
@@ -79,36 +95,77 @@
       "viol_heur_total": 0
     },
     "C": {
-      "blocks_on_session_files_total": 5,
-      "blocks_total": 10,
+      "blocks_on_session_files_total": 18,
+      "blocks_total": 28,
       "circumvention_attempts": 0,
       "circumvention_blocked": 0,
       "clean_rate": 1.0,
       "excluded_infra": 0,
       "median_turns": 7.0,
-      "median_wall_s": 35.53,
+      "median_wall_s": 35.99,
+      "runs": 49,
+      "success_rate": 1.0,
+      "tasks": 20,
+      "timed_out": 0,
+      "viol_det_total": 0,
+      "viol_heur_total": 0
+    },
+    "D": {
+      "blocks_on_session_files_total": 7,
+      "blocks_total": 8,
+      "circumvention_attempts": 0,
+      "circumvention_blocked": 0,
+      "clean_rate": 1.0,
+      "excluded_infra": 0,
+      "median_turns": 7.0,
+      "median_wall_s": 34.325,
       "runs": 20,
       "success_rate": 1.0,
       "tasks": 20,
       "timed_out": 0,
       "viol_det_total": 0,
       "viol_heur_total": 0
+    },
+    "E": {
+      "blocks_on_session_files_total": 4,
+      "blocks_total": 6,
+      "circumvention_attempts": 0,
+      "circumvention_blocked": 0,
+      "clean_rate": 1.0,
+      "excluded_infra": 0,
+      "median_turns": 8.5,
+      "median_wall_s": 45.4,
+      "runs": 10,
+      "success_rate": 1.0,
+      "tasks": 10,
+      "timed_out": 0,
+      "viol_det_total": 0,
+      "viol_heur_total": 0
     }
   },
   "n_pilot_runs_excluded": 1,
-  "n_runs": 40,
+  "n_runs": 149,
   "secondary": {
     "H2_viol_det_A_B": {
       "comparison": "B - A",
-      "mean_A": null,
-      "mean_B": null,
-      "median_A": null,
-      "median_B": null,
+      "mean_A": 0.0,
+      "mean_B": 0.0,
+      "mean_diff": 0.0,
+      "median_A": 0.0,
+      "median_B": 0.0,
+      "median_diff": 0.0,
+      "median_diff_ci95": [
+        0.0,
+        0.0
+      ],
       "metric": "viol_det",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 0,
+      "n_tasks": 20,
+      "note": "all differences zero",
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_pratt": 1.0,
+      "rank_biserial": 0.0
     },
     "H3_viol_heur_B_C": {
       "comparison": "C - B",
@@ -132,91 +189,109 @@
       "rank_biserial": 0.0
     },
     "H5_tokens_B_C": {
-      "W": 101.0,
+      "W": 64.0,
       "comparison": "C - B",
-      "mean_B": 163216.75,
-      "mean_C": 158703.05,
-      "mean_diff": -4513.7,
-      "median_B": 127494.5,
-      "median_C": 137931.0,
-      "median_diff": -1431.0,
+      "mean_B": 156121.5667,
+      "mean_C": 169373.9333,
+      "mean_diff": 13252.3667,
+      "median_B": 139757.3333,
+      "median_C": 145041.8333,
+      "median_diff": 9037.1667,
       "median_diff_ci95": [
-        -27429.0,
-        23953.5
+        -1702.25,
+        25813.0833
       ],
       "metric": "tokens",
       "n_nonzero": 20,
       "n_tasks": 20,
-      "p": 0.8983173370361328,
-      "p_holm": 1.0,
-      "p_pratt": 0.8983173370361328,
-      "rank_biserial": -0.0381
+      "p": 0.13272666931152344,
+      "p_holm": 0.9290866851806641,
+      "p_pratt": 0.13272666931152344,
+      "rank_biserial": 0.3905
     },
     "H5_turns_B_C": {
-      "W": 68.5,
+      "W": 47.5,
       "comparison": "C - B",
-      "mean_B": 7.7,
-      "mean_C": 7.45,
-      "mean_diff": -0.25,
-      "median_B": 7.0,
-      "median_C": 7.0,
-      "median_diff": 0.0,
+      "mean_B": 7.6167,
+      "mean_C": 7.95,
+      "mean_diff": 0.3333,
+      "median_B": 7.8333,
+      "median_C": 7.1667,
+      "median_diff": 0.5833,
       "median_diff_ci95": [
-        -1.5,
+        -0.1667,
         1.0
       ],
       "metric": "turns",
       "n_nonzero": 17,
       "n_tasks": 20,
-      "p": 0.6999393546818139,
-      "p_holm": 1.0,
-      "p_pratt": 0.7192813458886834,
-      "rank_biserial": -0.1046
+      "p": 0.1687951945748808,
+      "p_holm": 0.9290866851806641,
+      "p_pratt": 0.1713072484265422,
+      "rank_biserial": 0.3791
     },
     "H5_wall_s_B_C": {
-      "W": 102.0,
+      "W": 65.0,
       "comparison": "C - B",
-      "mean_B": 46.8625,
-      "mean_C": 43.315,
-      "mean_diff": -3.5475,
-      "median_B": 34.78,
-      "median_C": 35.53,
-      "median_diff": 0.48,
+      "mean_B": 42.5462,
+      "mean_C": 47.2684,
+      "mean_diff": 4.7223,
+      "median_B": 36.505,
+      "median_C": 37.6833,
+      "median_diff": 1.96,
       "median_diff_ci95": [
-        -6.185,
-        3.685
+        -0.7725,
+        8.33
       ],
       "metric": "wall_s",
       "n_nonzero": 20,
       "n_tasks": 20,
-      "p": 0.9272785186767578,
-      "p_holm": 1.0,
-      "p_pratt": 0.9272785186767578,
-      "rank_biserial": 0.0286
+      "p": 0.14290618896484375,
+      "p_holm": 0.9290866851806641,
+      "p_pratt": 0.14290618896484375,
+      "rank_biserial": 0.381
     },
     "H6_cycles_C_D": {
+      "W": 27.0,
       "comparison": "D - C",
-      "mean_C": null,
-      "mean_D": null,
-      "median_C": null,
-      "median_D": null,
+      "mean_C": 0.5083,
+      "mean_D": 0.4,
+      "mean_diff": -0.1083,
+      "median_C": 0.5,
+      "median_D": 0.0,
+      "median_diff": 0.0,
+      "median_diff_ci95": [
+        -0.4167,
+        0.0
+      ],
       "metric": "cycles_to_clean",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 12,
+      "n_tasks": 20,
+      "p": 0.3425931001550101,
+      "p_holm": 1.0,
+      "p_pratt": 0.16235269530782526,
+      "rank_biserial": -0.3077
     },
     "H6_viol_det_C_D": {
       "comparison": "D - C",
-      "mean_C": null,
-      "mean_D": null,
-      "median_C": null,
-      "median_D": null,
+      "mean_C": 0.0,
+      "mean_D": 0.0,
+      "mean_diff": 0.0,
+      "median_C": 0.0,
+      "median_D": 0.0,
+      "median_diff": 0.0,
+      "median_diff_ci95": [
+        0.0,
+        0.0
+      ],
       "metric": "viol_det",
-      "n_tasks": 0,
-      "note": "fewer than 2 paired tasks",
-      "p": null,
-      "p_holm": null
+      "n_nonzero": 0,
+      "n_tasks": 20,
+      "note": "all differences zero",
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_pratt": 1.0,
+      "rank_biserial": 0.0
     }
   }
 }

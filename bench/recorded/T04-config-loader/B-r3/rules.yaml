@@ -1,0 +1,168 @@
+version: 1
+rules:
+- id: B-EVAL
+  title: eval or exec
+  severity: critical
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  check:
+    engine: ast
+    rule: call
+    names:
+    - eval
+    - exec
+  message: Parse the input explicitly; never eval/exec it.
+  fixtures:
+    fail:
+    - 'x = eval(s)
+
+      '
+    pass:
+    - 'x = int(s)
+
+      '
+- id: B-OS-PATH
+  title: os.path instead of pathlib
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: \bos\.path\.
+  message: Use pathlib.Path instead of os.path.
+  fixtures:
+    fail:
+    - 'p = os.path.join(a, b)
+
+      '
+    pass:
+    - 'p = Path(a) / b
+
+      '
+- id: B-PRINT
+  title: print() in library code
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  exclude:
+  - src/**/cli.py
+  - src/**/__main__.py
+  check:
+    engine: ast
+    rule: call
+    names:
+    - print
+  message: Use the logging module (logger = logging.getLogger(__name__)) instead of print().
+  fixtures:
+    fail:
+    - "def f(x):\n    print(x)\n"
+    pass:
+    - "import logging\nlog = logging.getLogger(__name__)\ndef f(x):\n    log.debug(x)\n"
+- id: B-DOCSTRING
+  title: Docstring longer than 5 lines
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: docstring-max-lines
+    max: 5
+  message: Shorten the docstring to at most 5 lines.
+  fixtures:
+    fail:
+    - "def f():\n    \"\"\"a\n    b\n    c\n    d\n    e\n    f\n    \"\"\"\n"
+    pass:
+    - "def f():\n    \"\"\"One line.\"\"\"\n"
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-DEPS
+  title: Dependency manifest changed
+  severity: required
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - requirements*.txt
+    - pyproject.toml
+    - setup.py
+    - setup.cfg
+    - Pipfile
+    - poetry.lock
+    - uv.lock
+  message: Do not add dependencies; this task must use the standard library only.
+  fixtures:
+    fail:
+    - requirements.txt
+    - pyproject.toml
+    pass:
+    - src/pkg/core.py
+- id: B-ANSWERS
+  title: Hard-coded answer lookup
+  severity: advisory
+  decidability: heuristic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: python
+    plugin: answers.literal_lookup
+    options:
+      min_branches: 3
+  message: Compute the result; do not map known test inputs to expected outputs.
+  fixtures:
+    fail:
+    - "def f(x):\n    if x == 'a':\n        return 1\n    if x == 'b':\n        return 2\n    if x == 'c':\n        return\
+      \ 3\n"
+    pass:
+    - "def f(x):\n    return len(x)\n"
+- id: B-VOICE
+  title: Filler phrase in a comment or docstring
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  - '**/*.md'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    flags:
+    - i
+    patterns:
+    - \b(it is worth noting|it's worth noting|note that|simply|just|basically|obviously|clearly|of course)\b
+    - \b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b
+  message: Delete the filler word; state the fact directly.
+  fixtures:
+    fail:
+    - '# Simply return the value
+
+      '
+    - '# A robust parser
+
+      '
+    pass:
+    - '# Return the cached value
+
+      '

@@ -1,0 +1,218 @@
+diff --git a/scripts/render.sh b/scripts/render.sh
+index efba8c1..d5e42a0 100755
+--- a/scripts/render.sh
++++ b/scripts/render.sh
+@@ -1,3 +1,49 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++# Usage: render.sh TEMPLATE VALUES
++# Replaces each {{path}} in TEMPLATE with the value at that dotted path in the VALUES JSON object.
++
++if [[ $# -ne 2 ]]; then
++  echo "usage: render.sh TEMPLATE VALUES" >&2
++  exit 2
++fi
++
++template=$1
++values=$2
++
++if [[ ! -f "$template" ]]; then
++  echo "render.sh: cannot read template: $template" >&2
++  exit 1
++fi
++if [[ ! -f "$values" ]]; then
++  echo "render.sh: cannot read values: $values" >&2
++  exit 1
++fi
++if ! jq -e -s 'length == 1 and (.[0] | type) == "object"' "$values" >/dev/null 2>&1; then
++  echo "render.sh: values is not a single JSON object: $values" >&2
++  exit 1
++fi
++
++# Distinct placeholder paths in order of first appearance whose value is missing, null, an object or an array.
++bad=$(jq -r -n --rawfile t "$template" --slurpfile v "$values" '
++  def val($p): $v[0] | try getpath($p | split(".")) catch null;
++  def is_bad($x): ($x | type) as $ty | $ty == "null" or $ty == "object" or $ty == "array";
++  [$t | match("\\{\\{([A-Za-z0-9_.]+)\\}\\}"; "g") | .captures[0].string]
++  | reduce .[] as $p ([]; if any(. == $p) then . else . + [$p] end)
++  | .[] | select(is_bad(val(.)))
++' )
++
++if [[ -n "$bad" ]]; then
++  while IFS= read -r path; do
++    echo "render.sh: bad key $path" >&2
++  done <<< "$bad"
++  exit 1
++fi
++
++# -j writes the string without adding a newline, so the output ends as the template does.
++jq -j -n --rawfile t "$template" --slurpfile v "$values" '
++  def val($p): $v[0] | getpath($p | split("."));
++  def text($x): if ($x | type) == "string" then $x else ($x | tojson) end;
++  $t | gsub("\\{\\{(?<p>[A-Za-z0-9_.]+)\\}\\}"; text(val(.p)))
++'
+diff --git a/tests/test_render_values.py b/tests/test_render_values.py
+new file mode 100644
+index 0000000..e3e7875
+--- /dev/null
++++ b/tests/test_render_values.py
+@@ -0,0 +1,156 @@
++import json
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "render.sh"
++
++
++def render(tmp_path, template, values):
++    tpl = tmp_path / "template.txt"
++    tpl.write_bytes(template.encode("utf-8"))
++    val = tmp_path / "values.json"
++    text = values if isinstance(values, str) else json.dumps(values)
++    val.write_text(text, encoding="utf-8")
++    return subprocess.run(
++        ["bash", str(SCRIPT), str(tpl), str(val)], capture_output=True
++    )
++
++
++def test_inserts_string_number_and_boolean(tmp_path):
++    result = render(
++        tmp_path,
++        "host={{db.host}} port={{db.port}} tls={{db.tls}}\n",
++        {"db": {"host": "localhost", "port": 5432, "tls": True}},
++    )
++    assert result.returncode == 0
++    assert result.stdout == b"host=localhost port=5432 tls=true\n"
++    assert result.stderr == b""
++
++
++def test_top_level_key_and_repeated_placeholder(tmp_path):
++    result = render(tmp_path, "{{name}}-{{name}}", {"name": "api"})
++    assert result.returncode == 0
++    assert result.stdout == b"api-api"
++
++
++def test_special_characters_are_inserted_literally(tmp_path):
++    value = 'a/b & c\\d\nline "two" $HOME \\n {{other}}'
++    result = render(tmp_path, "[{{v}}]", {"v": value})
++    assert result.returncode == 0
++    assert result.stdout == ("[" + value + "]").encode("utf-8")
++
++
++def test_inserted_value_is_not_rescanned_for_placeholders(tmp_path):
++    result = render(tmp_path, "{{a}}", {"a": "{{b}}", "b": "X"})
++    assert result.returncode == 0
++    assert result.stdout == b"{{b}}"
++
++
++def test_non_ascii_text_survives(tmp_path):
++    result = render(tmp_path, "{{greet}} café", {"greet": "สวัสดี"})
++    assert result.returncode == 0
++    assert result.stdout == "สวัสดี café".encode("utf-8")
++
++
++def test_trailing_newline_is_kept_when_template_has_one(tmp_path):
++    result = render(tmp_path, "x={{x}}\n", {"x": 1})
++    assert result.stdout == b"x=1\n"
++
++
++def test_no_trailing_newline_is_added_when_template_has_none(tmp_path):
++    result = render(tmp_path, "x={{x}}", {"x": 1})
++    assert result.stdout == b"x=1"
++
++
++def test_empty_template_gives_empty_output(tmp_path):
++    result = render(tmp_path, "", {})
++    assert result.returncode == 0
++    assert result.stdout == b""
++
++
++def test_missing_key_reports_bad_key_and_prints_nothing(tmp_path):
++    result = render(tmp_path, "{{a}} {{db.host}}", {"a": "ok"})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == b"render.sh: bad key db.host\n"
++
++
++def test_null_value_is_bad(tmp_path):
++    result = render(tmp_path, "{{a}}", {"a": None})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == b"render.sh: bad key a\n"
++
++
++def test_object_and_array_values_are_bad(tmp_path):
++    result = render(tmp_path, "{{o}} {{arr}}", {"o": {"k": 1}, "arr": [1, 2]})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == b"render.sh: bad key o\nrender.sh: bad key arr\n"
++
++
++def test_path_through_scalar_is_bad(tmp_path):
++    result = render(tmp_path, "{{a.b}}", {"a": "text"})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == b"render.sh: bad key a.b\n"
++
++
++def test_bad_keys_reported_once_in_first_appearance_order(tmp_path):
++    template = "{{z.missing}} {{a}} {{z.missing}} {{m}} {{a}}"
++    result = render(tmp_path, template, {"a": None, "m": {"x": 1}})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == (
++        b"render.sh: bad key z.missing\n"
++        b"render.sh: bad key a\n"
++        b"render.sh: bad key m\n"
++    )
++
++
++def test_wrong_argument_count_prints_usage_and_exits_2(tmp_path):
++    tpl = tmp_path / "t.txt"
++    tpl.write_text("x", encoding="utf-8")
++    for args in ([], [str(tpl)], [str(tpl), str(tpl), str(tpl)]):
++        result = subprocess.run(["bash", str(SCRIPT), *args], capture_output=True)
++        assert result.returncode == 2
++        assert result.stdout == b""
++        assert b"usage" in result.stderr
++
++
++def test_missing_template_file_exits_1(tmp_path):
++    val = tmp_path / "v.json"
++    val.write_text("{}", encoding="utf-8")
++    result = subprocess.run(
++        ["bash", str(SCRIPT), str(tmp_path / "nope.txt"), str(val)],
++        capture_output=True,
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""
++
++
++def test_missing_values_file_exits_1(tmp_path):
++    tpl = tmp_path / "t.txt"
++    tpl.write_text("x", encoding="utf-8")
++    result = subprocess.run(
++        ["bash", str(SCRIPT), str(tpl), str(tmp_path / "nope.json")],
++        capture_output=True,
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""
++
++
++def test_invalid_json_exits_1(tmp_path):
++    result = render(tmp_path, "{{a}}", '{"a": ')
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""
++
++
++def test_json_that_is_not_an_object_exits_1(tmp_path):
++    result = render(tmp_path, "{{a}}", [{"a": 1}])
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""

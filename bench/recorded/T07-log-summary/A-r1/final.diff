@@ -1,0 +1,145 @@
+diff --git a/src/logsum/summary.py b/src/logsum/summary.py
+index a2ad388..7b6cd86 100644
+--- a/src/logsum/summary.py
++++ b/src/logsum/summary.py
+@@ -1,5 +1,52 @@
++import re
++from collections import Counter
+ from collections.abc import Iterable
+ 
++# Combined log format:
++# host ident authuser [time] "METHOD target PROTO" status bytes "referer" "user-agent"
++_LINE_RE = re.compile(
++    r"^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "
++    r'"(?P<method>[A-Z]+) (?P<target>\S+) HTTP/[\d.]+" '
++    r"(?P<status>\d{3}) (?P<bytes>\d+|-) "
++    r'"[^"]*" "[^"]*"$'
++)
++
+ 
+ def summarize(lines: Iterable[str]) -> dict[str, object]:
+-    raise NotImplementedError
++    total = 0
++    malformed = 0
++    status: Counter[str] = Counter()
++    paths: Counter[str] = Counter()
++    ips: set[str] = set()
++    size = 0
++
++    for raw in lines:
++        line = raw.strip()
++        if not line:
++            continue
++        match = _LINE_RE.match(line)
++        if match is None:
++            malformed += 1
++            continue
++
++        total += 1
++        ips.add(match["ip"])
++        paths[match["target"].split("?", 1)[0]] += 1
++
++        code = match["status"][0]
++        if code in "2345":
++            status[f"{code}xx"] += 1
++
++        if match["bytes"] != "-":
++            size += int(match["bytes"])
++
++    top_paths = [p for p, _ in sorted(paths.items(), key=lambda kv: (-kv[1], kv[0]))[:3]]
++
++    return {
++        "total": total,
++        "status": dict(status),
++        "top_paths": top_paths,
++        "unique_ips": len(ips),
++        "bytes": size,
++        "malformed": malformed,
++    }
+diff --git a/tests/test_summarize_behaviour.py b/tests/test_summarize_behaviour.py
+new file mode 100644
+index 0000000..aa742bd
+--- /dev/null
++++ b/tests/test_summarize_behaviour.py
+@@ -0,0 +1,81 @@
++from logsum import summarize
++
++
++def make(ip="203.0.113.9", path="/index.html", status=200, size="2326", query=""):
++    return (
++        f'{ip} - - [10/Oct/2026:13:55:36 +0000] "GET {path}{query} HTTP/1.1" '
++        f'{status} {size} "-" "curl/8.0"'
++    )
++
++
++def test_empty_input():
++    assert summarize([]) == {
++        "total": 0,
++        "status": {},
++        "top_paths": [],
++        "unique_ips": 0,
++        "bytes": 0,
++        "malformed": 0,
++    }
++
++
++def test_status_classes_only_when_present():
++    lines = [make(status=200), make(status=204), make(status=301), make(status=503)]
++    assert summarize(lines)["status"] == {"2xx": 2, "3xx": 1, "5xx": 1}
++
++
++def test_4xx_counted():
++    assert summarize([make(status=404)])["status"] == {"4xx": 1}
++
++
++def test_top_paths_strip_query_string():
++    lines = [make(path="/a", query="?x=1"), make(path="/a", query="?x=2"), make(path="/b")]
++    assert summarize(lines)["top_paths"] == ["/a", "/b"]
++
++
++def test_top_paths_limited_to_three_by_frequency():
++    lines = (
++        [make(path="/d")] * 4
++        + [make(path="/c")] * 3
++        + [make(path="/b")] * 2
++        + [make(path="/a")] * 1
++    )
++    assert summarize(lines)["top_paths"] == ["/d", "/c", "/b"]
++
++
++def test_top_paths_ties_sorted_alphabetically():
++    lines = [make(path="/z"), make(path="/m"), make(path="/a"), make(path="/q")]
++    assert summarize(lines)["top_paths"] == ["/a", "/m", "/q"]
++
++
++def test_unique_ips():
++    lines = [make(ip="10.0.0.1"), make(ip="10.0.0.1"), make(ip="10.0.0.2")]
++    assert summarize(lines)["unique_ips"] == 2
++
++
++def test_bytes_sum_with_dash_as_zero():
++    lines = [make(size="100"), make(size="-"), make(size="250")]
++    assert summarize(lines)["bytes"] == 350
++
++
++def test_malformed_lines_skipped_and_counted():
++    lines = [make(), "this is not a log line", "203.0.113.9 - - [bad"]
++    result = summarize(lines)
++    assert result["malformed"] == 2
++    assert result["total"] == 1
++    assert result["bytes"] == 2326
++    assert result["unique_ips"] == 1
++
++
++def test_blank_lines_ignored_entirely():
++    result = summarize(["", "   ", make(), "\n"])
++    assert result["total"] == 1
++    assert result["malformed"] == 0
++
++
++def test_trailing_newline_accepted():
++    assert summarize([make() + "\n"])["total"] == 1
++
++
++def test_accepts_any_iterable():
++    assert summarize(iter([make(), make()]))["total"] == 2

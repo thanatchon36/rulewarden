@@ -1,0 +1,192 @@
+diff --git a/scripts/backup.sh b/scripts/backup.sh
+index efba8c1..1170ad7 100755
+--- a/scripts/backup.sh
++++ b/scripts/backup.sh
+@@ -1,3 +1,40 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++# Usage: backup.sh SRC_DIR DEST_DIR [KEEP]
++# Archive the contents of SRC_DIR to DEST_DIR/backup-<STAMP>.tar.gz and keep
++# only the newest KEEP backups (default 5). BACKUP_NOW overrides <STAMP>.
++set -eo pipefail
++
++usage() {
++  echo "usage: $(basename "$0") SRC_DIR DEST_DIR [KEEP]" >&2
++  exit 2
++}
++
++[[ $# -ge 2 && $# -le 3 ]] || usage
++
++src=$1
++dest=$2
++keep=${3-5}
++
++[[ $keep =~ ^0*[1-9][0-9]*$ ]] || usage
++
++if [[ ! -d $src ]]; then
++  echo "error: not a directory: $src" >&2
++  exit 1
++fi
++
++mkdir -p -- "$dest"
++stamp=${BACKUP_NOW:-$(date +%Y%m%d-%H%M%S)}
++archive="$dest/backup-$stamp.tar.gz"
++
++tar -czf "$archive" -C "$src" .
++
++# Stamps sort lexicographically, so newest = greatest name. Only regular files
++# matching the backup pattern are candidates for deletion.
++find "$dest" -maxdepth 1 -type f -name 'backup-*.tar.gz' -print |
++  LC_ALL=C sort -r |
++  tail -n "+$((keep + 1))" |
++  while IFS= read -r old; do
++    rm -f -- "$old"
++  done
++
++echo "$archive"
+diff --git a/tests/test_backup_archive.py b/tests/test_backup_archive.py
+new file mode 100644
+index 0000000..6a5d721
+--- /dev/null
++++ b/tests/test_backup_archive.py
+@@ -0,0 +1,139 @@
++import os
++import re
++import subprocess
++import tarfile
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "backup.sh"
++
++
++def run(*args, now=None):
++    env = dict(os.environ)
++    env.pop("BACKUP_NOW", None)
++    if now is not None:
++        env["BACKUP_NOW"] = now
++    return subprocess.run(
++        ["bash", str(SCRIPT), *map(str, args)],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++
++
++@pytest.fixture
++def src(tmp_path):
++    d = tmp_path / "src"
++    (d / "sub").mkdir(parents=True)
++    (d / "a.txt").write_text("alpha")
++    (d / "sub" / "b.txt").write_text("beta")
++    return d
++
++
++def test_archive_contains_src_contents_relative(src, tmp_path):
++    dest = tmp_path / "out"
++    result = run(src, dest, now="20260101-120000")
++    assert result.returncode == 0, result.stderr
++
++    archive = dest / "backup-20260101-120000.tar.gz"
++    with tarfile.open(archive, "r:gz") as tar:
++        names = {n.removeprefix("./") for n in tar.getnames()}
++        assert {"a.txt", "sub", "sub/b.txt"} <= names
++        assert not any(n.startswith("/") for n in tar.getnames())
++        assert "src" not in names
++        member = next(m for m in tar.getmembers() if m.name.removeprefix("./") == "a.txt")
++        assert tar.extractfile(member).read() == b"alpha"
++
++
++def test_creates_missing_dest_dir(src, tmp_path):
++    dest = tmp_path / "nested" / "deeper"
++    assert run(src, dest, now="20260101-120000").returncode == 0
++    assert (dest / "backup-20260101-120000.tar.gz").is_file()
++
++
++def test_prints_archive_path(src, tmp_path):
++    dest = tmp_path / "out"
++    result = run(src, dest, now="20260101-120000")
++    assert result.stdout.strip() == str(dest / "backup-20260101-120000.tar.gz")
++
++
++def test_stamp_defaults_to_local_time_format(src, tmp_path):
++    dest = tmp_path / "out"
++    result = run(src, dest)
++    assert result.returncode == 0, result.stderr
++    name = Path(result.stdout.strip()).name
++    assert re.fullmatch(r"backup-\d{8}-\d{6}\.tar\.gz", name)
++
++
++def test_default_keeps_newest_five(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    for day in range(1, 8):
++        (dest / f"backup-2026010{day}-000000.tar.gz").write_bytes(b"")
++
++    assert run(src, dest, now="20260201-000000").returncode == 0
++
++    kept = sorted(p.name for p in dest.glob("backup-*.tar.gz"))
++    assert kept == [
++        "backup-20260104-000000.tar.gz",
++        "backup-20260105-000000.tar.gz",
++        "backup-20260106-000000.tar.gz",
++        "backup-20260107-000000.tar.gz",
++        "backup-20260201-000000.tar.gz",
++    ]
++
++
++def test_custom_keep(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    for day in range(1, 4):
++        (dest / f"backup-2026010{day}-000000.tar.gz").write_bytes(b"")
++
++    assert run(src, dest, 2, now="20260201-000000").returncode == 0
++
++    kept = sorted(p.name for p in dest.glob("backup-*.tar.gz"))
++    assert kept == ["backup-20260103-000000.tar.gz", "backup-20260201-000000.tar.gz"]
++
++
++def test_rotation_never_touches_other_files(src, tmp_path):
++    dest = tmp_path / "out"
++    dest.mkdir()
++    others = ["notes.txt", "backup.log", "backup-1.zip", "archive.tar.gz"]
++    for name in others:
++        (dest / name).write_text("keep me")
++    (dest / "backup-dir.tar.gz").mkdir()
++    for day in range(1, 4):
++        (dest / f"backup-2026010{day}-000000.tar.gz").write_bytes(b"")
++
++    assert run(src, dest, 1, now="20260201-000000").returncode == 0
++
++    for name in others:
++        assert (dest / name).read_text() == "keep me"
++    assert (dest / "backup-dir.tar.gz").is_dir()
++    kept = sorted(p.name for p in dest.glob("backup-*.tar.gz") if p.is_file())
++    assert kept == ["backup-20260201-000000.tar.gz"]
++
++
++@pytest.mark.parametrize("keep", ["0", "-1", "abc", "1.5", ""])
++def test_invalid_keep_is_usage_error(src, tmp_path, keep):
++    dest = tmp_path / "out"
++    result = run(src, dest, keep)
++    assert result.returncode == 2
++    assert "usage" in result.stderr.lower()
++    assert not dest.exists()
++
++
++@pytest.mark.parametrize("args", [[], ["only-one"]])
++def test_too_few_args_is_usage_error(tmp_path, args):
++    result = run(*args)
++    assert result.returncode == 2
++    assert "usage" in result.stderr.lower()
++
++
++def test_src_not_a_directory_exits_1(tmp_path):
++    missing = tmp_path / "missing"
++    result = run(missing, tmp_path / "out", now="20260101-120000")
++    assert result.returncode == 1
++    assert result.stderr.strip() != ""
++    assert result.stdout == ""

@@ -1,0 +1,219 @@
+diff --git a/src/resilience/retry.py b/src/resilience/retry.py
+index cb6d921..47fd14a 100644
+--- a/src/resilience/retry.py
++++ b/src/resilience/retry.py
+@@ -1,5 +1,35 @@
++import functools
+ import time
+ 
+ 
+ def retry(times, exceptions=(Exception,), delay=0.0, backoff=2.0, sleep=time.sleep):
+-    raise NotImplementedError
++    """Retry the decorated function on ``exceptions``, at most ``times`` calls.
++
++    Waits ``delay * backoff ** (n - 1)`` seconds via ``sleep`` after failed attempt ``n``.
++    ``wrapper.last_attempts`` holds the call count of the latest invocation.
++    """
++    if times < 1:
++        raise ValueError(f"times must be at least 1, got {times}")
++    if delay < 0:
++        raise ValueError(f"delay must be non-negative, got {delay}")
++    if backoff < 1:
++        raise ValueError(f"backoff must be at least 1, got {backoff}")
++
++    def decorator(func):
++        @functools.wraps(func)
++        def wrapper(*args, **kwargs):
++            wrapper.last_attempts = 0
++            for attempt in range(1, times + 1):
++                wrapper.last_attempts = attempt
++                try:
++                    return func(*args, **kwargs)
++                except exceptions:
++                    if attempt == times:
++                        raise
++                    if delay:
++                        sleep(delay * backoff ** (attempt - 1))
++
++        wrapper.last_attempts = 0
++        return wrapper
++
++    return decorator
+diff --git a/tests/test_retry_behaviour.py b/tests/test_retry_behaviour.py
+new file mode 100644
+index 0000000..9573feb
+--- /dev/null
++++ b/tests/test_retry_behaviour.py
+@@ -0,0 +1,172 @@
++import pytest
++
++from resilience import retry
++
++
++class Flaky:
++    def __init__(self, failures, error=ValueError):
++        self.failures = failures
++        self.error = error
++        self.calls = 0
++
++    def __call__(self, value=1):
++        self.calls += 1
++        if self.calls <= self.failures:
++            raise self.error(f"failure {self.calls}")
++        return value
++
++
++def make_sleep():
++    sleeps = []
++    return sleeps, sleeps.append
++
++
++def test_retries_until_success_and_counts_attempts():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=2)
++    wrapped = retry(3, sleep=sleep)(flaky)
++
++    assert wrapped() == 1
++    assert flaky.calls == 3
++    assert wrapped.last_attempts == 3
++
++
++def test_last_exception_is_reraised_unchanged():
++    sleeps, sleep = make_sleep()
++    errors = []
++
++    @retry(3, sleep=sleep)
++    def always_fails():
++        error = KeyError("boom")
++        errors.append(error)
++        raise error
++
++    with pytest.raises(KeyError) as info:
++        always_fails()
++
++    assert info.value is errors[-1]
++    assert len(errors) == 3
++    assert always_fails.last_attempts == 3
++
++
++def test_at_most_times_calls_are_made():
++    flaky = Flaky(failures=100)
++    wrapped = retry(4, sleep=lambda seconds: None)(flaky)
++
++    with pytest.raises(ValueError):
++        wrapped()
++
++    assert flaky.calls == 4
++    assert wrapped.last_attempts == 4
++
++
++def test_backoff_schedule_uses_injected_sleep():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=3)
++    wrapped = retry(4, delay=1.5, backoff=2.0, sleep=sleep)(flaky)
++
++    assert wrapped() == 1
++    assert sleeps == [1.5, 3.0, 6.0]
++
++
++def test_no_sleep_after_final_failed_attempt():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=100)
++    wrapped = retry(3, delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(ValueError):
++        wrapped()
++
++    assert sleeps == [1.0, 2.0]
++
++
++def test_zero_delay_never_calls_sleep():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=2)
++    wrapped = retry(3, sleep=sleep)(flaky)
++
++    assert wrapped() == 1
++    assert sleeps == []
++
++
++def test_unlisted_exception_propagates_without_retry():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=5, error=TypeError)
++    wrapped = retry(5, exceptions=(ValueError,), delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(TypeError):
++        wrapped()
++
++    assert flaky.calls == 1
++    assert wrapped.last_attempts == 1
++    assert sleeps == []
++
++
++def test_listed_exception_subclass_is_retried():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=1, error=FileNotFoundError)
++    wrapped = retry(2, exceptions=(OSError,), sleep=sleep)(flaky)
++
++    assert wrapped() == 1
++    assert flaky.calls == 2
++
++
++def test_times_one_makes_single_call_and_no_sleep():
++    sleeps, sleep = make_sleep()
++    flaky = Flaky(failures=1)
++    wrapped = retry(1, delay=1.0, sleep=sleep)(flaky)
++
++    with pytest.raises(ValueError):
++        wrapped()
++
++    assert flaky.calls == 1
++    assert sleeps == []
++
++
++def test_last_attempts_resets_on_each_invocation():
++    flaky = Flaky(failures=1)
++    wrapped = retry(3, sleep=lambda seconds: None)(flaky)
++
++    wrapped()
++    assert wrapped.last_attempts == 2
++
++    flaky.calls = 0
++    flaky.failures = 0
++    wrapped()
++    assert wrapped.last_attempts == 1
++
++
++def test_wrapper_keeps_name_and_doc():
++    @retry(2)
++    def documented():
++        """Return a value."""
++        return 1
++
++    assert documented.__name__ == "documented"
++    assert documented.__doc__ == "Return a value."
++
++
++def test_arguments_are_passed_through():
++    @retry(2)
++    def add(a, b=0):
++        return a + b
++
++    assert add(2, b=3) == 5
++
++
++@pytest.mark.parametrize(
++    "kwargs",
++    [
++        {"times": 0},
++        {"times": -1},
++        {"times": 2, "delay": -0.1},
++        {"times": 2, "backoff": 0.5},
++    ],
++)
++def test_invalid_arguments_raise_value_error_at_decoration_time(kwargs):
++    with pytest.raises(ValueError):
++        retry(**kwargs)
++
++
++def test_valid_boundary_arguments_are_accepted():
++    retry(1, delay=0.0, backoff=1.0)

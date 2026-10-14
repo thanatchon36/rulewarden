@@ -1,0 +1,232 @@
+diff --git a/src/ttlcache/cache.py b/src/ttlcache/cache.py
+index cf1d76b..200377d 100644
+--- a/src/ttlcache/cache.py
++++ b/src/ttlcache/cache.py
+@@ -1,6 +1,69 @@
+ import time
++from collections import OrderedDict
+ 
+ 
+ class TTLCache:
++    """An LRU cache whose entries expire `ttl` seconds after being set.
++
++    Inserting a new key into a full cache drops expired entries first,
++    then evicts the least recently used entry if still full.
++    """
++
+     def __init__(self, maxsize, ttl, clock=time.monotonic):
+-        raise NotImplementedError
++        if maxsize <= 0:
++            raise ValueError("maxsize must be positive")
++        if ttl <= 0:
++            raise ValueError("ttl must be positive")
++        self._maxsize = maxsize
++        self._ttl = ttl
++        self._clock = clock
++        # Maps key -> (value, expiry). Iteration order is recency order, so the
++        # first item is the least recently used one.
++        self._data = OrderedDict()
++
++    def set(self, key, value):
++        if not self._is_live(key):
++            self._make_room()
++        self._data[key] = (value, self._clock() + self._ttl)
++        self._data.move_to_end(key)
++
++    def get(self, key, default=None):
++        if not self._is_live(key):
++            return default
++        self._data.move_to_end(key)
++        return self._data[key][0]
++
++    def delete(self, key):
++        if not self._is_live(key):
++            raise KeyError(key)
++        del self._data[key]
++
++    def __contains__(self, key):
++        return self._is_live(key)
++
++    def __len__(self):
++        self._purge_expired()
++        return len(self._data)
++
++    def _is_live(self, key):
++        entry = self._data.get(key)
++        if entry is None:
++            return False
++        if self._clock() < entry[1]:
++            return True
++        # Removed on lookup so expired entries do not linger in the store.
++        del self._data[key]
++        return False
++
++    def _make_room(self):
++        if len(self._data) < self._maxsize:
++            return
++        self._purge_expired()
++        if len(self._data) >= self._maxsize:
++            self._data.popitem(last=False)
++
++    def _purge_expired(self):
++        now = self._clock()
++        expired = [key for key, (_, expiry) in self._data.items() if now >= expiry]
++        for key in expired:
++            del self._data[key]
+diff --git a/tests/test_expiry_and_eviction.py b/tests/test_expiry_and_eviction.py
+new file mode 100644
+index 0000000..5280a61
+--- /dev/null
++++ b/tests/test_expiry_and_eviction.py
+@@ -0,0 +1,151 @@
++import pytest
++
++from ttlcache import TTLCache
++
++
++class FakeClock:
++    def __init__(self):
++        self.now = 0.0
++
++    def __call__(self):
++        return self.now
++
++
++@pytest.fixture
++def clock():
++    return FakeClock()
++
++
++def make_cache(clock, maxsize=2, ttl=10):
++    return TTLCache(maxsize, ttl, clock=clock)
++
++
++def test_value_expires_at_ttl(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    clock.now = 9.99
++    assert c.get("a") == 1
++    clock.now = 10
++    assert c.get("a", "gone") == "gone"
++
++
++def test_expired_entry_is_removed_on_get(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    clock.now = 10
++    c.get("a")
++    assert "a" not in c._data
++
++
++def test_set_existing_key_replaces_value_and_resets_expiry(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    clock.now = 8
++    c.set("a", 2)
++    clock.now = 15
++    assert c.get("a") == 2
++
++
++def test_get_refreshes_recency(clock):
++    c = make_cache(clock, maxsize=2)
++    c.set("a", 1)
++    c.set("b", 2)
++    c.get("a")
++    c.set("c", 3)
++    assert "a" in c
++    assert "b" not in c
++
++
++def test_set_existing_key_refreshes_recency(clock):
++    c = make_cache(clock, maxsize=2)
++    c.set("a", 1)
++    c.set("b", 2)
++    c.set("a", 10)
++    c.set("c", 3)
++    assert "a" in c
++    assert "b" not in c
++
++
++def test_get_missing_returns_default(clock):
++    c = make_cache(clock)
++    assert c.get("nope") is None
++    assert c.get("nope", 42) == 42
++
++
++def test_delete_removes_key(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    c.delete("a")
++    assert "a" not in c
++
++
++def test_delete_missing_raises_key_error(clock):
++    c = make_cache(clock)
++    with pytest.raises(KeyError):
++        c.delete("a")
++
++
++def test_delete_expired_raises_key_error(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    clock.now = 10
++    with pytest.raises(KeyError):
++        c.delete("a")
++
++
++def test_contains_ignores_expired(clock):
++    c = make_cache(clock)
++    c.set("a", 1)
++    assert "a" in c
++    clock.now = 10
++    assert "a" not in c
++
++
++def test_len_counts_only_live_entries(clock):
++    c = make_cache(clock, maxsize=5)
++    c.set("a", 1)
++    clock.now = 5
++    c.set("b", 2)
++    assert len(c) == 2
++    clock.now = 10
++    assert len(c) == 1
++
++
++def test_full_cache_drops_expired_before_evicting_lru(clock):
++    c = make_cache(clock, maxsize=2)
++    c.set("a", 1)
++    clock.now = 5
++    c.set("b", 2)
++    clock.now = 10
++    c.set("c", 3)
++    assert "a" not in c
++    assert c.get("b") == 2
++    assert c.get("c") == 3
++
++
++def test_full_cache_evicts_lru_when_nothing_expired(clock):
++    c = make_cache(clock, maxsize=3)
++    c.set("a", 1)
++    c.set("b", 2)
++    c.set("c", 3)
++    c.get("a")
++    c.set("d", 4)
++    assert "b" not in c
++    assert len(c) == 3
++
++
++def test_expired_entries_do_not_count_toward_capacity(clock):
++    c = make_cache(clock, maxsize=2)
++    c.set("a", 1)
++    clock.now = 5
++    c.set("b", 2)
++    clock.now = 10
++    c.set("c", 3)
++    assert len(c) == 2
++    assert c.get("b") == 2
++
++
++@pytest.mark.parametrize("maxsize, ttl", [(0, 10), (-1, 10), (2, 0), (2, -5)])
++def test_non_positive_arguments_raise_value_error(maxsize, ttl):
++    with pytest.raises(ValueError):
++        TTLCache(maxsize, ttl)

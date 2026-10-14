@@ -1,0 +1,164 @@
+diff --git a/src/mdtoc/toc.py b/src/mdtoc/toc.py
+index c7c0c10..dfa1b6c 100644
+--- a/src/mdtoc/toc.py
++++ b/src/mdtoc/toc.py
+@@ -1,2 +1,48 @@
++import re
++
++_HEADING = re.compile(r"^(#{1,6}) (.*)$")
++_CLOSING = re.compile(r"(^|\s+)#+$")
++
++
++def _headings(markdown: str):
++    """Yield (level, title) for each ATX heading outside fenced code blocks."""
++    fence = None
++    for line in markdown.splitlines():
++        stripped = line.lstrip()
++        if fence is not None:
++            if stripped.startswith(fence):
++                fence = None
++            continue
++        if stripped.startswith("```") or stripped.startswith("~~~"):
++            fence = stripped[:3]
++            continue
++        match = _HEADING.match(line)
++        if match:
++            text = _CLOSING.sub("", match.group(2).strip()).strip()
++            yield len(match.group(1)), text
++
++
++def _anchor(title: str) -> str:
++    kept = "".join(c for c in title.lower() if c.isalnum() or c in " -_")
++    return kept.replace(" ", "-")
++
++
+ def toc(markdown: str, max_level: int = 3) -> str:
+-    raise NotImplementedError
++    entries = [(level, title) for level, title in _headings(markdown) if level <= max_level]
++    if not entries:
++        return ""
++
++    base = min(level for level, _ in entries)
++    used = set()
++    lines = []
++    for level, title in entries:
++        anchor = _anchor(title)
++        candidate = anchor
++        n = 0
++        while candidate in used:
++            n += 1
++            candidate = f"{anchor}-{n}"
++        used.add(candidate)
++        indent = "  " * (level - base)
++        lines.append(f"{indent}- [{title}](#{candidate})\n")
++    return "".join(lines)
+diff --git a/tests/test_toc_headings.py b/tests/test_toc_headings.py
+new file mode 100644
+index 0000000..7698578
+--- /dev/null
++++ b/tests/test_toc_headings.py
+@@ -0,0 +1,104 @@
++from mdtoc import toc
++
++
++def test_no_headings_returns_empty_string():
++    assert toc("just text\n") == ""
++    assert toc("") == ""
++
++
++def test_nested_levels_are_indented_relative_to_shallowest():
++    md = "## Install\n### Linux\n### macOS\n## Usage\n"
++    assert toc(md) == (
++        "- [Install](#install)\n"
++        "  - [Linux](#linux)\n"
++        "  - [macOS](#macos)\n"
++        "- [Usage](#usage)\n"
++    )
++
++
++def test_indent_base_is_shallowest_included_heading():
++    md = "### Deep\n#### Deeper\n"
++    assert toc(md, max_level=4) == "- [Deep](#deep)\n  - [Deeper](#deeper)\n"
++
++
++def test_headings_deeper_than_max_level_are_skipped():
++    md = "# A\n## B\n#### C\n"
++    assert toc(md, max_level=2) == "- [A](#a)\n  - [B](#b)\n"
++
++
++def test_max_level_default_is_three():
++    md = "# A\n#### D\n"
++    assert toc(md) == "- [A](#a)\n"
++
++
++def test_headings_inside_backtick_fence_are_ignored():
++    md = "# Real\n```\n# fake\n```\n## Also Real\n"
++    assert toc(md) == "- [Real](#real)\n  - [Also Real](#also-real)\n"
++
++
++def test_headings_inside_tilde_fence_are_ignored():
++    md = "# Real\n~~~python\n# fake\n~~~\n# Next\n"
++    assert toc(md) == "- [Real](#real)\n- [Next](#next)\n"
++
++
++def test_backtick_fence_not_closed_by_tilde():
++    md = "```\n# fake\n~~~\n# still fake\n```\n# Real\n"
++    assert toc(md) == "- [Real](#real)\n"
++
++
++def test_closing_hashes_are_removed():
++    assert toc("## Setup ##\n") == "- [Setup](#setup)\n"
++
++
++def test_hash_inside_title_without_space_is_kept():
++    assert toc("# C#\n") == "- [C#](#c)\n"
++
++
++def test_surrounding_whitespace_is_stripped_from_title():
++    assert toc("#    Spaced   \n") == "- [Spaced](#spaced)\n"
++
++
++def test_hash_without_following_space_is_not_a_heading():
++    assert toc("#NoSpace\n") == ""
++
++
++def test_seven_hashes_is_not_a_heading():
++    assert toc("####### Too deep\n") == ""
++
++
++def test_anchor_drops_punctuation_and_keeps_hyphen_and_underscore():
++    assert toc("# Hello, World! (v1.2) foo-bar_baz\n") == (
++        "- [Hello, World! (v1.2) foo-bar_baz](#hello-world-v12-foo-bar_baz)\n"
++    )
++
++
++def test_anchor_replaces_each_space_without_collapsing():
++    assert toc("# a  b\n") == "- [a  b](#a--b)\n"
++
++
++def test_duplicate_anchors_get_numeric_suffixes():
++    md = "# Notes\n## Notes\n## Notes\n"
++    assert toc(md) == (
++        "- [Notes](#notes)\n"
++        "  - [Notes](#notes-1)\n"
++        "  - [Notes](#notes-2)\n"
++    )
++
++
++def test_duplicate_suffix_skips_already_used_anchor():
++    md = "# A\n# A\n# A 1\n"
++    assert toc(md) == (
++        "- [A](#a)\n"
++        "- [A](#a-1)\n"
++        "- [A 1](#a-1-1)\n"
++    )
++
++
++def test_duplicate_detection_uses_anchor_not_title():
++    md = "# Hello!\n# Hello?\n"
++    assert toc(md) == "- [Hello!](#hello)\n- [Hello?](#hello-1)\n"
++
++
++def test_skipped_headings_do_not_affect_duplicate_numbering():
++    md = "# X\n#### X\n# X\n"
++    assert toc(md, max_level=3) == "- [X](#x)\n- [X](#x-1)\n"

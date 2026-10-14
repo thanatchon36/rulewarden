@@ -128,7 +128,9 @@ def cells(rows: list[dict[str, Any]]) -> dict[str, Any]:
             "median_turns": float(np.median([r["turns"] or 0 for r in valid])) if valid else None,
             "median_wall_s": float(np.median([r["wall_s"] or 0 for r in valid])) if valid else None,
             "blocks_total": int(sum(r["blocks"] for r in valid)),
-            "blocks_on_session_files_total": int(sum(r.get("blocks_on_session_files", 0) for r in valid)),
+            "blocks_on_session_files_total": int(
+                sum(r.get("blocks_on_session_files", 0) for r in valid)
+            ),
             "circumvention_attempts": int(sum(r["circumvention_attempts"] for r in valid)),
             "circumvention_blocked": int(sum(r["circumvention_blocked"] for r in valid)),
         }

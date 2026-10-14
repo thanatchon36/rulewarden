@@ -1,0 +1,166 @@
+diff --git a/src/httpkit/client.py b/src/httpkit/client.py
+index b9e1342..6e46c20 100644
+--- a/src/httpkit/client.py
++++ b/src/httpkit/client.py
+@@ -1,6 +1,42 @@
++import json
++import urllib.error
++import urllib.request
++
++
+ class HTTPStatusError(Exception):
+-    pass
++    def __init__(self, status: int, url: str):
++        super().__init__(f"HTTP {status} for {url}")
++        self.status = status
++        self.url = url
++
++
++def _get_once(url: str, timeout: float) -> object:
++    request = urllib.request.Request(
++        url,
++        headers={"Accept": "application/json", "User-Agent": "httpkit/1.0"},
++    )
++    try:
++        with urllib.request.urlopen(request, timeout=timeout) as response:
++            status = response.status
++            body = response.read()
++    except urllib.error.HTTPError as exc:
++        raise HTTPStatusError(exc.code, url) from None
++
++    if not 200 <= status < 300:
++        raise HTTPStatusError(status, url)
++
++    try:
++        return json.loads(body)
++    except ValueError as exc:
++        raise ValueError(f"invalid JSON from {url}: {exc}") from exc
+ 
+ 
+ def fetch_json(url: str, timeout: float = 5.0, retries: int = 0) -> object:
+-    raise NotImplementedError
++    attempts = retries + 1
++    for attempt in range(attempts):
++        try:
++            return _get_once(url, timeout)
++        except HTTPStatusError as exc:
++            # Only 5xx is retried; 4xx (and any other status) fails immediately.
++            if exc.status < 500 or attempt == attempts - 1:
++                raise
+diff --git a/tests/test_fetch_json.py b/tests/test_fetch_json.py
+new file mode 100644
+index 0000000..7321966
+--- /dev/null
++++ b/tests/test_fetch_json.py
+@@ -0,0 +1,111 @@
++import json
++import socket
++import threading
++from http.server import BaseHTTPRequestHandler, HTTPServer
++
++import pytest
++
++from httpkit import HTTPStatusError, fetch_json
++
++
++class _Server:
++    """Serves a queue of (status, body) responses and records requests."""
++
++    def __init__(self, responses):
++        self.responses = list(responses)
++        self.requests = []
++        outer = self
++
++        class Handler(BaseHTTPRequestHandler):
++            def do_GET(self):
++                outer.requests.append(dict(self.headers))
++                status, body = outer.responses.pop(0) if len(outer.responses) > 1 else outer.responses[0]
++                payload = body.encode() if isinstance(body, str) else body
++                self.send_response(status)
++                self.send_header("Content-Type", "application/json")
++                self.send_header("Content-Length", str(len(payload)))
++                self.end_headers()
++                self.wfile.write(payload)
++
++            def log_message(self, *args):
++                pass
++
++        self.httpd = HTTPServer(("127.0.0.1", 0), Handler)
++        self.url = f"http://127.0.0.1:{self.httpd.server_port}/resource"
++        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
++
++    def __enter__(self):
++        self.thread.start()
++        return self
++
++    def __exit__(self, *exc):
++        self.httpd.shutdown()
++        self.httpd.server_close()
++
++
++def test_returns_decoded_json_body():
++    with _Server([(200, json.dumps({"a": [1, 2]}))]) as server:
++        assert fetch_json(server.url) == {"a": [1, 2]}
++
++
++def test_sends_accept_and_user_agent_headers():
++    with _Server([(200, "{}")]) as server:
++        fetch_json(server.url)
++    headers = server.requests[0]
++    assert headers["Accept"] == "application/json"
++    assert headers["User-Agent"] == "httpkit/1.0"
++
++
++def test_non_2xx_raises_http_status_error_with_status_and_url():
++    with _Server([(404, "{}")]) as server:
++        with pytest.raises(HTTPStatusError) as info:
++            fetch_json(server.url)
++    assert info.value.status == 404
++    assert info.value.url == server.url
++    assert isinstance(info.value, Exception)
++
++
++def test_4xx_is_not_retried():
++    with _Server([(403, "{}"), (200, "{}")]) as server:
++        with pytest.raises(HTTPStatusError) as info:
++            fetch_json(server.url, retries=3)
++    assert info.value.status == 403
++    assert len(server.requests) == 1
++
++
++def test_5xx_is_retried_until_success():
++    with _Server([(503, "{}"), (502, "{}"), (200, '{"ok": true}')]) as server:
++        assert fetch_json(server.url, retries=2) == {"ok": True}
++    assert len(server.requests) == 3
++
++
++def test_5xx_exhausts_retries_and_raises_last_status():
++    with _Server([(500, "{}")]) as server:
++        with pytest.raises(HTTPStatusError) as info:
++            fetch_json(server.url, retries=2)
++    assert info.value.status == 500
++    assert len(server.requests) == 3
++
++
++def test_5xx_without_retries_makes_single_attempt():
++    with _Server([(500, "{}"), (200, "{}")]) as server:
++        with pytest.raises(HTTPStatusError) as info:
++            fetch_json(server.url)
++    assert info.value.status == 500
++    assert len(server.requests) == 1
++
++
++def test_invalid_json_raises_value_error():
++    with _Server([(200, "not json")]) as server:
++        with pytest.raises(ValueError):
++            fetch_json(server.url)
++
++
++def test_connection_refused_propagates_original_exception():
++    # Bind and release a port so nothing is listening on it.
++    sock = socket.socket()
++    sock.bind(("127.0.0.1", 0))
++    port = sock.getsockname()[1]
++    sock.close()
++    with pytest.raises(OSError):
++        fetch_json(f"http://127.0.0.1:{port}/", timeout=1.0)

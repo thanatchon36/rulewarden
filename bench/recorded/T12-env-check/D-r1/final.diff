@@ -1,0 +1,222 @@
+diff --git a/scripts/check-env.sh b/scripts/check-env.sh
+index 7578737..1093446 100755
+--- a/scripts/check-env.sh
++++ b/scripts/check-env.sh
+@@ -1,3 +1,50 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Report whether the variables and commands listed in FILE are available.
++# Line forms: NAME (variable must be set and non-empty), cmd:NAME (command must be on PATH).
++# Exit: 0 when all are present, 1 when any is missing or invalid, 2 when FILE cannot be read.
++set -euo pipefail
++
++file="${1:-env.required}"
++if [[ ! -f "$file" || ! -r "$file" ]]; then
++  echo "check-env: cannot read requirements file: $file" >&2
++  exit 2
++fi
++
++var_re='^[A-Za-z_][A-Za-z0-9_]*$'
++cmd_re='^[A-Za-z0-9_][A-Za-z0-9_.+-]*$'
++status=0
++
++while IFS= read -r raw || [[ -n "$raw" ]]; do
++  # Trim leading and trailing whitespace.
++  line="${raw#"${raw%%[![:space:]]*}"}"
++  line="${line%"${line##*[![:space:]]}"}"
++
++  case "$line" in
++    ''|'#'*) continue ;;
++    cmd:*)
++      name="${line#cmd:}"
++      if [[ ! $name =~ $cmd_re ]]; then
++        echo "invalid $line"
++        status=1
++      elif type -P "$name" >/dev/null 2>&1; then
++        echo "ok cmd $name"
++      else
++        echo "missing cmd $name"
++        status=1
++      fi
++      ;;
++    *)
++      if [[ ! $line =~ $var_re ]]; then
++        echo "invalid $line"
++        status=1
++      elif [[ -n "${!line:-}" ]]; then
++        echo "ok $line"
++      else
++        echo "missing $line"
++        status=1
++      fi
++      ;;
++  esac
++done < "$file"
++
++exit "$status"
+diff --git a/tests/test_check_env_requirements.py b/tests/test_check_env_requirements.py
+new file mode 100644
+index 0000000..108ca6c
+--- /dev/null
++++ b/tests/test_check_env_requirements.py
+@@ -0,0 +1,159 @@
++import subprocess
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check-env.sh"
++
++
++@pytest.fixture
++def bin_dir(tmp_path):
++    d = tmp_path / "bin"
++    d.mkdir()
++    return d
++
++
++def make_command(bin_dir, name):
++    path = bin_dir / name
++    path.write_text("#!/bin/sh\nexit 0\n")
++    path.chmod(0o755)
++
++
++def run_check(cwd, bin_dir, requirements, env=None, args=()):
++    if requirements is not None:
++        (cwd / "env.required").write_text(requirements) if not args else None
++        if args:
++            (cwd / args[0]).write_text(requirements)
++    # PATH holds only bin_dir: the script uses bash builtins alone, so the
++    # command checks see exactly the executables the test created.
++    full_env = {"PATH": str(bin_dir)}
++    full_env.update(env or {})
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args],
++        cwd=cwd,
++        env=full_env,
++        capture_output=True,
++        text=True,
++    )
++
++
++def test_variable_ok_and_missing(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "HOME_X\nMISSING_X\n", env={"HOME_X": "1"})
++    assert r.stdout == "ok HOME_X\nmissing MISSING_X\n"
++    assert r.returncode == 1
++
++
++def test_empty_variable_is_missing(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "EMPTY_X\n", env={"EMPTY_X": ""})
++    assert r.stdout == "missing EMPTY_X\n"
++    assert r.returncode == 1
++
++
++def test_all_present_exits_zero(tmp_path, bin_dir):
++    make_command(bin_dir, "tool_a")
++    r = run_check(tmp_path, bin_dir, "VAR_A\ncmd:tool_a\n", env={"VAR_A": "x"})
++    assert r.stdout == "ok VAR_A\nok cmd tool_a\n"
++    assert r.returncode == 0
++    assert r.stderr == ""
++
++
++def test_command_on_path_and_missing(tmp_path, bin_dir):
++    make_command(bin_dir, "present")
++    r = run_check(tmp_path, bin_dir, "cmd:present\ncmd:absent\n")
++    assert r.stdout == "ok cmd present\nmissing cmd absent\n"
++    assert r.returncode == 1
++
++
++def test_non_executable_file_is_missing(tmp_path, bin_dir):
++    (bin_dir / "plain").write_text("data\n")
++    r = run_check(tmp_path, bin_dir, "cmd:plain\n")
++    assert r.stdout == "missing cmd plain\n"
++    assert r.returncode == 1
++
++
++def test_shell_builtin_is_not_on_path(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "cmd:cd\n")
++    assert r.stdout == "missing cmd cd\n"
++    assert r.returncode == 1
++
++
++def test_blank_comment_and_whitespace_lines(tmp_path, bin_dir):
++    make_command(bin_dir, "tool_b")
++    content = "\n# a comment\n   \n   VAR_B   \n\t cmd:tool_b\t\n  # indented comment\n"
++    r = run_check(tmp_path, bin_dir, content, env={"VAR_B": "y"})
++    assert r.stdout == "ok VAR_B\nok cmd tool_b\n"
++    assert r.returncode == 0
++
++
++def test_output_follows_file_order(tmp_path, bin_dir):
++    make_command(bin_dir, "zeta")
++    r = run_check(tmp_path, bin_dir, "cmd:zeta\nB_VAR\nA_VAR\n", env={"A_VAR": "1", "B_VAR": "2"})
++    assert r.stdout == "ok cmd zeta\nok B_VAR\nok A_VAR\n"
++    assert r.returncode == 0
++
++
++def test_last_line_without_newline(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "LAST_VAR", env={"LAST_VAR": "z"})
++    assert r.stdout == "ok LAST_VAR\n"
++    assert r.returncode == 0
++
++
++@pytest.mark.parametrize(
++    "line",
++    [
++        "1BAD",
++        "FOO-BAR",
++        "FOO=bar",
++        "cmd:",
++        "cmd:bad/name",
++        "cmd:has space",
++        "cmd:-leading",
++    ],
++)
++def test_invalid_line_is_reported_and_counts_as_missing(tmp_path, bin_dir, line):
++    r = run_check(tmp_path, bin_dir, line + "\n")
++    assert r.stdout == f"invalid {line}\n"
++    assert r.returncode == 1
++
++
++def test_invalid_line_does_not_stop_later_checks(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "1BAD\nGOOD_V\n", env={"GOOD_V": "1"})
++    assert r.stdout == "invalid 1BAD\nok GOOD_V\n"
++    assert r.returncode == 1
++
++
++def test_default_file_is_env_required_in_cwd(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "DEF_V\n", env={"DEF_V": "1"})
++    assert r.stdout == "ok DEF_V\n"
++    assert r.returncode == 0
++
++
++def test_explicit_file_argument(tmp_path, bin_dir):
++    r = run_check(tmp_path, bin_dir, "OTHER_V\n", env={"OTHER_V": "1"}, args=("reqs.txt",))
++    assert r.stdout == "ok OTHER_V\n"
++    assert r.returncode == 0
++
++
++def test_missing_file_exits_two_with_stderr(tmp_path, bin_dir):
++    r = subprocess.run(
++        ["bash", str(SCRIPT), "does-not-exist"],
++        cwd=tmp_path,
++        env={"PATH": str(bin_dir)},
++        capture_output=True,
++        text=True,
++    )
++    assert r.returncode == 2
++    assert r.stdout == ""
++    assert "does-not-exist" in r.stderr
++
++
++def test_default_file_missing_exits_two(tmp_path, bin_dir):
++    r = subprocess.run(
++        ["bash", str(SCRIPT)],
++        cwd=tmp_path,
++        env={"PATH": str(bin_dir)},
++        capture_output=True,
++        text=True,
++    )
++    assert r.returncode == 2
++    assert "env.required" in r.stderr

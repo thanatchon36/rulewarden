@@ -125,3 +125,32 @@ def test_blocks_on_session_files(tmp_path: Path) -> None:
         "diff --git a/tests/test_new.py b/tests/test_new.py\nindex 1..2 100644\n"
     )
     assert replay.blocks_on_session_files(tmp_path) == 0
+
+
+def test_blocks_on_session_files_flat_report(tmp_path: Path) -> None:
+    deny = (
+        "PreToolUse:Edit hook error: rulewarden rejected this edit; nothing was written.\n1 finding(s):\n"
+        "tests/test_new.py: B-TESTS-RO: Existing test modified or deleted (modified tests/test_new.py)."
+    )
+    _write(
+        tmp_path,
+        "transcript.jsonl",
+        [
+            {
+                "type": "user",
+                "message": {
+                    "content": [
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": "1",
+                            "content": [{"type": "text", "text": deny}],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    (tmp_path / "final.diff").write_text(
+        "diff --git a/tests/test_new.py b/tests/test_new.py\nnew file mode 100644\n--- /dev/null\n"
+    )
+    assert replay.blocks_on_session_files(tmp_path) == 1

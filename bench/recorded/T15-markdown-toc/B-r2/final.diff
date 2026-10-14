@@ -1,0 +1,157 @@
+diff --git a/src/mdtoc/toc.py b/src/mdtoc/toc.py
+index c7c0c10..021a991 100644
+--- a/src/mdtoc/toc.py
++++ b/src/mdtoc/toc.py
+@@ -1,2 +1,55 @@
++import re
++
++_HEADING = re.compile(r"^(#{1,6}) (.*)$")
++_FENCE = re.compile(r"^(`{3,}|~{3,})")
++_CLOSING_HASHES = re.compile(r"(?:^|\s+)#+$")
++_NOT_ANCHOR_CHAR = re.compile(r"[^\w \-]")
++
++
++def _headings(markdown: str):
++    """Yield (level, title) for each ATX heading outside fenced code blocks."""
++    fence = None
++    for line in markdown.splitlines():
++        match = _FENCE.match(line)
++        if fence is not None:
++            # A closing fence must use the same character and be at least as long.
++            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):
++                fence = None
++            continue
++        if match:
++            fence = match.group(1)
++            continue
++        heading = _HEADING.match(line)
++        if heading:
++            title = _CLOSING_HASHES.sub("", heading.group(2).strip()).strip()
++            yield len(heading.group(1)), title
++
++
++def _anchor(title: str, seen: set) -> str:
++    base = _NOT_ANCHOR_CHAR.sub("", title.lower()).replace(" ", "-")
++    anchor = base
++    n = 0
++    while anchor in seen:
++        n += 1
++        anchor = f"{base}-{n}"
++    seen.add(anchor)
++    return anchor
++
++
+ def toc(markdown: str, max_level: int = 3) -> str:
+-    raise NotImplementedError
++    """Return a Markdown table of contents for the ATX headings in ``markdown``.
++
++    Headings deeper than ``max_level`` are skipped, and fenced code blocks are
++    ignored so that lines starting with ``#`` inside them are not treated as
++    headings. Indentation is relative to the shallowest included heading.
++    """
++    included = [(level, title) for level, title in _headings(markdown) if level <= max_level]
++    if not included:
++        return ""
++    base_level = min(level for level, _ in included)
++    seen: set = set()
++    lines = []
++    for level, title in included:
++        indent = "  " * (level - base_level)
++        lines.append(f"{indent}- [{title}](#{_anchor(title, seen)})\n")
++    return "".join(lines)
+diff --git a/tests/test_toc_behaviour.py b/tests/test_toc_behaviour.py
+new file mode 100644
+index 0000000..cf79fa5
+--- /dev/null
++++ b/tests/test_toc_behaviour.py
+@@ -0,0 +1,90 @@
++from mdtoc import toc
++
++
++def test_no_headings_returns_empty_string():
++    assert toc("just text\n") == ""
++    assert toc("") == ""
++
++
++def test_nested_levels_indent_relative_to_shallowest():
++    md = "# A\n## B\n### C\n"
++    assert toc(md) == "- [A](#a)\n  - [B](#b)\n    - [C](#c)\n"
++
++
++def test_indent_starts_at_shallowest_included_heading():
++    md = "## Only\n#### Deep\n"
++    assert toc(md) == "- [Only](#only)\n"
++    assert toc("### Start\n#### Next\n", max_level=4) == "- [Start](#start)\n  - [Next](#next)\n"
++
++
++def test_headings_deeper_than_max_level_are_skipped():
++    md = "# A\n## B\n#### D\n"
++    assert toc(md, max_level=2) == "- [A](#a)\n  - [B](#b)\n"
++
++
++def test_headings_inside_backtick_fence_are_ignored():
++    md = "# Real\n```\n# Fake\n```\n## After\n"
++    assert toc(md) == "- [Real](#real)\n  - [After](#after)\n"
++
++
++def test_headings_inside_tilde_fence_are_ignored():
++    md = "~~~python\n# Fake\n~~~\n# Real\n"
++    assert toc(md) == "- [Real](#real)\n"
++
++
++def test_fence_closes_only_with_same_character():
++    md = "```\n~~~\n# Still code\n```\n# Out\n"
++    assert toc(md) == "- [Out](#out)\n"
++
++
++def test_closing_hashes_are_removed():
++    assert toc("## Setup ##\n") == "- [Setup](#setup)\n"
++
++
++def test_hash_without_leading_space_is_not_a_closing_sequence():
++    assert toc("# C#\n") == "- [C#](#c)\n"
++
++
++def test_title_whitespace_is_stripped():
++    assert toc("#    Spaced out   \n") == "- [Spaced out](#spaced-out)\n"
++
++
++def test_hash_without_space_is_not_a_heading():
++    assert toc("#NoSpace\n") == ""
++
++
++def test_seven_hashes_is_not_a_heading():
++    assert toc("####### Too deep\n") == ""
++
++
++def test_anchor_drops_punctuation_and_keeps_hyphen_and_underscore():
++    assert toc("# Hello, World! (v2)_x-y\n") == "- [Hello, World! (v2)_x-y](#hello-world-v2_x-y)\n"
++
++
++def test_anchor_lowercases_title():
++    assert toc("# API Reference\n") == "- [API Reference](#api-reference)\n"
++
++
++def test_duplicate_anchors_get_numeric_suffixes():
++    md = "# Intro\n## Intro\n## Intro\n"
++    assert toc(md) == (
++        "- [Intro](#intro)\n"
++        "  - [Intro](#intro-1)\n"
++        "  - [Intro](#intro-2)\n"
++    )
++
++
++def test_duplicate_suffix_skips_already_taken_anchor():
++    md = "# A\n# A\n# A-1\n"
++    assert toc(md) == "- [A](#a)\n- [A](#a-1)\n- [A-1](#a-1-1)\n"
++
++
++def test_duplicates_counted_after_punctuation_is_removed():
++    md = "# Foo!\n# Foo?\n"
++    assert toc(md) == "- [Foo!](#foo)\n- [Foo?](#foo-1)\n"
++
++
++def test_output_lines_end_with_newline():
++    out = toc("# A\n## B\n")
++    assert out.endswith("\n")
++    assert all(line.endswith("\n") for line in out.splitlines(keepends=True))

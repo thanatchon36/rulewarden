@@ -1,0 +1,227 @@
+diff --git a/scripts/check-env.sh b/scripts/check-env.sh
+index 7578737..9ce3747 100755
+--- a/scripts/check-env.sh
++++ b/scripts/check-env.sh
+@@ -1,3 +1,51 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Check that the variables and commands listed in a requirements file are present.
++# Usage: check-env.sh [FILE]   (FILE defaults to env.required)
++set -euo pipefail
++
++file="${1:-env.required}"
++name_pattern='^[A-Za-z_][A-Za-z0-9_]*$'
++# Command names are looked up on PATH, so they may not be empty, contain whitespace, or contain '/'.
++cmd_pattern='^[^[:space:]/]+$'
++
++if [[ ! -f "$file" ]]; then
++  echo "check-env: requirements file not found: $file" >&2
++  exit 2
++fi
++
++missing=0
++
++while IFS= read -r line || [[ -n "$line" ]]; do
++  # Trim leading and trailing whitespace.
++  line="${line#"${line%%[![:space:]]*}"}"
++  line="${line%"${line##*[![:space:]]}"}"
++
++  if [[ -z "$line" || "$line" == \#* ]]; then
++    continue
++  fi
++
++  if [[ "$line" == cmd:* ]]; then
++    name="${line#cmd:}"
++    if [[ ! "$name" =~ $cmd_pattern ]]; then
++      echo "invalid $line"
++      missing=1
++    elif type -P "$name" >/dev/null 2>&1; then
++      echo "ok cmd $name"
++    else
++      echo "missing cmd $name"
++      missing=1
++    fi
++  elif [[ "$line" =~ $name_pattern ]]; then
++    if [[ -n "${!line:-}" ]]; then
++      echo "ok $line"
++    else
++      echo "missing $line"
++      missing=1
++    fi
++  else
++    echo "invalid $line"
++    missing=1
++  fi
++done < "$file"
++
++exit "$missing"
+diff --git a/tests/test_check_env_requirements.py b/tests/test_check_env_requirements.py
+new file mode 100644
+index 0000000..64a3ef8
+--- /dev/null
++++ b/tests/test_check_env_requirements.py
+@@ -0,0 +1,163 @@
++import os
++import shutil
++import stat
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check-env.sh"
++# Resolved once from the real PATH, because tests replace PATH for the script.
++BASH = shutil.which("bash")
++
++
++def run_check(tmp_path, requirements, env=None, path_dirs=None, args=None):
++    req = tmp_path / "env.required"
++    req.write_text(requirements)
++    if env is None:
++        env = dict(os.environ)
++    # Give the script a PATH that holds only the fake commands the test creates.
++    env["PATH"] = os.pathsep.join(str(d) for d in (path_dirs or []))
++    return subprocess.run(
++        [BASH, str(SCRIPT), *(args or [str(req)])],
++        capture_output=True,
++        text=True,
++        env=env,
++        cwd=tmp_path,
++    )
++
++
++def make_command(directory, name):
++    directory.mkdir(exist_ok=True)
++    exe = directory / name
++    exe.write_text("#!/bin/sh\nexit 0\n")
++    exe.chmod(exe.stat().st_mode | stat.S_IXUSR)
++    return directory
++
++
++def clean_env(**extra):
++    env = {k: v for k, v in os.environ.items() if not k.startswith("CHECKENV_")}
++    env.update(extra)
++    return env
++
++
++def test_set_variable_is_ok(tmp_path):
++    r = run_check(tmp_path, "CHECKENV_SET\n", env=clean_env(CHECKENV_SET="1"))
++    assert r.stdout == "ok CHECKENV_SET\n"
++    assert r.returncode == 0
++
++
++def test_unset_variable_is_missing(tmp_path):
++    r = run_check(tmp_path, "CHECKENV_UNSET\n", env=clean_env())
++    assert r.stdout == "missing CHECKENV_UNSET\n"
++    assert r.returncode == 1
++
++
++def test_empty_variable_is_missing(tmp_path):
++    r = run_check(tmp_path, "CHECKENV_EMPTY\n", env=clean_env(CHECKENV_EMPTY=""))
++    assert r.stdout == "missing CHECKENV_EMPTY\n"
++    assert r.returncode == 1
++
++
++def test_command_on_path_is_ok(tmp_path):
++    bin_dir = make_command(tmp_path / "bin", "checkenv-tool")
++    r = run_check(tmp_path, "cmd:checkenv-tool\n", env=clean_env(), path_dirs=[bin_dir])
++    assert r.stdout == "ok cmd checkenv-tool\n"
++    assert r.returncode == 0
++
++
++def test_command_not_on_path_is_missing(tmp_path):
++    bin_dir = tmp_path / "bin"
++    bin_dir.mkdir()
++    r = run_check(tmp_path, "cmd:checkenv-absent\n", env=clean_env(), path_dirs=[bin_dir])
++    assert r.stdout == "missing cmd checkenv-absent\n"
++    assert r.returncode == 1
++
++
++def test_results_follow_file_order(tmp_path):
++    bin_dir = make_command(tmp_path / "bin", "checkenv-tool")
++    requirements = "cmd:checkenv-tool\nCHECKENV_B\nCHECKENV_A\ncmd:checkenv-nope\n"
++    env = clean_env(CHECKENV_A="x")
++    r = run_check(tmp_path, requirements, env=env, path_dirs=[bin_dir])
++    assert r.stdout.splitlines() == [
++        "ok cmd checkenv-tool",
++        "missing CHECKENV_B",
++        "ok CHECKENV_A",
++        "missing cmd checkenv-nope",
++    ]
++    assert r.returncode == 1
++
++
++def test_blank_and_comment_lines_are_ignored(tmp_path):
++    requirements = "\n# a comment\n   \n\t# indented comment\nCHECKENV_SET\n"
++    r = run_check(tmp_path, requirements, env=clean_env(CHECKENV_SET="1"))
++    assert r.stdout == "ok CHECKENV_SET\n"
++    assert r.returncode == 0
++
++
++def test_surrounding_whitespace_is_ignored(tmp_path):
++    bin_dir = make_command(tmp_path / "bin", "checkenv-tool")
++    requirements = "  CHECKENV_SET  \n\t cmd:checkenv-tool \t\n"
++    env = clean_env(CHECKENV_SET="1")
++    r = run_check(tmp_path, requirements, env=env, path_dirs=[bin_dir])
++    assert r.stdout.splitlines() == ["ok CHECKENV_SET", "ok cmd checkenv-tool"]
++    assert r.returncode == 0
++
++
++def test_last_line_without_newline_is_checked(tmp_path):
++    r = run_check(tmp_path, "CHECKENV_SET", env=clean_env(CHECKENV_SET="1"))
++    assert r.stdout == "ok CHECKENV_SET\n"
++    assert r.returncode == 0
++
++
++def test_invalid_variable_name_is_reported_and_counts_as_missing(tmp_path):
++    requirements = "1BAD\nBAD-NAME\nBAD.NAME\n"
++    r = run_check(tmp_path, requirements, env=clean_env())
++    assert r.stdout.splitlines() == [
++        "invalid 1BAD",
++        "invalid BAD-NAME",
++        "invalid BAD.NAME",
++    ]
++    assert r.returncode == 1
++
++
++def test_invalid_command_name_is_reported_and_counts_as_missing(tmp_path):
++    bin_dir = make_command(tmp_path / "bin", "checkenv-tool")
++    requirements = "cmd:/bin/sh\ncmd:\ncmd:checkenv tool\n"
++    r = run_check(tmp_path, requirements, env=clean_env(), path_dirs=[bin_dir])
++    assert r.stdout.splitlines() == [
++        "invalid cmd:/bin/sh",
++        "invalid cmd:",
++        "invalid cmd:checkenv tool",
++    ]
++    assert r.returncode == 1
++
++
++def test_all_present_exits_zero(tmp_path):
++    bin_dir = make_command(tmp_path / "bin", "checkenv-tool")
++    requirements = "CHECKENV_A\ncmd:checkenv-tool\n"
++    env = clean_env(CHECKENV_A="x")
++    r = run_check(tmp_path, requirements, env=env, path_dirs=[bin_dir])
++    assert r.returncode == 0
++
++
++def test_empty_file_exits_zero(tmp_path):
++    r = run_check(tmp_path, "", env=clean_env())
++    assert r.stdout == ""
++    assert r.returncode == 0
++
++
++def test_default_file_is_env_required_in_cwd(tmp_path):
++    (tmp_path / "env.required").write_text("CHECKENV_SET\n")
++    env = clean_env(CHECKENV_SET="1")
++    env["PATH"] = os.defpath
++    r = subprocess.run(
++        [BASH, str(SCRIPT)], capture_output=True, text=True, env=env, cwd=tmp_path
++    )
++    assert r.stdout == "ok CHECKENV_SET\n"
++    assert r.returncode == 0
++
++
++def test_missing_file_exits_two_with_message_on_stderr(tmp_path):
++    r = run_check(tmp_path, "", args=[str(tmp_path / "does-not-exist")])
++    assert r.returncode == 2
++    assert r.stdout == ""
++    assert "does-not-exist" in r.stderr

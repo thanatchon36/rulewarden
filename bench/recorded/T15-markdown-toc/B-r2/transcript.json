@@ -1,0 +1,936 @@
+[
+ {
+  "type": "system",
+  "subtype": "init",
+  "cwd": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2",
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "tools": [
+   "Task",
+   "Bash",
+   "CronCreate",
+   "CronDelete",
+   "CronList",
+   "Edit",
+   "EnterWorktree",
+   "ExitWorktree",
+   "Glob",
+   "Grep",
+   "ListAgents",
+   "NotebookEdit",
+   "Read",
+   "RemoteTrigger",
+   "ReportFindings",
+   "ScheduleWakeup",
+   "SendMessage",
+   "Skill",
+   "TaskStop",
+   "ToolSearch",
+   "WebFetch",
+   "WebSearch",
+   "Write"
+  ],
+  "mcp_servers": [],
+  "model": "claude-haiku-5-5",
+  "permissionMode": "acceptEdits",
+  "slash_commands": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring",
+   "agents",
+   "auto-mode-setup",
+   "autocompact",
+   "clear",
+   "color",
+   "compact",
+   "config",
+   "output-style",
+   "context",
+   "effort",
+   "fast",
+   "focus",
+   "heapdump",
+   "init",
+   "mcp",
+   "model",
+   "__remote-workflow",
+   "workflow-launch-exec",
+   "reload-plugins",
+   "reload-skills",
+   "rename",
+   "security-review",
+   "usage-credits",
+   "extra-usage",
+   "usage",
+   "insights",
+   "recap",
+   "goal",
+   "list-agents",
+   "team-onboarding"
+  ],
+  "terminal_slash_commands": [
+   "doctor",
+   "color",
+   "focus",
+   "reload-plugins"
+  ],
+  "apiKeySource": "none",
+  "claude_code_version": "2.1.299",
+  "output_style": "default",
+  "agents": [
+   "claude",
+   "Explore",
+   "general-purpose",
+   "Plan",
+   "statusline-setup"
+  ],
+  "skills": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring"
+  ],
+  "plugins": [
+   {
+    "name": "cc-plugin-agents-md",
+    "path": "builtin",
+    "source": "cc-plugin-agents-md@builtin"
+   },
+   {
+    "name": "cc-plugin-plugin-authoring",
+    "path": "builtin",
+    "source": "cc-plugin-plugin-authoring@builtin"
+   }
+  ],
+  "capabilities": [
+   "interrupt_receipt_v1",
+   "interrupt_cancel_queued_v1",
+   "interrupt_send_now_v1",
+   "msg_lifecycle_v1",
+   "request_marker_lists_v1",
+   "sdk_mcp_tools_list_changed",
+   "sdk_mcp_manifests",
+   "mcp_read_resource_v1",
+   "mcp_tool_ui_meta_v1",
+   "ui_surface_v1"
+  ],
+  "analytics_disabled": true,
+  "product_feedback_disabled": true,
+  "uuid": "04e84f58-875f-4c9b-b925-f2626212445d",
+  "memory_paths": {
+   "auto": "/Users/thanatchon36/.claude/projects/-private-tmp-claude-501--Users-thanatchon36-github-rulewarden-52944ca6-e0e0-4505-9300-460146c6dd03-scratchpad-bench-work-T15-markdown-toc-B-r2/memory/"
+  },
+  "messaging_socket_path": "/tmp/cc-socks/36279.sock",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "per_turn_effort_active": true,
+  "view_mode": "default"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nLV5pHLuNhfKc85WXi",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSnAUKEAgSGAI4AUIIdGhpbmtpbmcSDE7V3/fpv2dDlWH7IRoMaIEivmaYQuI3QJCYIjDeVaF4kFKC35+fgpAT5/V8DIoE/3S/epmJZajlGDchiPw2wN1+Jx6zCh7kW5LTMsoquQRubQN/rgt2f6AstIdNC5CNKilzv8ltnUSvDNbTessF6sQ+u4qizkoNnHMdG0CoPAN6Dg+qwuGp6rcPI90VxX7mK6MGjpoyNBrU6OXT65PjBYdXnV+H0IVgR8/pgbTZ9p14z0yUjBwdhIZ5s0lko17WhDJgEHB2lcG3J54nooAyZaRGrMqa0r3zO0Q/7s7uHmlHwmhB6SCIUd/oYi/6H3ypnzMO2++PHCBUXbDNtIduSg1PueIAsKw7FJM/Zht3LjcugyYJ+40nf231ODQK1S2YRxZOMP2CtG5aqNiBIAK8FgFOPDIdtoiAf2j9SKQIle1OgKHjxH1OBmKWy2L3AKjXC0kHl2FeZlBzc7nvsCcLOy8WJHUTObTfpEFK3NWg9hDMa40Y0rS4595yXUJ5wL42QjEJFDVzbIf9+i/U6SqQxK7YGvk34JCaKAqdp1oflk4UXNpotE5JAZfd1nNyYSP+C4DjcU4XG+Q6DEPoKJHXgnR25OeJFDHbDbBmxVqsD9gHLZRrWfYom2xJospTYitG1BwD0RJv1cdHLLTYnpHMr+VKG0vcBQSPaSZmxiZBR9UBCanqNoeyX4peSeVYpqskAxPRnbyEART6GUaIUb9arvwGeZyLcZOf+A27JpXyvVi4FPFqCWn1NDgr2M0QiBYpwUgtxHmcdxwHBuhDmF8ctQ9WXIu9R3dacmgJ3+JCljd2IuC5OiDg47t5TgkxHzGS5JyBSrd8dciUoD1mpuU3UUF3u8FI3OlpChgB"
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7030,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7030
+    },
+    "output_tokens": 5,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "6c2230a4-e148-43e6-8b03-99493b3316ff",
+  "timestamp": "2026-10-14T08:04:25.305Z",
+  "request_id": "req_011Cg1nLUowfAVVNNyKASvip",
+  "thinking_duration_ms": 1,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nLV5pHLuNhfKc85WXi",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01HgnAr8drAZJkfGYkJF9uAM",
+     "name": "Bash",
+     "input": {
+      "command": "git status --short && find . -path ./.git -prune -o -type f -print | head -50 && cat src/mdtoc/*.py 2>/dev/null; ls tests 2>/dev/null; cat tests/*.py 2>/dev/null | head -80",
+      "description": "Inspect repo layout and existing source"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7030,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7030
+    },
+    "output_tokens": 5,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "352458df-6750-4ce5-b55e-78a32ae0bac9",
+  "timestamp": "2026-10-14T08:04:25.941Z",
+  "request_id": "req_011Cg1nLUowfAVVNNyKASvip"
+ },
+ {
+  "type": "rate_limit_event",
+  "rate_limit_info": {
+   "status": "allowed_warning",
+   "resetsAt": 1791966000,
+   "rateLimitType": "five_hour",
+   "utilization": 0.92,
+   "overageStatus": "rejected",
+   "overageDisabledReason": "org_level_disabled",
+   "isUsingOverage": false,
+   "surpassedThreshold": 0.9,
+   "unifiedWindows": {
+    "five_hour": {
+     "utilization": 0.92,
+     "resetsAt": 1791966000
+    },
+    "seven_day": {
+     "utilization": 0.36,
+     "resetsAt": 1792407600
+    }
+   },
+   "overageEnabled": false
+  },
+  "uuid": "427636c4-952d-48d8-aa60-eb44f30d9df1",
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01HgnAr8drAZJkfGYkJF9uAM",
+     "type": "tool_result",
+     "content": "./tests/conftest.py\n./tests/test_toc.py\n./.gitignore\n./CLAUDE.md\n./src/mdtoc/toc.py\n./src/mdtoc/__init__.py\nfrom mdtoc.toc import toc\n\n__all__ = [\"toc\"]\ndef toc(markdown: str, max_level: int = 3) -> str:\n    raise NotImplementedError\nconftest.py\ntest_toc.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\nfrom mdtoc import toc\n\n\ndef test_single():\n    assert toc(\"# Title\\n\") == \"- [Title](#title)\\n\"",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "ce4e8987-780b-4fe8-97c6-01ce72c5dfe9",
+  "timestamp": "2026-10-14T08:04:26.994Z",
+  "tool_use_result": {
+   "stdout": "./tests/conftest.py\n./tests/test_toc.py\n./.gitignore\n./CLAUDE.md\n./src/mdtoc/toc.py\n./src/mdtoc/__init__.py\nfrom mdtoc.toc import toc\n\n__all__ = [\"toc\"]\ndef toc(markdown: str, max_level: int = 3) -> str:\n    raise NotImplementedError\nconftest.py\ntest_toc.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\nfrom mdtoc import toc\n\n\ndef test_single():\n    assert toc(\"# Title\\n\") == \"- [Title](#title)\\n\"",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01HgnAr8drAZJkfGYkJF9uAM",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "4944992f-a682-48f9-937e-380a726dd9ec"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 250,
+  "estimated_tokens_delta": 200,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "cd528c32-bd92-4e10-993f-f6b4019e3228"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 600,
+  "estimated_tokens_delta": 350,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "9f861df7-c29c-4562-8701-1f615b0ecbd3"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 850,
+  "estimated_tokens_delta": 250,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "cd7d0f62-890a-40ec-a7eb-d8006fbbae30"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1100,
+  "estimated_tokens_delta": 250,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "65e2bb44-7604-441f-82fa-2f7746e14579"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nLi3RH3SyVeFHkDMg6",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": {
+      "__rw_chunks__": [
+       "CAQSpBsKEAgSGAI4AUIIdGhpbmtpbmcSDGyvgs/ZjUVjDP89CxoMZdUDDOH9t7qSNEZ6IjDCnytbEajRmmPrusJVBQTFS/ihDO1HyQYZOwxddI2Owee27l1ya2rRzNQsDADW5iMqwRq76Bn70uU82Bi2yi/niazwyabEfGs0o0i+iHqADTYEdPK3gCY5YRavYJzXtircR6GIe4fbQ8owDiH1jMhTiPPPjSfpOp2Q5is7K6Q7hYaXFKPGdjmLnuUT868DfboAlugC1heD/JcJfiW2znUFmizZgF5cm/+wyucvX1rh/uoIyWm9f8HO1otEXNXK4U5QC38MXKiXs2AWEExfbbVBsFDhdPmYVhEaxnsxDIhdOLiqXNC44DXl0aRoZVbbyTrtsDJMjR/EaU02rI15EdyiCGF4yPMYncyjPfqqfFooYraQ/6LcYw4bl1cYGTsJ7kjE+UMrZn0YnzxdURR1TL4HBORWk7U6s4nfwdNRU7BxYiwS8ToQMCqEKOuggX+XdfF8obIZ0dwrzk4NEAUEq7lKlbzLnAnf6w5MiEfGO0XOW6w3/4SVIaREgYHxgn/0H0rFR4BPX/vB9+ExgI4XhiSra1nkw5uJWDmgN8Ebsn7uACmtMNQV61UbmrQEKFgDHjD7VCCn8WRbZEiR32+22tXou0yJPYxnHcFont1jpBahSHI1EdQP3jIYMRmmsNnS36O+mtVib51PP9yThdW0p4ESfkKDGfl4lalshoEmNpq77b4jelkiPaaqZ+FGfO0xP50eTYoVO1DhD241HgqR6Bwcf+GsXa536meMG5UVIe/GrKzNcI0eGysK75PnlLo5THtZ3pB+vbyGI5kAPt2i75eUFVUMgnhfXzpcJ5hfjBW4QhrADZNgVMMkpKYuJDtSe//mzx3KDqvMstBJBKdOcZhSGVQQDB2d9A3teZBUSH/ovjbPnUJk5I9gw4NZwjyy3/9d59YNFbcb6B3NTukVuEaaxHW0nlTpc70GbI+tqFaTfwSmGIfy0Uhm0+tb19/VEO8ibF2k+/QYKjgvsNoI8rEdAtqTP1KnsQT/7UPgQ4yrGJvmwdd+wKCKiGI0rXPX/Nkw9lLWJoMT2FWi20kXDU0zFOiBl0/q6buhtWq4Pw8FRiZ5nL0ZYJDVTOXCYKiH8CLTGgcPrinMMjyVzRzGU4JE2twKFcnbiKAPJcMsK1hysriXGITUzqAkZdl7TgACFRZDfijVlAvU8lByxmWSJxC3zCvWjcpzqNOLq0JF5KMY32KByLZ7QXHlMb/T3/Rx5UQgeKWNdn1Av05LM0pfuyThZFmzi7BATs6Um2dbyzfPb/qOc2tUhTzAsr95FOgLBOIPuep3w76+PFLGNgs4RDSt5AsiUXOnfc0y67kbgdHyF+/LZun8/MJB5V9i0I8KKVZhF6f4ugvVEARlMw10zEY8Qdhv8rznmAkXYYwv6v/gMqmsAtYt4hwVBFOU1x8SCveIzoeX49yGFRe/cORxd88G/gg1Gh4e2Oxw7xyQPu3jxz8+RiIvHNPkqwQFkP41hcCiFfrCRByjxnXdC4TFN+a2rTuGtiRQi+riKm4E3CNyG1aDR9WA9fC8hIxS6QFZA39ri3SOmA13V7pGpwS54AaTwI0cd9TdpHOA8TsRFSN1Cr9LTIygUQo4i+DDMJxrSKeLfSdIogDYNUOIZm4DZ+2cuxvWMdC7tTicAY5NSJMGSgHDChW8p5IP8gJk3ak937G1BVQdzIKXGKC4bJojY+Xw0Dbxca4iZKPth8/v7fANdvvAKPyWYZZKtfpore0lpy2c7G0YOqVvk5oyYJmwbCCCYsanJqbmrZQR/OPiU+iWTDuQVuBtrwnTrtC9VAHLSJdb6UDn2hfMR4iihxfAXjLVIqoN+QA78eG70fk0T12TVAoHVMR/FimixZHcyhMgGlVj2qCII72zG3jPYQUnNDGkiz/I215SX20eR2lPNBFqKdMUFSS9scoLruVskr5t155kBr8sE3N2",
+       "kO8R/0XKl2wp/pJQz8qApPee4PfmkCWQ6SdrvEk6loEbkyl5FCmdYN+YnBv6+ugxnpzSUIxPBy0UMXSqQSlZR8jnU2PILtYmA0cPSUhw1gPUZY5z8Vw2BjbjCfzxXAv2WXOUAlHXjBaMoNlJC2yNXqnZPPzSENqoNoqrWhCKFd+zsg9Z2xznThzYtv4CT/QQzN/gelJLokZw6HGCXCGk45Lf7d4itTYb60Mxx7vypM+AUuAl3z7JOn4atXjAHlGVZpTn4zFC3eSf0dlE17Bh3OW616bnH8ULzyiTc69RP3h9GhS+q7sOWPkBnUXiZ8lHmU4R54HoCxIDiY2HjjsibV7OBkwpQc4VledzAbumCwRboLFpe6N3YGwRw14W1+LWhvOUfLpZtLdt3WNGe8KwYjnan3qNAKqLebqVW37E++luVsu8Q3H/INfdsniL7tcCRczHvUZEB+QM8XNafwIrjslYMrREAcXYd0RAv/5mPu2qhHtHhyEVhkMU7H0rRZ1wvTHbL5tTiMsFB00zKxtguWCiyrZF41RnTXwMZIbuC1m3pEOOJQG+Bklg16/DWH5lwGS7Ht095c8GW1aYAcALKcaoochhZA4s6RvE8Q8gIaGCIx5uDt7K8cYpCiZ53nq9c3qp83nW9mqX6Rxkky3Vzy5nquo/1xQh9B0a1ydlGIFcIjeEI6Udf5o7I3zAWzh2j9h+LV6/e3Y5iKE5LcVK5DleLmfv/MkWl2ib9472slQ6YQCCB6GonW4eSsmBtlS6K1nZzLKs5+gyMYfeTs1g6cpwPftTY6Mv20kT+k6XJEgqORYM9pO9rHiIBxdPSiEMZ8psV40WByEe1kur2pWV5i0IKkpjGXpt/LWOmCmscihyobRUftlm5BcxzYttfiFpghZ+n/fL/N+NmcbrCsy01lJAjEuAtItghYVwyfk1WX471CCeuQkQeDT2J0xa/vaeTplSALKqj+CCkvCt4+onlQT6MfYWhEm9G+QvG1oSryx/hJk1KifdUDnn9Cggu90VlMP7VQLE7Po7+sZ+jzAopvBglnc+tWSnUHuPTHHE3TDhBc+MCvUkhY7gaoz/tl36mr68O6RqJu9uSLArXWSNI0d2u6SNuXQhNQaTbic690a0gEk02wNCQsLgSE9tm79nAgXW+OlWinhkAwEu2hP5lCfbyvahbAvMD1W1iGMh4QOHdICtE+FgTrriACcu7iD+0Nc6Z0TF9SJVtuhyIG2q/nLMcirQ747g9C4fWw0o/V98PRW9X+zeioYzETlrq2pjPcbAKVdLVOBH5eMO4Gxf6o6dBGX/rT/0XNKAWchBrJKRNbI9AwJ8NUO/9Erzn5ODKViBdroMrLHnnrEaa2JsnodxoYrTBgYuu/3F5HqCVauJFt79Y6c3/FnzBBoKB96UtLzdvFs+6rqO6uGg6AgFxU2f4f84qI3HImoBHf1yYNbAoxMLeYIad/GcMwnbmJfeQllRJlJmj8IIfzcukLma/dW4mHgV1JYP+1Xj79Chd1UaSmBE1pJSZKoMFvhllCBIbqs+rEOVSA2C/I2yoPPHfemGon+5s0rAdnB5fOxr6O226lvgEZvArQheleMU1TZeZpYYcNL76X2KHQpgAVtcJHnGcw3v7ArGNs61ACn7YcC+zqSXMXbwvzWGyGuyF5bHWsVwCEn91eQ5MOSB9NE8QmPlGKslm+t4BUugfVkBBQ3oN6u6Lr33thq6HOgYMU2r0kK0a5G2qCNYVdJNHVA0GyWh3bzr7u7eIL9WKyvJ0naIacptXdeqHQ4u0+nbpXB71lFg6vJefGrn3mvhIrd/Er+3oFub1f9sDyeOgeVIE8GdWCqOgjK2Y5SeBczGflcBG9J9JsGQImpGVGcjJBsw8RL3v5H+bZY2K2qwahWFKd7IvGXAH+wjD9ByEFS6+Z/8gmfV/dIyJiK8JcI25MEtUoXejKcEKcSQuAoFn8ygUNi+QnCC2vxuMy99xiL+1TCQJTL2mstKnfLbmcyB",
+       "DRAxVEc0yL2jl8Oc16HGhmGcItZnHLWNWJf9VY3V8OkIklVdDZZwbW6auVPbZbYQPZHLbH6BC0jwMk31UnTSAORH6AMf2PnYl1rS7St45MN4SJIMzGyGQsEYvnpqqUYSlzjTVw1b+PkHzj2uAA+nm5KJwCo3AaUV2n+/L7ttGL/iDn0hlmz8ZFXHO15qmikkQjMoCRfNiAvKtPlTP/Etz8cxdzeJ/I44qHVWFdJGeibuIlbZlQk0U4ukc/7mTHyLh7QTrIhIaGsbaccve1Xe51VaBd3QeU70gb4KbKu6VQQRs1cvt02AnCEgm0C9u6LbowkmVnauQ1xvjEMkG+i8EI08HXK0gF+mnzCJTarBnGHOpeYdsuCs7+pIl3l4b7iQeZ0N+ni2ZTh1lJJGpLBzcbDSw+rHty3hsUwFOUQReg7e5Y8HNDCDCqunGos34tp3LH4L16xX0ybwXcChQ49CUlRZoj5OsoBPMaqiUvRwPS3OMoBqXXFIfMYieYXLGLCPTNqjcvC+9lJPyhqdglMn0ych30MXSYkA6WIhew9nyZUmDBeGWkrPN1yPiWOZnZ1oCjawX2ubDiNQjKzuDsI9mYsWrImxrMf8qUiyslEQEy5Tfzb1HHPtaakMhZl04ym0JRwJl52herh8MEJUj8UqOx4YAQ=="
+      ]
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 436,
+    "cache_read_input_tokens": 17058,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 436
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "1b8a427d-0c07-40bf-9a08-f59d2501198b",
+  "timestamp": "2026-10-14T08:04:33.390Z",
+  "request_id": "req_011Cg1nLhno3XKfnmDfFGNdB",
+  "thinking_duration_ms": 5136,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nLi3RH3SyVeFHkDMg6",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_019yDpatxVDR3NdQs3Ldn82c",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/src/mdtoc/toc.py",
+      "content": "import re\n\n_HEADING = re.compile(r\"^(#{1,6}) (.*)$\")\n_FENCE = re.compile(r\"^(`{3,}|~{3,})\")\n_CLOSING_HASHES = re.compile(r\"(?:^|\\s+)#+$\")\n_NOT_ANCHOR_CHAR = re.compile(r\"[^\\w \\-]\")\n\n\ndef _headings(markdown: str):\n    \"\"\"Yield (level, title) for each ATX heading outside fenced code blocks.\"\"\"\n    fence = None\n    for line in markdown.splitlines():\n        match = _FENCE.match(line)\n        if fence is not None:\n            # A closing fence must use the same character and be at least as long.\n            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):\n                fence = None\n            continue\n        if match:\n            fence = match.group(1)\n            continue\n        heading = _HEADING.match(line)\n        if heading:\n            title = _CLOSING_HASHES.sub(\"\", heading.group(2).strip()).strip()\n            yield len(heading.group(1)), title\n\n\ndef _anchor(title: str, seen: set) -> str:\n    base = _NOT_ANCHOR_CHAR.sub(\"\", title.lower()).replace(\" \", \"-\")\n    anchor = base\n    n = 0\n    while anchor in seen:\n        n += 1\n        anchor = f\"{base}-{n}\"\n    seen.add(anchor)\n    return anchor\n\n\ndef toc(markdown: str, max_level: int = 3) -> str:\n    \"\"\"Return a Markdown table of contents for the ATX headings in ``markdown``.\n\n    Headings deeper than ``max_level`` are skipped, and fenced code blocks are\n    ignored so that lines starting with ``#`` inside them are not treated as\n    headings. Indentation is relative to the shallowest included heading.\n    \"\"\"\n    included = [(level, title) for level, title in _headings(markdown) if level <= max_level]\n    if not included:\n        return \"\"\n    base_level = min(level for level, _ in included)\n    seen: set = set()\n    lines = []\n    for level, title in included:\n        indent = \"  \" * (level - base_level)\n        lines.append(f\"{indent}- [{title}](#{_anchor(title, seen)})\\n\")\n    return \"\".join(lines)\n"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 436,
+    "cache_read_input_tokens": 17058,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 436
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "98a18c3f-cd69-4cec-817c-6f1ad84cbd79",
+  "timestamp": "2026-10-14T08:04:36.083Z",
+  "request_id": "req_011Cg1nLhno3XKfnmDfFGNdB"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_019yDpatxVDR3NdQs3Ldn82c",
+     "type": "tool_result",
+     "content": "The file /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/src/mdtoc/toc.py has been updated successfully. (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "e3db2144-ae85-422a-bbaf-c1b377b0691e",
+  "timestamp": "2026-10-14T08:04:36.092Z",
+  "tool_use_result": {
+   "type": "update",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/src/mdtoc/toc.py",
+   "content": "import re\n\n_HEADING = re.compile(r\"^(#{1,6}) (.*)$\")\n_FENCE = re.compile(r\"^(`{3,}|~{3,})\")\n_CLOSING_HASHES = re.compile(r\"(?:^|\\s+)#+$\")\n_NOT_ANCHOR_CHAR = re.compile(r\"[^\\w \\-]\")\n\n\ndef _headings(markdown: str):\n    \"\"\"Yield (level, title) for each ATX heading outside fenced code blocks.\"\"\"\n    fence = None\n    for line in markdown.splitlines():\n        match = _FENCE.match(line)\n        if fence is not None:\n            # A closing fence must use the same character and be at least as long.\n            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):\n                fence = None\n            continue\n        if match:\n            fence = match.group(1)\n            continue\n        heading = _HEADING.match(line)\n        if heading:\n            title = _CLOSING_HASHES.sub(\"\", heading.group(2).strip()).strip()\n            yield len(heading.group(1)), title\n\n\ndef _anchor(title: str, seen: set) -> str:\n    base = _NOT_ANCHOR_CHAR.sub(\"\", title.lower()).replace(\" \", \"-\")\n    anchor = base\n    n = 0\n    while anchor in seen:\n        n += 1\n        anchor = f\"{base}-{n}\"\n    seen.add(anchor)\n    return anchor\n\n\ndef toc(markdown: str, max_level: int = 3) -> str:\n    \"\"\"Return a Markdown table of contents for the ATX headings in ``markdown``.\n\n    Headings deeper than ``max_level`` are skipped, and fenced code blocks are\n    ignored so that lines starting with ``#`` inside them are not treated as\n    headings. Indentation is relative to the shallowest included heading.\n    \"\"\"\n    included = [(level, title) for level, title in _headings(markdown) if level <= max_level]\n    if not included:\n        return \"\"\n    base_level = min(level for level, _ in included)\n    seen: set = set()\n    lines = []\n    for level, title in included:\n        indent = \"  \" * (level - base_level)\n        lines.append(f\"{indent}- [{title}](#{_anchor(title, seen)})\\n\")\n    return \"\".join(lines)\n",
+   "structuredPatch": [
+    {
+     "oldStart": 1,
+     "oldLines": 2,
+     "newStart": 1,
+     "newLines": 55,
+     "lines": [
+      "+import re",
+      "+",
+      "+_HEADING = re.compile(r\"^(#{1,6}) (.*)$\")",
+      "+_FENCE = re.compile(r\"^(`{3,}|~{3,})\")",
+      "+_CLOSING_HASHES = re.compile(r\"(?:^|\\s+)#+$\")",
+      "+_NOT_ANCHOR_CHAR = re.compile(r\"[^\\w \\-]\")",
+      "+",
+      "+",
+      "+def _headings(markdown: str):",
+      "+    \"\"\"Yield (level, title) for each ATX heading outside fenced code blocks.\"\"\"",
+      "+    fence = None",
+      "+    for line in markdown.splitlines():",
+      "+        match = _FENCE.match(line)",
+      "+        if fence is not None:",
+      "+            # A closing fence must use the same character and be at least as long.",
+      "+            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):",
+      "+                fence = None",
+      "+            continue",
+      "+        if match:",
+      "+            fence = match.group(1)",
+      "+            continue",
+      "+        heading = _HEADING.match(line)",
+      "+        if heading:",
+      "+            title = _CLOSING_HASHES.sub(\"\", heading.group(2).strip()).strip()",
+      "+            yield len(heading.group(1)), title",
+      "+",
+      "+",
+      "+def _anchor(title: str, seen: set) -> str:",
+      "+    base = _NOT_ANCHOR_CHAR.sub(\"\", title.lower()).replace(\" \", \"-\")",
+      "+    anchor = base",
+      "+    n = 0",
+      "+    while anchor in seen:",
+      "+        n += 1",
+      "+        anchor = f\"{base}-{n}\"",
+      "+    seen.add(anchor)",
+      "+    return anchor",
+      "+",
+      "+",
+      " def toc(markdown: str, max_level: int = 3) -> str:",
+      "-    raise NotImplementedError",
+      "+    \"\"\"Return a Markdown table of contents for the ATX headings in ``markdown``.",
+      "+",
+      "+    Headings deeper than ``max_level`` are skipped, and fenced code blocks are",
+      "+    ignored so that lines starting with ``#`` inside them are not treated as",
+      "+    headings. Indentation is relative to the shallowest included heading.",
+      "+    \"\"\"",
+      "+    included = [(level, title) for level, title in _headings(markdown) if level <= max_level]",
+      "+    if not included:",
+      "+        return \"\"",
+      "+    base_level = min(level for level, _ in included)",
+      "+    seen: set = set()",
+      "+    lines = []",
+      "+    for level, title in included:",
+      "+        indent = \"  \" * (level - base_level)",
+      "+        lines.append(f\"{indent}- [{title}](#{_anchor(title, seen)})\\n\")",
+      "+    return \"\".join(lines)"
+     ]
+    }
+   ],
+   "originalFile": "def toc(markdown: str, max_level: int = 3) -> str:\n    raise NotImplementedError\n",
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_019yDpatxVDR3NdQs3Ldn82c",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nMNafdYvehLdvQ7gck",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQS6AUKEAgSGAI4AUIIdGhpbmtpbmcSDGtr2xVqCEAESXhG2RoMdjYXCsLepWb0LtLJIjBifevRjT2H1M1TCOsapI3F8FckdcRTv9gdCM80Rge5tjrpXdMmM74vbhs8yAjiWs8qhQUcB4qwWZ4d/W5Ok69/+Y5RrVDoIhw80pFMHDL5TKwDa9uw46cxJCDao6JlLpQz/aNC/genLDJHsvMjU9pzHUhaV6kI9rR6IsY7o0flqUW95C155Mn+VHhID1/hFmEf7V8PX/zh7eJTv8wf+cMHqo6MBjx8Qr8HmBm1J3LZTzpJRuL7vlmKngzKYpvZEsKIhQUwtqa6v4d/oIEcYPOiO0szKghuxfs47j37Ua3DaeYpxRbcCrNEP3Ko1w/PU+mzyUPexde47RFWYDyWgfKBSgD6YW7Qu4Z6Jl4OHGFGKqW5Oc8EEsy9oOgflPI0FiG8h7f8x4672aoNTtD1fmwlW0F5aLU3jzIaMMZiqbpjWGLNWoKLJwruCm3gJeWhQtQJ1DgWz7IWlwV+1rVzwErcz9gPqUjhPEISdooQvQxdbqXrsoB4xIFuCNUgsNkXuriIXf4ET8jUyEeBKd6iWC//h9KH6l/w3Vr5bxRuRqohd4Zq0iYHap3AyRvpeqYbscuHoqh05i1IV6jMcR2oVUDAXGxFzu6iuQ4RQ/rqL/A66h/Q84uxqoG0mjmjjQLNROTs5I7m/Djllgrl9YTP0kn/Ywu5azlaPcm/bk070+hiue0Sf7qANOZ+zhQPhfXwx0BWLQeXG2oH1msxpDIPeZHWPIB6tSmNTeuzFQfBrLq7zoIN1EsDeXCV54r1Hu/wlQHIKMysOoWGCfRarGd3gygA97SNQ3ieFWitSAxSOGLfKwFALW8o3UphUyhuOWULIQcqHOxugDyffCdx4pP84Yq6W1aKjxYlwWzhNzyMHj4jN7qanfJAsGochqNdoEYAuHfjZo58Z3WYYUHjcptBj2+6QXx1s8t+Iw8YAQ=="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 2202,
+    "cache_read_input_tokens": 17494,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 2202
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "687a4eca-aed2-4d32-9586-8b3a900e07cf",
+  "timestamp": "2026-10-14T08:04:37.266Z",
+  "request_id": "req_011Cg1nMNMHbFZNArjEfgL8R",
+  "thinking_duration_ms": 152,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nMNafdYvehLdvQ7gck",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01TCZH5jmag8dq6nYC6rSqFY",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/tests/test_toc_behaviour.py",
+      "content": {
+       "__rw_chunks__": [
+        "from mdtoc import toc\n\n\ndef test_no_headings_returns_empty_string():\n    assert toc(\"just text\\n\") == \"\"\n    assert toc(\"\") == \"\"\n\n\ndef test_nested_levels_indent_relative_to_shallowest():\n    md = \"# A\\n## B\\n### C\\n\"\n    assert toc(md) == \"- [A](#a)\\n  - [B](#b)\\n    - [C](#c)\\n\"\n\n\ndef test_indent_starts_at_shallowest_included_heading():\n    md = \"## Only\\n#### Deep\\n\"\n    assert toc(md) == \"- [Only](#only)\\n\"\n    assert toc(\"### Start\\n#### Next\\n\", max_level=4) == \"- [Start](#start)\\n  - [Next](#next)\\n\"\n\n\ndef test_headings_deeper_than_max_level_are_skipped():\n    md = \"# A\\n## B\\n#### D\\n\"\n    assert toc(md, max_level=2) == \"- [A](#a)\\n  - [B](#b)\\n\"\n\n\ndef test_headings_inside_backtick_fence_are_ignored():\n    md = \"# Real\\n```\\n# Fake\\n```\\n## After\\n\"\n    assert toc(md) == \"- [Real](#real)\\n  - [After](#after)\\n\"\n\n\ndef test_headings_inside_tilde_fence_are_ignored():\n    md = \"~~~python\\n# Fake\\n~~~\\n# Real\\n\"\n    assert toc(md) == \"- [Real](#real)\\n\"\n\n\ndef test_fence_closes_only_with_same_character():\n    md = \"```\\n~~~\\n# Still code\\n```\\n# Out\\n\"\n    assert toc(md) == \"- [Out](#out)\\n\"\n\n\ndef test_closing_hashes_are_removed():\n    assert toc(\"## Setup ##\\n\") == \"- [Setup](#setup)\\n\"\n\n\ndef test_hash_without_leading_space_is_not_a_closing_sequence():\n    assert toc(\"# C#\\n\") == \"- [C#](#c)\\n\"\n\n\ndef test_title_whitespace_is_stripped():\n    assert toc(\"#    Spaced out   \\n\") == \"- [Spaced out](#spaced-out)\\n\"\n\n\ndef test_hash_without_space_is_not_a_heading():\n    assert toc(\"#NoSpace\\n\") == \"\"\n\n\ndef test_seven_hashes_is_not_a_heading():\n    assert toc(\"####### Too deep\\n\") == \"\"\n\n\ndef test_anchor_drops_punctuation_and_keeps_hyphen_and_underscore():\n    assert toc(\"# Hello, World! (v2)_x-y\\n\") == \"- [Hello, World! (v2)_x-y](#hello-world-v2_x-y)\\n\"\n\n\ndef test_anchor_lowercases_title():\n    assert toc(\"# API Reference\\n\") == \"- [API Reference](#api-reference)\\n\"\n\n\ndef test_duplicate_anchors_get_numeric_suffixes():\n    md = \"# Intro\\n## Intro\\n## Intro\\n\"\n    assert t",
+        "oc(md) == (\n        \"- [Intro](#intro)\\n\"\n        \"  - [Intro](#intro-1)\\n\"\n        \"  - [Intro](#intro-2)\\n\"\n    )\n\n\ndef test_duplicate_suffix_skips_already_taken_anchor():\n    md = \"# A\\n# A\\n# A-1\\n\"\n    assert toc(md) == \"- [A](#a)\\n- [A](#a-1)\\n- [A-1](#a-1-1)\\n\"\n\n\ndef test_duplicates_counted_after_punctuation_is_removed():\n    md = \"# Foo!\\n# Foo?\\n\"\n    assert toc(md) == \"- [Foo!](#foo)\\n- [Foo?](#foo-1)\\n\"\n\n\ndef test_output_lines_end_with_newline():\n    out = toc(\"# A\\n## B\\n\")\n    assert out.endswith(\"\\n\")\n    assert all(line.endswith(\"\\n\") for line in out.splitlines(keepends=True))\n"
+       ]
+      }
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 2202,
+    "cache_read_input_tokens": 17494,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 2202
+    },
+    "output_tokens": 3,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "778fd24c-2134-4773-9b09-e5bae9e75dcc",
+  "timestamp": "2026-10-14T08:04:41.767Z",
+  "request_id": "req_011Cg1nMNMHbFZNArjEfgL8R"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01TCZH5jmag8dq6nYC6rSqFY",
+     "type": "tool_result",
+     "content": "File created successfully at: /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/tests/test_toc_behaviour.py (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "fdbf2763-1a08-4471-a8e8-98c10c6c3222",
+  "timestamp": "2026-10-14T08:04:41.772Z",
+  "tool_use_result": {
+   "type": "create",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T15-markdown-toc-B-r2/tests/test_toc_behaviour.py",
+   "content": {
+    "__rw_chunks__": [
+     "from mdtoc import toc\n\n\ndef test_no_headings_returns_empty_string():\n    assert toc(\"just text\\n\") == \"\"\n    assert toc(\"\") == \"\"\n\n\ndef test_nested_levels_indent_relative_to_shallowest():\n    md = \"# A\\n## B\\n### C\\n\"\n    assert toc(md) == \"- [A](#a)\\n  - [B](#b)\\n    - [C](#c)\\n\"\n\n\ndef test_indent_starts_at_shallowest_included_heading():\n    md = \"## Only\\n#### Deep\\n\"\n    assert toc(md) == \"- [Only](#only)\\n\"\n    assert toc(\"### Start\\n#### Next\\n\", max_level=4) == \"- [Start](#start)\\n  - [Next](#next)\\n\"\n\n\ndef test_headings_deeper_than_max_level_are_skipped():\n    md = \"# A\\n## B\\n#### D\\n\"\n    assert toc(md, max_level=2) == \"- [A](#a)\\n  - [B](#b)\\n\"\n\n\ndef test_headings_inside_backtick_fence_are_ignored():\n    md = \"# Real\\n```\\n# Fake\\n```\\n## After\\n\"\n    assert toc(md) == \"- [Real](#real)\\n  - [After](#after)\\n\"\n\n\ndef test_headings_inside_tilde_fence_are_ignored():\n    md = \"~~~python\\n# Fake\\n~~~\\n# Real\\n\"\n    assert toc(md) == \"- [Real](#real)\\n\"\n\n\ndef test_fence_closes_only_with_same_character():\n    md = \"```\\n~~~\\n# Still code\\n```\\n# Out\\n\"\n    assert toc(md) == \"- [Out](#out)\\n\"\n\n\ndef test_closing_hashes_are_removed():\n    assert toc(\"## Setup ##\\n\") == \"- [Setup](#setup)\\n\"\n\n\ndef test_hash_without_leading_space_is_not_a_closing_sequence():\n    assert toc(\"# C#\\n\") == \"- [C#](#c)\\n\"\n\n\ndef test_title_whitespace_is_stripped():\n    assert toc(\"#    Spaced out   \\n\") == \"- [Spaced out](#spaced-out)\\n\"\n\n\ndef test_hash_without_space_is_not_a_heading():\n    assert toc(\"#NoSpace\\n\") == \"\"\n\n\ndef test_seven_hashes_is_not_a_heading():\n    assert toc(\"####### Too deep\\n\") == \"\"\n\n\ndef test_anchor_drops_punctuation_and_keeps_hyphen_and_underscore():\n    assert toc(\"# Hello, World! (v2)_x-y\\n\") == \"- [Hello, World! (v2)_x-y](#hello-world-v2_x-y)\\n\"\n\n\ndef test_anchor_lowercases_title():\n    assert toc(\"# API Reference\\n\") == \"- [API Reference](#api-reference)\\n\"\n\n\ndef test_duplicate_anchors_get_numeric_suffixes():\n    md = \"# Intro\\n## Intro\\n## Intro\\n\"\n    assert t",
+     "oc(md) == (\n        \"- [Intro](#intro)\\n\"\n        \"  - [Intro](#intro-1)\\n\"\n        \"  - [Intro](#intro-2)\\n\"\n    )\n\n\ndef test_duplicate_suffix_skips_already_taken_anchor():\n    md = \"# A\\n# A\\n# A-1\\n\"\n    assert toc(md) == \"- [A](#a)\\n- [A](#a-1)\\n- [A-1](#a-1-1)\\n\"\n\n\ndef test_duplicates_counted_after_punctuation_is_removed():\n    md = \"# Foo!\\n# Foo?\\n\"\n    assert toc(md) == \"- [Foo!](#foo)\\n- [Foo?](#foo-1)\\n\"\n\n\ndef test_output_lines_end_with_newline():\n    out = toc(\"# A\\n## B\\n\")\n    assert out.endswith(\"\\n\")\n    assert all(line.endswith(\"\\n\") for line in out.splitlines(keepends=True))\n"
+    ]
+   },
+   "structuredPatch": [],
+   "originalFile": null,
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01TCZH5jmag8dq6nYC6rSqFY",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nMnqfxm6mbjbwTvxVC",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01BdfgSmnby5QZMg1Y3Xe6w8",
+     "name": "Bash",
+     "input": {
+      "command": "python -m pytest -q 2>&1 | tail -30",
+      "description": "Run the test suite"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1617,
+    "cache_read_input_tokens": 19696,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1617
+    },
+    "output_tokens": 20,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "d7507a54-fceb-4f9f-b580-1db77f081106",
+  "timestamp": "2026-10-14T08:04:43.335Z",
+  "request_id": "req_011Cg1nMndHiVwcbhxRVyjrT"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01BdfgSmnby5QZMg1Y3Xe6w8",
+     "type": "tool_result",
+     "content": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n...................                                                      [100%]\n19 passed in 0.01s",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "7d825c40-0171-4987-899c-aa8264dd7e3c",
+  "timestamp": "2026-10-14T08:04:43.447Z",
+  "tool_use_result": {
+   "stdout": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n...................                                                      [100%]\n19 passed in 0.01s",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01BdfgSmnby5QZMg1Y3Xe6w8",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "9d8b24cc-7a4e-43ba-95f7-9fdd33b65afd"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 302,
+  "estimated_tokens_delta": 252,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "c4d335fb-4a55-42ac-8b6e-5914eaf705c4"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nMvDvdkaw6j13p3wPA",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSrQkKEAgSGAI4AUIIdGhpbmtpbmcSDI48R2bXvIgIpHFpjBoMPJNbBSdIQJy252kRIjD75n8huzCTIhQ9sCXqWb5KcerpXgpWz373KvKgqzQU8lfL2ZLxyDpjAi8htDeEyzkqygiHvDZe5gmsPFwAtl29RCk4ggDaeBfPxwXZ9ieSrKODlsryouvklsyN9myiZ0+HHl6FXxxAwmn6zR/bz+n8jWZ10KrIdrKeKfUETbctm8oewQ62IpVxBSCql5h+hqkZ/ShyDNhcegxeNsEPpdnUS5gX3VNRLwZUGkM2d+sFrEryocvzuDPFLIrW8O/SPhC2DR5hrESORQ+Rjpp9j/uB3DP85kDQkwGQTKMeC2IgkhunNjdDtzW720lxOkflG1kqiT9BFAlpBFzT6Ia6oUCAE7RzoeJU2wRESl0ciB2Jsgx2+SYFWgh5JBgIyiyvIblbuZe4Y+4T/BDMopnRlbzRF6/5AFWtAUc1fIwTCNnQwsbZFyg+7fS/+sGaZlpuYT6H6ej6BK3TpCf0dHIKxwd3/S1FnmMyy0nTwPhrp3zrg7I0jo1bYPJryvpuxxrRGO0LXTHpmjmK8SO3pzQBMHIJPzEifvPKcwGc4LxnR7yZPOOp7X4G332kuJkMwPZ56aJFqdBo+pUl31+FHbh+6OluzWoj9oIWIyRROaOvdRYRGC5LsDoCfV1HkCkQSXnIJoLmlpCpUAvNuzSVfS01V64T3BL/ADvUXkRURaWWds64elJdcfPKZR1m6sW9xj0+2096jTqaYo/9vehLuqDygpPj5bIf7TQPxpLkM4Q0O/IVFIjwpS6ttkeZ4AajvHSHEYwZ0kxG1txQWFukja8yMF2t4d2U8SvMP3EfA4TGfCo7Had8Zqr5OqO3MCpU2+LNlm+QHdcnEPuBct8slCHkNPVIDJ2SKEZuCTU7+Lksw7s3S378E1jxV7KUPInXN+KzUGAuuarqp0mzyfGuWDK2dozQuBWgk1nl+rRyARmDQUvqz5BJjw9hflikiQe+H4xcEq4VC1NsYlMEGuZHodx6vVTbDlulI+HIDmKkk06QwP2D0E93nwjkHA17YFUQVKchjmflr2MQBorwm3xoBvnVY9XQYjiiT9r0IV6LV0gxFPQ2wVPOsgqkUCmcZrnmk9XXnCqtDC50yp/wnCXrWx+9Wx4EmRwkn2qxST7hziTzHNdfgQJwB7ASsXqPT5jybM8vyLYICEKF7v1tbp6QQJ6Nn+OmFL2vNAzj7t1Dh13nI+sgqY2UxSpHrnsGPJYu/twoxDctOxRrcjVPGwqoq0p1PxOkVnuWHaR9mpuPl0TTBPca+Ki5OZJwY8UH7PvpYHo1rlYxBr+0eZ0uYkA2vmxbdaGhdlNfWhVCrG3KG2Tjv8KEZvEbN/i2FH4kYsZACGKXjA5bjE53+YdhF/wTXyT2sp9M1R1uo7ZlxhhMDUrOlRheIMNGYXqPPqZZuB/BPLuyvo+Kv8rgy1hX+AbLHdqMB9/VKn0uElXBXThnlI2TkYlyDurNtaSim+03bPgBs3ALi7pgEn7KoJVxpdN4I77in650zoeIyD9Ulvue3aeyvIZuMSRsXSoNV9S6HP+cxoQYAQ=="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 171,
+    "cache_read_input_tokens": 21313,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 171
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "a15c0561-1377-4b16-9b59-2b3589eb7c6e",
+  "timestamp": "2026-10-14T08:04:45.462Z",
+  "request_id": "req_011Cg1nMuoPchDctAjDUC2i3",
+  "thinking_duration_ms": 729,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1nMvDvdkaw6j13p3wPA",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "text",
+     "text": "`toc()` is implemented in `src/mdtoc/toc.py` and the new tests are in `tests/test_toc_behaviour.py`. `python -m pytest -q` passes: 19 tests, including the existing one.\n\nThe spec left a few points open, so these are the choices I made:\n\n- **Fences:** a fence opens on a line starting with three or more backticks or tildes. It closes only on a line using the same character and at least as many characters.\n- **Headings:** a line counts as a heading only if it starts with 1–6 `#` followed by a space, so `#NoSpace` and `####### x` are ignored.\n- **Closing hashes:** removed only when preceded by whitespace, so `# C#` keeps its title.\n- **Anchors:** \"letter, digit, underscore\" is implemented with the regex `\\w`, so non-ASCII letters are kept.\n- **Duplicates:** if a generated suffix is already taken, the next free number is used (for example `a`, `a-1`, `a-1-1`).\n- **Empty output:** when no headings are included, `toc()` returns `\"\"`.\n\nI did not modify the existing test file, and I did not commit anything."
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 171,
+    "cache_read_input_tokens": 21313,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 171
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "uuid": "1f92a96c-a964-4244-a592-e10c496c33e1",
+  "timestamp": "2026-10-14T08:04:46.908Z",
+  "request_id": "req_011Cg1nMuoPchDctAjDUC2i3"
+ },
+ {
+  "duration_api_ms": 21918,
+  "stop_reason": "end_turn",
+  "session_id": "0af1f414-2832-472a-9da3-cd6f8604df8c",
+  "total_cost_usd": 0.00542359,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 11456,
+   "cache_read_input_tokens": 85589,
+   "output_tokens": 4551,
+   "output_tokens_details": {
+    "thinking_tokens": 1367
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 11456,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 10,
+    "outputTokens": 4551,
+    "cacheReadInputTokens": 85589,
+    "cacheCreationInputTokens": 11456,
+    "webSearchRequests": 0,
+    "costUSD": 0.00542359,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1367,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 5,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "`toc()` is implemented in `src/mdtoc/toc.py` and the new tests are in `tests/test_toc_behaviour.py`. `python -m pytest -q` passes: 19 tests, including the existing one.\n\nThe spec left a few points open, so these are the choices I made:\n\n- **Fences:** a fence opens on a line starting with three or more backticks or tildes. It closes only on a line using the same character and at least as many characters.\n- **Headings:** a line counts as a heading only if it starts with 1–6 `#` followed by a space, so `#NoSpace` and `####### x` are ignored.\n- **Closing hashes:** removed only when preceded by whitespace, so `# C#` keeps its title.\n- **Anchors:** \"letter, digit, underscore\" is implemented with the regex `\\w`, so non-ASCII letters are kept.\n- **Duplicates:** if a generated suffix is already taken, the next free number is used (for example `a`, `a-1`, `a-1-1`).\n- **Empty output:** when no headings are included, `toc()` returns `\"\"`.\n\nI did not modify the existing test file, and I did not commit anything.",
+  "ttft_ms": 1344,
+  "type": "result",
+  "duration_ms": 23051,
+  "uuid": "7388fc1d-feb7-49d6-946f-89e2d6d2a393",
+  "ttft_stream_ms": 1342,
+  "time_to_request_ms": 39,
+  "first_content_frame_ms": 1343,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+]

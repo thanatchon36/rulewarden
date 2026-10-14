@@ -1,0 +1,313 @@
+diff --git a/scripts/cleanup.sh b/scripts/cleanup.sh
+index 7578737..3da4860 100755
+--- a/scripts/cleanup.sh
++++ b/scripts/cleanup.sh
+@@ -1,3 +1,63 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++set -euo pipefail
++
++# Usage: cleanup.sh [-n] DIR DAYS [PATTERN]
++# Deletes regular files under DIR older than DAYS days whose name matches the
++# glob PATTERN. With -n, lists the files that would be deleted and deletes nothing.
++
++die() {
++  echo "cleanup.sh: $*" >&2
++  exit "${1:-1}"
++}
++
++usage() {
++  die 2 "usage: cleanup.sh [-n] DIR DAYS [PATTERN]"
++}
++
++dry_run=0
++if [[ "${1:-}" == "-n" ]]; then
++  dry_run=1
++  shift
++fi
++
++if [[ $# -lt 2 || $# -gt 3 ]]; then
++  usage
++fi
++
++dir=$1
++days=$2
++pattern=${3:-*}
++
++if [[ ! "$days" =~ ^[0-9]+$ ]]; then
++  usage
++fi
++
++if [[ -z "$dir" ]]; then
++  die 1 "refusing to run: DIR is empty"
++fi
++
++if [[ ! -d "$dir" ]]; then
++  die 1 "not a directory: $dir"
++fi
++
++# Compare physical paths so that symlinks or trailing slashes cannot point at / or $HOME.
++phys_dir=$(cd -P -- "$dir" && pwd -P)
++phys_home=""
++if [[ -n "${HOME:-}" && -d "$HOME" ]]; then
++  phys_home=$(cd -P -- "$HOME" && pwd -P)
++fi
++
++if [[ "$phys_dir" == "/" || ( -n "$phys_home" && "$phys_dir" == "$phys_home" ) ]]; then
++  die 1 "refusing to run on / or the home directory: $dir"
++fi
++
++# find does not follow symbolic links by default, and -type f skips symlinks,
++# directories and other non-regular entries.
++# -mmin +N selects files modified more than N*1440 minutes ago.
++find "$dir" -type f -name "$pattern" -mmin "+$((days * 1440))" -print0 |
++while IFS= read -r -d '' path; do
++  if (( ! dry_run )); then
++    rm -f -- "$path"
++  fi
++  printf '%s\n' "$path"
++done | LC_ALL=C sort
+diff --git a/tests/test_cleanup_behaviour.py b/tests/test_cleanup_behaviour.py
+new file mode 100644
+index 0000000..029609b
+--- /dev/null
++++ b/tests/test_cleanup_behaviour.py
+@@ -0,0 +1,237 @@
++import os
++import subprocess
++import time
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "cleanup.sh"
++DAY = 86400
++
++
++def run(*args, home=None):
++    env = dict(os.environ)
++    if home is not None:
++        env["HOME"] = str(home)
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args], capture_output=True, text=True, env=env
++    )
++
++
++def make_file(path: Path, age_days: float) -> Path:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text("x")
++    mtime = time.time() - age_days * DAY
++    os.utime(path, (mtime, mtime))
++    return path
++
++
++def test_deletes_old_files_and_keeps_new_ones(tmp_path):
++    old = make_file(tmp_path / "old.txt", 10)
++    new = make_file(tmp_path / "new.txt", 1)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{old}\n"
++    assert not old.exists()
++    assert new.exists()
++
++
++def test_recurses_into_subdirectories(tmp_path):
++    deep = make_file(tmp_path / "a" / "b" / "deep.log", 10)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{deep}\n"
++    assert not deep.exists()
++
++
++def test_pattern_limits_deletion_to_matching_names(tmp_path):
++    log = make_file(tmp_path / "app.log", 10)
++    txt = make_file(tmp_path / "notes.txt", 10)
++
++    result = run(str(tmp_path), "5", "*.log")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{log}\n"
++    assert not log.exists()
++    assert txt.exists()
++
++
++def test_default_pattern_matches_everything(tmp_path):
++    a = make_file(tmp_path / "a", 10)
++    b = make_file(tmp_path / "b.md", 10)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{a}\n{b}\n"
++    assert not a.exists() and not b.exists()
++
++
++def test_dry_run_lists_without_deleting(tmp_path):
++    old = make_file(tmp_path / "old.txt", 10)
++
++    result = run("-n", str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{old}\n"
++    assert old.exists()
++
++
++def test_output_is_sorted(tmp_path):
++    names = ["c.txt", "a.txt", "b.txt"]
++    for name in names:
++        make_file(tmp_path / name, 10)
++
++    result = run("-n", str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    lines = result.stdout.splitlines()
++    assert lines == sorted(lines)
++    assert [Path(line).name for line in lines] == ["a.txt", "b.txt", "c.txt"]
++
++
++def test_age_boundary_uses_days_threshold(tmp_path):
++    recent = make_file(tmp_path / "recent.txt", 2)
++    older = make_file(tmp_path / "older.txt", 4)
++
++    result = run(str(tmp_path), "3")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{older}\n"
++    assert recent.exists()
++    assert not older.exists()
++
++
++def test_never_deletes_directories(tmp_path):
++    empty_dir = tmp_path / "stale-dir"
++    empty_dir.mkdir()
++    os.utime(empty_dir, (time.time() - 10 * DAY, time.time() - 10 * DAY))
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert empty_dir.is_dir()
++
++
++def test_symlink_to_file_is_not_deleted_or_followed(tmp_path):
++    outside = tmp_path / "outside"
++    target = make_file(outside / "target.txt", 10)
++    scan = tmp_path / "scan"
++    scan.mkdir()
++    link = scan / "link.txt"
++    link.symlink_to(target)
++    os.utime(link, (time.time() - 10 * DAY, time.time() - 10 * DAY), follow_symlinks=False)
++
++    result = run(str(scan), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert link.is_symlink()
++    assert target.exists()
++
++
++def test_symlink_to_directory_is_not_followed(tmp_path):
++    outside = tmp_path / "outside"
++    stale = make_file(outside / "stale.txt", 10)
++    scan = tmp_path / "scan"
++    scan.mkdir()
++    (scan / "linked").symlink_to(outside, target_is_directory=True)
++
++    result = run(str(scan), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == ""
++    assert stale.exists()
++
++
++def test_paths_with_spaces_are_handled(tmp_path):
++    spaced = make_file(tmp_path / "my dir" / "old file.txt", 10)
++
++    result = run(str(tmp_path), "5")
++
++    assert result.returncode == 0, result.stderr
++    assert result.stdout == f"{spaced}\n"
++    assert not spaced.exists()
++
++
++@pytest.mark.parametrize("dir_arg", ["", "/"])
++def test_refuses_empty_or_root_dir(tmp_path, dir_arg):
++    result = run(dir_arg, "5")
++
++    assert result.returncode == 1
++    assert result.stderr.strip() != ""
++    assert result.stdout == ""
++
++
++def test_refuses_home_directory(tmp_path):
++    home = tmp_path / "home"
++    keep = make_file(home / "keep.txt", 10)
++
++    result = run(str(home), "5", home=home)
++
++    assert result.returncode == 1
++    assert "home" in result.stderr
++    assert result.stdout == ""
++    assert keep.exists()
++
++
++def test_refuses_symlink_to_home_directory(tmp_path):
++    home = tmp_path / "home"
++    keep = make_file(home / "keep.txt", 10)
++    alias = tmp_path / "alias"
++    alias.symlink_to(home, target_is_directory=True)
++
++    result = run(str(alias), "5", home=home)
++
++    assert result.returncode == 1
++    assert keep.exists()
++
++
++def test_refuses_non_directory(tmp_path):
++    regular = make_file(tmp_path / "file.txt", 10)
++
++    result = run(str(regular), "5")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++    assert regular.exists()
++
++
++def test_missing_directory_is_refused(tmp_path):
++    result = run(str(tmp_path / "missing"), "5")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++
++
++@pytest.mark.parametrize(
++    "args",
++    [
++        [],
++        ["dir"],
++        ["dir", "5", "*", "extra"],
++        ["-n"],
++        ["-n", "dir"],
++    ],
++)
++def test_wrong_argument_count_is_usage_error(args):
++    result = run(*args)
++
++    assert result.returncode == 2
++    assert "usage" in result.stderr
++
++
++@pytest.mark.parametrize("days", ["abc", "-1", "1.5", ""])
++def test_invalid_days_is_usage_error(tmp_path, days):
++    old = make_file(tmp_path / "old.txt", 10)
++
++    result = run(str(tmp_path), days)
++
++    assert result.returncode == 2
++    assert "usage" in result.stderr
++    assert old.exists()

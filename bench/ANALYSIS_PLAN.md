@@ -123,3 +123,11 @@ No pre-registered analysis changes. One **exploratory** descriptive metric is ad
 number of denied tool calls whose deny message names a path that is new in the run's final diff. It is reported
 next to `blocks`, so readers can see how much of the blocking was this defect. The defect is fixed after the
 benchmark (the PreToolUse diff for a path rule should use the session-baseline status).
+
+**A2 (2026-10-14, after the last run, before any results were written up): measurement fix for the exploratory
+metric.** `blocks_on_session_files` parsed only the managed report format, so it missed denies in condition D,
+which uses the flat format (`path: RULE: …`). The parser now reads both formats (test
+`test_blocks_on_session_files_flat_report`). No pre-registered metric or test is affected. Final run count: 149
+non-pilot runs plus 1 pilot = `BENCH_MAX_RUNS` = 150. Stage 6 completed 19 of 40 runs (B and C repeat 3 for T01–T10,
+minus T10/C). No run was excluded for infrastructure failure. `git diff 2593565 -- src` was empty when the last run
+ended.

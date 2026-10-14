@@ -1,0 +1,194 @@
+diff --git a/src/appconfig/loader.py b/src/appconfig/loader.py
+index 3e6f7d7..2462221 100644
+--- a/src/appconfig/loader.py
++++ b/src/appconfig/loader.py
+@@ -1,6 +1,59 @@
++import configparser
++import os
++import re
+ from collections.abc import Mapping
+ from pathlib import Path
+ 
++_REFERENCE = re.compile(r"\$\$|\$\{([^}]*)\}")
++_TRUE = {"true", "yes", "on"}
++_FALSE = {"false", "no", "off"}
++_INT = re.compile(r"[+-]?[0-9]+")
++_FLOAT = re.compile(r"[+-]?(?:[0-9]+\.[0-9]*|\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?")
++
++
++def _interpolate(value: str, env: Mapping[str, str]) -> str:
++    def replace(match: re.Match[str]) -> str:
++        if match.group(0) == "$$":
++            return "$"
++        name = match.group(1)
++        if name not in env:
++            raise KeyError(name)
++        return env[name]
++
++    return _REFERENCE.sub(replace, value)
++
++
++def _convert(value: str) -> object:
++    text = value.strip()
++    lowered = text.lower()
++    if lowered in _TRUE:
++        return True
++    if lowered in _FALSE:
++        return False
++    if _INT.fullmatch(text):
++        return int(text)
++    if _FLOAT.fullmatch(text):
++        return float(text)
++    return text
++
+ 
+ def load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:
+-    raise NotImplementedError
++    source = Path(path)
++    if not source.is_file():
++        raise FileNotFoundError(f"config file not found: {source}")
++    if env is None:
++        env = os.environ
++
++    parser = configparser.ConfigParser(interpolation=None, default_section="DEFAULT")
++    parser.read_string(source.read_text(encoding="utf-8"), source=str(source))
++
++    result: dict[str, dict[str, object]] = {}
++    for section in parser.sections():
++        values: dict[str, object] = {}
++        for key, raw in parser[section].items():
++            override = f"APP_{section.upper()}_{key.upper()}"
++            # An override replaces the file value, so the file value is not interpolated.
++            text = env[override] if override in env else _interpolate(raw, env)
++            values[key] = _convert(text)
++        result[section] = values
++    return result
+diff --git a/tests/test_load_config_behaviour.py b/tests/test_load_config_behaviour.py
+new file mode 100644
+index 0000000..97e7597
+--- /dev/null
++++ b/tests/test_load_config_behaviour.py
+@@ -0,0 +1,123 @@
++import pytest
++
++from appconfig import load_config
++
++
++def write(tmp_path, text):
++    p = tmp_path / "app.ini"
++    p.write_text(text, encoding="utf-8")
++    return p
++
++
++def test_missing_file_raises(tmp_path):
++    with pytest.raises(FileNotFoundError):
++        load_config(tmp_path / "absent.ini", env={})
++
++
++def test_accepts_str_path(tmp_path):
++    p = write(tmp_path, "[server]\nhost = localhost\n")
++    assert load_config(str(p), env={}) == {"server": {"host": "localhost"}}
++
++
++def test_default_section_is_applied_and_not_returned(tmp_path):
++    p = write(tmp_path, "[DEFAULT]\ntimeout = 30\n[a]\nx = 1\n[b]\ntimeout = 5\n")
++    assert load_config(p, env={}) == {"a": {"timeout": 30, "x": 1}, "b": {"timeout": 5}}
++
++
++def test_keys_are_lowercase(tmp_path):
++    p = write(tmp_path, "[Server]\nHost = h\n")
++    assert load_config(p, env={}) == {"Server": {"host": "h"}}
++
++
++def test_interpolates_from_env(tmp_path):
++    p = write(tmp_path, "[db]\nurl = postgres://${HOST}:${PORT}/app\n")
++    result = load_config(p, env={"HOST": "db1", "PORT": "5432"})
++    assert result["db"]["url"] == "postgres://db1:5432/app"
++
++
++def test_missing_variable_raises_key_error_with_name(tmp_path):
++    p = write(tmp_path, "[db]\nurl = ${MISSING_VAR}\n")
++    with pytest.raises(KeyError) as info:
++        load_config(p, env={})
++    assert info.value.args == ("MISSING_VAR",)
++
++
++def test_double_dollar_is_literal_dollar(tmp_path):
++    p = write(tmp_path, "[s]\nprice = $$5 and $${NOT_A_VAR}\n")
++    assert load_config(p, env={})["s"]["price"] == "$5 and ${NOT_A_VAR}"
++
++
++def test_lone_dollar_is_kept(tmp_path):
++    p = write(tmp_path, "[s]\nnote = costs $ 5\n")
++    assert load_config(p, env={})["s"]["note"] == "costs $ 5"
++
++
++def test_env_override_replaces_value(tmp_path):
++    p = write(tmp_path, "[server]\nhost = localhost\nport = 80\n")
++    result = load_config(p, env={"APP_SERVER_HOST": "example.com"})
++    assert result["server"] == {"host": "example.com", "port": 80}
++
++
++def test_env_override_skips_interpolation_of_file_value(tmp_path):
++    p = write(tmp_path, "[server]\nhost = ${UNSET_IN_ENV}\n")
++    result = load_config(p, env={"APP_SERVER_HOST": "example.com"})
++    assert result["server"]["host"] == "example.com"
++
++
++def test_env_override_applies_to_default_inherited_key(tmp_path):
++    p = write(tmp_path, "[DEFAULT]\nlevel = info\n[a]\n")
++    assert load_config(p, env={"APP_A_LEVEL": "debug"}) == {"a": {"level": "debug"}}
++
++
++def test_env_override_is_converted(tmp_path):
++    p = write(tmp_path, "[feature]\nenabled = false\n")
++    assert load_config(p, env={"APP_FEATURE_ENABLED": "On"})["feature"]["enabled"] is True
++
++
++@pytest.mark.parametrize("text", ["true", "yes", "on", "TRUE", "Yes", "ON"])
++def test_truthy_strings_become_true(tmp_path, text):
++    p = write(tmp_path, f"[s]\nv = {text}\n")
++    assert load_config(p, env={})["s"]["v"] is True
++
++
++@pytest.mark.parametrize("text", ["false", "no", "off", "FALSE", "No", "OFF"])
++def test_falsy_strings_become_false(tmp_path, text):
++    p = write(tmp_path, f"[s]\nv = {text}\n")
++    assert load_config(p, env={})["s"]["v"] is False
++
++
++def test_integers_become_int(tmp_path):
++    p = write(tmp_path, "[s]\na = 42\nb = -7\nc = +3\n")
++    result = load_config(p, env={})["s"]
++    assert result == {"a": 42, "b": -7, "c": 3}
++    assert all(type(v) is int for v in result.values())
++
++
++def test_decimals_become_float(tmp_path):
++    p = write(tmp_path, "[s]\na = 3.5\nb = -0.25\nc = .5\nd = 1e3\n")
++    result = load_config(p, env={})["s"]
++    assert result == {"a": 3.5, "b": -0.25, "c": 0.5, "d": 1000.0}
++    assert all(type(v) is float for v in result.values())
++
++
++@pytest.mark.parametrize("text", ["nan", "inf", "1_000", "1.2.3", "0x10", "yesno"])
++def test_other_text_stays_string(tmp_path, text):
++    p = write(tmp_path, f"[s]\nv = {text}\n")
++    assert load_config(p, env={})["s"]["v"] == text
++
++
++def test_string_values_are_stripped(tmp_path):
++    p = write(tmp_path, "[s]\nv =   hello world   \n")
++    assert load_config(p, env={})["s"]["v"] == "hello world"
++
++
++def test_interpolated_value_is_stripped_and_converted(tmp_path):
++    p = write(tmp_path, "[s]\nv = ${PORT}\n")
++    assert load_config(p, env={"PORT": " 8080 "})["s"]["v"] == 8080
++
++
++def test_default_os_environ_used_when_env_omitted(tmp_path, monkeypatch):
++    monkeypatch.setenv("APPCONFIG_TEST_HOST", "from-environ")
++    monkeypatch.setenv("APP_SERVER_PORT", "9000")
++    p = write(tmp_path, "[server]\nhost = ${APPCONFIG_TEST_HOST}\nport = 80\n")
++    assert load_config(p) == {"server": {"host": "from-environ", "port": 9000}}

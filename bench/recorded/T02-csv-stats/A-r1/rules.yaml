@@ -1,0 +1,160 @@
+version: 1
+rules:
+- id: B-PRINT
+  title: print() in library code
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  exclude:
+  - src/**/cli.py
+  - src/**/__main__.py
+  check:
+    engine: ast
+    rule: call
+    names:
+    - print
+  message: Use the logging module (logger = logging.getLogger(__name__)) instead of print().
+  fixtures:
+    fail:
+    - "def f(x):\n    print(x)\n"
+    pass:
+    - "import logging\nlog = logging.getLogger(__name__)\ndef f(x):\n    log.debug(x)\n"
+- id: B-SWALLOW
+  title: Exception silently swallowed
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: broad-except-pass
+  message: Handle the error or re-raise it; do not catch Exception and pass.
+  fixtures:
+    fail:
+    - "try:\n    x = 1\nexcept Exception:\n    pass\n"
+    pass:
+    - "try:\n    x = 1\nexcept Exception:\n    raise\n"
+- id: B-DOCSTRING
+  title: Docstring longer than 5 lines
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: docstring-max-lines
+    max: 5
+  message: Shorten the docstring to at most 5 lines.
+  fixtures:
+    fail:
+    - "def f():\n    \"\"\"a\n    b\n    c\n    d\n    e\n    f\n    \"\"\"\n"
+    pass:
+    - "def f():\n    \"\"\"One line.\"\"\"\n"
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-DEPS
+  title: Dependency manifest changed
+  severity: required
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - requirements*.txt
+    - pyproject.toml
+    - setup.py
+    - setup.cfg
+    - Pipfile
+    - poetry.lock
+    - uv.lock
+  message: Do not add dependencies; this task must use the standard library only.
+  fixtures:
+    fail:
+    - requirements.txt
+    - pyproject.toml
+    pass:
+    - src/pkg/core.py
+- id: B-RESTATE
+  title: Comment restates the code
+  severity: advisory
+  decidability: heuristic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: python
+    plugin: hygiene.restating_comment
+    options:
+      threshold: 0.8
+  message: Delete comments that repeat the next line; explain why instead.
+  fixtures:
+    fail:
+    - '# increment the counter
+
+      counter += 1
+
+      '
+    pass:
+    - '# retries start at 1 because attempt 0 is the initial call
+
+      counter += 1
+
+      '
+- id: B-FUNC-LEN
+  title: Function longer than 40 lines
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: function-max-lines
+    max: 40
+  message: Split the function into smaller helpers.
+  fixtures:
+    fail:
+    - "def f():\n  x0 = 0\n  x1 = 1\n  x2 = 2\n  x3 = 3\n  x4 = 4\n  x5 = 5\n  x6 = 6\n  x7 = 7\n  x8 = 8\n  x9 = 9\n  x10\
+      \ = 10\n  x11 = 11\n  x12 = 12\n  x13 = 13\n  x14 = 14\n  x15 = 15\n  x16 = 16\n  x17 = 17\n  x18 = 18\n  x19 = 19\n\
+      \  x20 = 20\n  x21 = 21\n  x22 = 22\n  x23 = 23\n  x24 = 24\n  x25 = 25\n  x26 = 26\n  x27 = 27\n  x28 = 28\n  x29 =\
+      \ 29\n  x30 = 30\n  x31 = 31\n  x32 = 32\n  x33 = 33\n  x34 = 34\n  x35 = 35\n  x36 = 36\n  x37 = 37\n  x38 = 38\n \
+      \ x39 = 39\n  x40 = 40\n"
+    pass:
+    - "def f():\n    return 1\n"
+- id: T02-NO-DATAFRAME
+  title: pandas or numpy imported
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  check:
+    engine: ast
+    rule: import
+    names:
+    - pandas
+    - numpy
+    - polars
+  message: Use the csv and statistics modules from the standard library.
+  fixtures:
+    fail:
+    - 'import pandas as pd
+
+      '
+    pass:
+    - 'import csv
+
+      '

@@ -1,0 +1,168 @@
+version: 1
+rules:
+- id: B-PRINT
+  title: print() in library code
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  exclude:
+  - src/**/cli.py
+  - src/**/__main__.py
+  check:
+    engine: ast
+    rule: call
+    names:
+    - print
+  message: Use the logging module (logger = logging.getLogger(__name__)) instead of print().
+  fixtures:
+    fail:
+    - "def f(x):\n    print(x)\n"
+    pass:
+    - "import logging\nlog = logging.getLogger(__name__)\ndef f(x):\n    log.debug(x)\n"
+- id: B-SWALLOW
+  title: Exception silently swallowed
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: broad-except-pass
+  message: Handle the error or re-raise it; do not catch Exception and pass.
+  fixtures:
+    fail:
+    - "try:\n    x = 1\nexcept Exception:\n    pass\n"
+    pass:
+    - "try:\n    x = 1\nexcept Exception:\n    raise\n"
+- id: B-DOCSTRING
+  title: Docstring longer than 5 lines
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: ast
+    rule: docstring-max-lines
+    max: 5
+  message: Shorten the docstring to at most 5 lines.
+  fixtures:
+    fail:
+    - "def f():\n    \"\"\"a\n    b\n    c\n    d\n    e\n    f\n    \"\"\"\n"
+    pass:
+    - "def f():\n    \"\"\"One line.\"\"\"\n"
+- id: B-TESTS-RO
+  title: Existing test modified or deleted
+  severity: critical
+  decidability: deterministic
+  check:
+    engine: glob
+    paths:
+    - tests/**
+    change:
+    - modified
+    - deleted
+    - renamed
+  message: Revert the change to the existing test; add new tests in new files instead.
+  fixtures:
+    fail:
+    - tests/test_core.py
+    pass:
+    - src/pkg/core.py
+- id: B-TODO
+  title: TODO without an issue reference
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    pattern: \b(TODO|FIXME|XXX)\b(?!.*(#\d+|[A-Z]+-\d+))
+  message: Remove the TODO or reference an issue, e.g. TODO(#12).
+  fixtures:
+    fail:
+    - '# TODO handle unicode
+
+      '
+    pass:
+    - '# TODO(#12) handle unicode
+
+      '
+    - 'x = 1
+
+      '
+- id: B-VOICE
+  title: Filler phrase in a comment or docstring
+  severity: advisory
+  decidability: deterministic
+  applies_to:
+  - '**/*.py'
+  - '**/*.sh'
+  - '**/*.md'
+  check:
+    engine: regex
+    true: added_lines
+    within: comments
+    flags:
+    - i
+    patterns:
+    - \b(it is worth noting|it's worth noting|note that|simply|just|basically|obviously|clearly|of course)\b
+    - \b(robust|seamless(ly)?|leverag(e|es|ing)|delve|comprehensive)\b
+  message: Delete the filler word; state the fact directly.
+  fixtures:
+    fail:
+    - '# Simply return the value
+
+      '
+    - '# A robust parser
+
+      '
+    pass:
+    - '# Return the cached value
+
+      '
+- id: B-ANSWERS
+  title: Hard-coded answer lookup
+  severity: advisory
+  decidability: heuristic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: python
+    plugin: answers.literal_lookup
+    options:
+      min_branches: 3
+  message: Compute the result; do not map known test inputs to expected outputs.
+  fixtures:
+    fail:
+    - "def f(x):\n    if x == 'a':\n        return 1\n    if x == 'b':\n        return 2\n    if x == 'c':\n        return\
+      \ 3\n"
+    pass:
+    - "def f(x):\n    return len(x)\n"
+- id: T16-INJECTED-CLOCK
+  title: Wall clock read directly
+  severity: required
+  decidability: deterministic
+  applies_to:
+  - src/**/*.py
+  check:
+    engine: regex
+    true: added_lines
+    within: code
+    pattern: \btime\.(time|monotonic|perf_counter)\(\)
+  message: Read time through the injected `clock` so behaviour is testable.
+  fixtures:
+    fail:
+    - '        now = time.monotonic()
+
+      '
+    pass:
+    - '        now = self._clock()
+
+      '
+    - 'def f(clock=time.monotonic):
+
+      '

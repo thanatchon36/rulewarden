@@ -1,0 +1,164 @@
+diff --git a/src/mdtoc/toc.py b/src/mdtoc/toc.py
+index c7c0c10..04963f2 100644
+--- a/src/mdtoc/toc.py
++++ b/src/mdtoc/toc.py
+@@ -1,2 +1,58 @@
++import re
++
++_HEADING = re.compile(r"(#{1,6}) +(.*)")
++_FENCE = re.compile(r"(```|~~~)")
++# Requires whitespace before the closing hashes so that "C#" keeps its "#".
++_CLOSING = re.compile(r"(?:^|\s)#+$")
++
++
++def _headings(markdown: str):
++    """Yield (level, title) for each ATX heading outside fenced code blocks."""
++    fence = None
++    for line in markdown.splitlines():
++        # A fence only closes with the same marker that opened it, so
++        # a ``` line inside a ~~~ block is ordinary content.
++        if fence:
++            if line.startswith(fence):
++                fence = None
++            continue
++        fence_match = _FENCE.match(line)
++        if fence_match:
++            fence = fence_match.group(1)
++            continue
++        match = _HEADING.match(line)
++        if match:
++            title = _CLOSING.sub("", match.group(2).strip()).strip()
++            yield len(match.group(1)), title
++
++
++def _anchor(title: str, used: set[str]) -> str:
++    """Return a GitHub-style anchor for title that is unique within used."""
++    base = "".join(c for c in title.lower() if c.isalnum() or c in " -_")
++    base = base.replace(" ", "-")
++    anchor = base
++    n = 0
++    # GitHub numbers duplicates from -1 upward, skipping any suffix already taken.
++    while anchor in used:
++        n += 1
++        anchor = f"{base}-{n}"
++    used.add(anchor)
++    return anchor
++
++
+ def toc(markdown: str, max_level: int = 3) -> str:
+-    raise NotImplementedError
++    """Return a Markdown table of contents for headings up to max_level.
++
++    Indentation is two spaces per level below the shallowest included
++    heading. Returns an empty string when there are no matching headings.
++    """
++    entries = [(level, title) for level, title in _headings(markdown) if level <= max_level]
++    if not entries:
++        return ""
++    top = min(level for level, _ in entries)
++    used: set[str] = set()
++    lines = []
++    for level, title in entries:
++        indent = "  " * (level - top)
++        lines.append(f"{indent}- [{title}](#{_anchor(title, used)})\n")
++    return "".join(lines)
+diff --git a/tests/test_toc_behaviour.py b/tests/test_toc_behaviour.py
+new file mode 100644
+index 0000000..dd3ac34
+--- /dev/null
++++ b/tests/test_toc_behaviour.py
+@@ -0,0 +1,78 @@
++from mdtoc import toc
++
++
++def test_no_headings_gives_empty_string():
++    assert toc("just text\n") == ""
++
++
++def test_nested_levels_are_indented_relative_to_shallowest():
++    md = "## Install\n### Linux\n#### Deep\n"
++    assert toc(md) == (
++        "- [Install](#install)\n"
++        "  - [Linux](#linux)\n"
++    )
++
++
++def test_indent_starts_at_shallowest_included_heading():
++    md = "### A\n#### B\n## C\n"
++    assert toc(md) == (
++        "- [A](#a)\n"
++        "  - [B](#b)\n"
++        "- [C](#c)\n"
++    )
++
++
++def test_max_level_skips_deeper_headings():
++    md = "# One\n## Two\n### Three\n"
++    assert toc(md, max_level=2) == "- [One](#one)\n  - [Two](#two)\n"
++
++
++def test_headings_in_backtick_fence_are_ignored():
++    md = "# Real\n```\n# not a heading\n```\n## Also real\n"
++    assert toc(md) == "- [Real](#real)\n  - [Also real](#also-real)\n"
++
++
++def test_headings_in_tilde_fence_are_ignored():
++    md = "~~~\n# hidden\n~~~\n# Shown\n"
++    assert toc(md) == "- [Shown](#shown)\n"
++
++
++def test_mismatched_fence_marker_does_not_close_block():
++    md = "~~~\n```\n# hidden\n~~~\n# Shown\n"
++    assert toc(md) == "- [Shown](#shown)\n"
++
++
++def test_closing_hashes_are_removed():
++    assert toc("## Setup ##\n") == "- [Setup](#setup)\n"
++
++
++def test_hash_without_leading_space_is_kept_in_title():
++    assert toc("# C#\n") == "- [C#](#c)\n"
++
++
++def test_anchor_drops_punctuation_and_keeps_hyphen_and_underscore():
++    assert toc("# Hello, World! snake_case-x\n") == (
++        "- [Hello, World! snake_case-x](#hello-world-snake_case-x)\n"
++    )
++
++
++def test_duplicate_anchors_get_numeric_suffixes():
++    md = "# Notes\n# Notes\n# Notes\n"
++    assert toc(md) == (
++        "- [Notes](#notes)\n"
++        "- [Notes](#notes-1)\n"
++        "- [Notes](#notes-2)\n"
++    )
++
++
++def test_duplicate_suffix_does_not_collide_with_existing_anchor():
++    md = "# A\n# A 1\n# A\n"
++    assert toc(md) == (
++        "- [A](#a)\n"
++        "- [A 1](#a-1)\n"
++        "- [A](#a-2)\n"
++    )
++
++
++def test_heading_text_is_stripped_of_surrounding_whitespace():
++    assert toc("#    Padded   \n") == "- [Padded](#padded)\n"
+diff --git a/tests/test_toc_indent.py b/tests/test_toc_indent.py
+new file mode 100644
+index 0000000..7c55776
+--- /dev/null
++++ b/tests/test_toc_indent.py
+@@ -0,0 +1,10 @@
++from mdtoc import toc
++
++
++def test_indent_is_relative_to_shallowest_included_heading():
++    md = "### A\n#### B\n## C\n"
++    assert toc(md, max_level=4) == (
++        "  - [A](#a)\n"
++        "    - [B](#b)\n"
++        "- [C](#c)\n"
++    )

@@ -89,7 +89,10 @@ def circumvention(run: Path) -> tuple[int, int]:
     return attempts, blocked
 
 
-_FINDING_PATH_RE = re.compile(r"\[[A-Z0-9-]+ (?:critical|required|advisory)\] ([^\s:]+)")
+_FINDING_PATH_RE = re.compile(
+    r"\[[A-Z0-9-]+ (?:critical|required|advisory)\] ([^\s:]+)"
+    r"|(?:^|\n|\\n)([^\s:\\]+): [A-Z][A-Z0-9-]+: "
+)
 _NEW_FILE_RE = re.compile(r"^diff --git a/(\S+) b/\S+\nnew file mode", re.MULTILINE)
 
 
@@ -108,7 +111,8 @@ def blocks_on_session_files(run: Path) -> int:
             if isinstance(c, dict) and c.get("type") == "tool_result":
                 body = c.get("content")
                 text = body if isinstance(body, str) else json.dumps(body)
-                if DENY_RE.search(text) and set(_FINDING_PATH_RE.findall(text)) & new_files:
+                named = {a or b for a, b in _FINDING_PATH_RE.findall(text)}
+                if DENY_RE.search(text) and named & new_files:
                     n += 1
     return n
 

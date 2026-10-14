@@ -1,0 +1,179 @@
+diff --git a/scripts/summarize.sh b/scripts/summarize.sh
+index efba8c1..db3887c 100755
+--- a/scripts/summarize.sh
++++ b/scripts/summarize.sh
+@@ -1,3 +1,46 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++if [[ $# -ne 1 ]]; then
++  echo "usage: summarize.sh FILE" >&2
++  exit 2
++fi
++
++file=$1
++
++if [[ ! -f "$file" ]]; then
++  echo "error: file not found: $file" >&2
++  exit 1
++fi
++
++if ! jq -e 'type == "array"' "$file" >/dev/null 2>&1; then
++  echo "error: not a valid JSON array of orders: $file" >&2
++  exit 1
++fi
++
++# One value per output line: order count, paid count, paid revenue, top customer.
++summary=$(jq -r '
++  map(select(.status == "paid")) as $paid
++  | length,
++    ($paid | length),
++    ($paid | map(.total) | add // 0),
++    (if ($paid | length) == 0 then "-"
++     else $paid
++       | group_by(.customer)
++       | map({customer: .[0].customer, revenue: (map(.total) | add)})
++       | sort_by([-.revenue, .customer])
++       | .[0].customer
++     end)
++' "$file")
++
++{
++  read -r orders
++  read -r paid
++  read -r revenue
++  read -r top
++} <<< "$summary"
++
++printf 'orders: %s\n' "$orders"
++printf 'paid: %s\n' "$paid"
++printf 'revenue: %.2f\n' "$revenue"
++printf 'top: %s\n' "$top"
+diff --git a/tests/test_summarize_behaviour.py b/tests/test_summarize_behaviour.py
+new file mode 100644
+index 0000000..36db55a
+--- /dev/null
++++ b/tests/test_summarize_behaviour.py
+@@ -0,0 +1,120 @@
++import json
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "summarize.sh"
++
++
++def run(*args):
++    return subprocess.run(
++        ["bash", str(SCRIPT), *args], capture_output=True, text=True
++    )
++
++
++def write_orders(tmp_path, orders):
++    f = tmp_path / "orders.json"
++    f.write_text(json.dumps(orders))
++    return f
++
++
++def order(id, customer, total, status="paid"):
++    return {"id": id, "customer": customer, "total": total, "status": status}
++
++
++def test_full_summary(tmp_path):
++    f = write_orders(
++        tmp_path,
++        [
++            order(1, "alice", 10.5),
++            order(2, "bob", 4.25),
++            order(3, "alice", 3),
++            order(4, "carol", 100, status="pending"),
++            order(5, "bob", 1.25),
++        ],
++    )
++    out = run(str(f))
++    assert out.returncode == 0
++    assert out.stdout == "orders: 5\npaid: 4\nrevenue: 19.00\ntop: alice\n"
++    assert out.stderr == ""
++
++
++def test_no_paid_orders_gives_dash(tmp_path):
++    f = write_orders(tmp_path, [order(1, "alice", 10, status="pending")])
++    out = run(str(f))
++    assert out.returncode == 0
++    assert out.stdout == "orders: 1\npaid: 0\nrevenue: 0.00\ntop: -\n"
++
++
++def test_empty_array(tmp_path):
++    f = write_orders(tmp_path, [])
++    out = run(str(f))
++    assert out.returncode == 0
++    assert out.stdout == "orders: 0\npaid: 0\nrevenue: 0.00\ntop: -\n"
++
++
++def test_tie_goes_to_alphabetically_first_customer(tmp_path):
++    f = write_orders(
++        tmp_path,
++        [
++            order(1, "zed", 5),
++            order(2, "amy", 2),
++            order(3, "amy", 3),
++            order(4, "mia", 5),
++        ],
++    )
++    out = run(str(f))
++    assert out.returncode == 0
++    assert out.stdout.splitlines()[3] == "top: amy"
++
++
++def test_top_uses_summed_paid_revenue_not_single_order(tmp_path):
++    f = write_orders(
++        tmp_path,
++        [
++            order(1, "bob", 9),
++            order(2, "ann", 4),
++            order(3, "ann", 4),
++            order(4, "ann", 4, status="refunded"),
++        ],
++    )
++    out = run(str(f))
++    assert out.returncode == 0
++    assert out.stdout.splitlines()[3] == "top: ann"
++
++
++def test_revenue_has_two_decimals(tmp_path):
++    f = write_orders(tmp_path, [order(1, "a", 0.1), order(2, "a", 0.2)])
++    out = run(str(f))
++    assert out.stdout.splitlines()[2] == "revenue: 0.30"
++
++
++def test_no_argument_prints_usage_and_exits_2():
++    out = run()
++    assert out.returncode == 2
++    assert out.stderr.strip() == "usage: summarize.sh FILE"
++    assert out.stdout == ""
++
++
++def test_missing_file_exits_1(tmp_path):
++    out = run(str(tmp_path / "does-not-exist.json"))
++    assert out.returncode == 1
++    assert out.stderr != ""
++    assert out.stdout == ""
++
++
++def test_invalid_json_exits_1(tmp_path):
++    f = tmp_path / "bad.json"
++    f.write_text("[{\"id\": 1,")
++    out = run(str(f))
++    assert out.returncode == 1
++    assert out.stderr != ""
++    assert out.stdout == ""
++
++
++def test_non_array_json_exits_1(tmp_path):
++    f = tmp_path / "obj.json"
++    f.write_text(json.dumps({"id": 1}))
++    out = run(str(f))
++    assert out.returncode == 1
++    assert out.stderr != ""
++    assert out.stdout == ""

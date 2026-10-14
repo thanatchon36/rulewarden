@@ -1,0 +1,162 @@
+diff --git a/src/csvstats/stats.py b/src/csvstats/stats.py
+index c455bfb..89ea8c7 100644
+--- a/src/csvstats/stats.py
++++ b/src/csvstats/stats.py
+@@ -1,5 +1,57 @@
++import csv
++import math
++import statistics
+ from pathlib import Path
+ 
+ 
+ def column_stats(path: str | Path, column: str) -> dict[str, float]:
+-    raise NotImplementedError
++    """Return count, mean, median, min, max and sample stdev of a CSV column.
++
++    Empty cells are skipped. Raises KeyError if the column is missing,
++    ValueError if a non-empty cell is not a finite number or if no
++    non-empty cells exist.
++    """
++    with open(path, newline="", encoding="utf-8") as fh:
++        reader = csv.reader(fh)
++        header = next(reader, [])
++        index = _column_index(header, column)
++        values = _numeric_values(reader, index)
++
++    if not values:
++        raise ValueError(f"column {column!r} has no non-empty cells")
++
++    return {
++        "count": len(values),
++        "mean": statistics.fmean(values),
++        "median": statistics.median(values),
++        "min": min(values),
++        "max": max(values),
++        "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
++    }
++
++
++def _column_index(header: list[str], column: str) -> int:
++    # Header matching is exact, so "Price" and "price" are distinct columns.
++    try:
++        return header.index(column)
++    except ValueError:
++        raise KeyError(column) from None
++
++
++def _numeric_values(rows, index: int) -> list[float]:
++    values: list[float] = []
++    for row_number, row in enumerate(rows, start=1):
++        cell = row[index].strip() if index < len(row) else ""
++        if not cell:
++            continue
++        try:
++            value = float(cell)
++        except ValueError:
++            raise ValueError(
++                f"data row {row_number}: {cell!r} is not a number"
++            ) from None
++        # float() accepts "nan" and "inf", which would silently corrupt the statistics.
++        if not math.isfinite(value):
++            raise ValueError(f"data row {row_number}: {cell!r} is not a finite number")
++        values.append(value)
++    return values
+diff --git a/tests/test_column_stats.py b/tests/test_column_stats.py
+new file mode 100644
+index 0000000..43387a0
+--- /dev/null
++++ b/tests/test_column_stats.py
+@@ -0,0 +1,93 @@
++import math
++
++import pytest
++
++from csvstats import column_stats
++
++
++def _write(tmp_path, text):
++    p = tmp_path / "d.csv"
++    p.write_text(text, encoding="utf-8")
++    return p
++
++
++def test_all_statistics(tmp_path):
++    p = _write(tmp_path, "a,b\n1,x\n2,y\n3,z\n4,w\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 4 and isinstance(s["count"], int)
++    assert s["mean"] == 2.5
++    assert s["median"] == 2.5
++    assert s["min"] == 1.0
++    assert s["max"] == 4.0
++    assert s["stdev"] == pytest.approx(math.sqrt(5 / 3))
++
++
++def test_values_are_floats(tmp_path):
++    p = _write(tmp_path, "a\n1\n2\n")
++    s = column_stats(p, "a")
++    assert all(isinstance(s[k], float) for k in ("mean", "median", "min", "max", "stdev"))
++
++
++def test_single_value_has_zero_stdev(tmp_path):
++    p = _write(tmp_path, "a\n7\n")
++    s = column_stats(p, "a")
++    assert s == {"count": 1, "mean": 7.0, "median": 7.0, "min": 7.0, "max": 7.0, "stdev": 0.0}
++
++
++def test_empty_cells_are_ignored(tmp_path):
++    p = _write(tmp_path, "a,b\n1,x\n,y\n   ,z\n3,w\n")
++    s = column_stats(p, "a")
++    assert s["count"] == 2
++    assert s["mean"] == 2.0
++
++
++def test_missing_trailing_cell_counts_as_empty(tmp_path):
++    p = _write(tmp_path, "a,b\n1,2\n5\n")
++    s = column_stats(p, "b")
++    assert s["count"] == 1
++    assert s["mean"] == 2.0
++
++
++def test_quoted_fields_and_negative_numbers(tmp_path):
++    p = _write(tmp_path, 'name,v\n"Smith, J",-2.5\n"Doe, A"," 4 "\n')
++    s = column_stats(p, "v")
++    assert s["count"] == 2
++    assert s["min"] == -2.5
++    assert s["max"] == 4.0
++
++
++def test_missing_column_raises_key_error(tmp_path):
++    p = _write(tmp_path, "a,b\n1,2\n")
++    with pytest.raises(KeyError):
++        column_stats(p, "c")
++
++
++def test_header_match_is_case_sensitive(tmp_path):
++    p = _write(tmp_path, "Price\n1\n")
++    with pytest.raises(KeyError):
++        column_stats(p, "price")
++
++
++def test_non_numeric_cell_names_data_row(tmp_path):
++    p = _write(tmp_path, "a\n1\n2\nabc\n4\n")
++    with pytest.raises(ValueError, match="data row 3"):
++        column_stats(p, "a")
++
++
++@pytest.mark.parametrize("bad", ["nan", "inf", "-Infinity"])
++def test_non_finite_cell_is_rejected(tmp_path, bad):
++    p = _write(tmp_path, f"a\n1\n{bad}\n")
++    with pytest.raises(ValueError, match="data row 2"):
++        column_stats(p, "a")
++
++
++def test_no_non_empty_cells_raises(tmp_path):
++    p = _write(tmp_path, "a,b\n,x\n  ,y\n")
++    with pytest.raises(ValueError):
++        column_stats(p, "a")
++
++
++def test_header_only_raises(tmp_path):
++    p = _write(tmp_path, "a,b\n")
++    with pytest.raises(ValueError):
++        column_stats(p, "a")

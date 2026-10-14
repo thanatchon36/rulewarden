@@ -1,0 +1,942 @@
+[
+ {
+  "type": "system",
+  "subtype": "hook_started",
+  "hook_id": "df7384bf-1db9-4dd1-9495-af9baf946266",
+  "hook_name": "SessionStart:startup",
+  "hook_event": "SessionStart",
+  "uuid": "77356e96-2bb8-4f95-9dd9-b766030bd3fd",
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab"
+ },
+ {
+  "type": "system",
+  "subtype": "hook_response",
+  "hook_id": "df7384bf-1db9-4dd1-9495-af9baf946266",
+  "hook_name": "SessionStart:startup",
+  "hook_event": "SessionStart",
+  "output": "",
+  "stdout": "",
+  "stderr": "",
+  "exit_code": 0,
+  "outcome": "success",
+  "uuid": "85f50ccd-2874-44e5-9cc5-87112741a7b6",
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab"
+ },
+ {
+  "type": "system",
+  "subtype": "init",
+  "cwd": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1",
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "tools": [
+   "Task",
+   "Bash",
+   "CronCreate",
+   "CronDelete",
+   "CronList",
+   "Edit",
+   "EnterWorktree",
+   "ExitWorktree",
+   "Glob",
+   "Grep",
+   "ListAgents",
+   "NotebookEdit",
+   "Read",
+   "RemoteTrigger",
+   "ReportFindings",
+   "ScheduleWakeup",
+   "SendMessage",
+   "Skill",
+   "TaskStop",
+   "ToolSearch",
+   "WebFetch",
+   "WebSearch",
+   "Write"
+  ],
+  "mcp_servers": [],
+  "model": "claude-haiku-5-5",
+  "permissionMode": "acceptEdits",
+  "slash_commands": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring",
+   "agents",
+   "auto-mode-setup",
+   "autocompact",
+   "clear",
+   "color",
+   "compact",
+   "config",
+   "output-style",
+   "context",
+   "effort",
+   "fast",
+   "focus",
+   "heapdump",
+   "init",
+   "mcp",
+   "model",
+   "__remote-workflow",
+   "workflow-launch-exec",
+   "reload-plugins",
+   "reload-skills",
+   "rename",
+   "security-review",
+   "usage-credits",
+   "extra-usage",
+   "usage",
+   "insights",
+   "recap",
+   "goal",
+   "list-agents",
+   "team-onboarding"
+  ],
+  "terminal_slash_commands": [
+   "doctor",
+   "color",
+   "focus",
+   "reload-plugins"
+  ],
+  "apiKeySource": "none",
+  "claude_code_version": "2.1.299",
+  "output_style": "default",
+  "agents": [
+   "claude",
+   "Explore",
+   "general-purpose",
+   "Plan",
+   "statusline-setup"
+  ],
+  "skills": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring"
+  ],
+  "plugins": [
+   {
+    "name": "cc-plugin-agents-md",
+    "path": "builtin",
+    "source": "cc-plugin-agents-md@builtin"
+   },
+   {
+    "name": "cc-plugin-plugin-authoring",
+    "path": "builtin",
+    "source": "cc-plugin-plugin-authoring@builtin"
+   }
+  ],
+  "capabilities": [
+   "interrupt_receipt_v1",
+   "interrupt_cancel_queued_v1",
+   "interrupt_send_now_v1",
+   "msg_lifecycle_v1",
+   "request_marker_lists_v1",
+   "sdk_mcp_tools_list_changed",
+   "sdk_mcp_manifests",
+   "mcp_read_resource_v1",
+   "mcp_tool_ui_meta_v1",
+   "ui_surface_v1"
+  ],
+  "analytics_disabled": true,
+  "product_feedback_disabled": true,
+  "uuid": "ede37916-5729-446f-b560-d8a0a97fddde",
+  "memory_paths": {
+   "auto": "/Users/thanatchon36/.claude/projects/-private-tmp-claude-501--Users-thanatchon36-github-rulewarden-52944ca6-e0e0-4505-9300-460146c6dd03-scratchpad-bench-work-T14-ttl-cache-D-r1/memory/"
+  },
+  "messaging_socket_path": "/tmp/cc-socks/52339.sock",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "per_turn_effort_active": true,
+  "view_mode": "default"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o1s2Fod6TNu9xzjWu1",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_018xhJTN1fJFGJHD8vsfDwDf",
+     "name": "Bash",
+     "input": {
+      "command": "git status --short && find . -path ./.git -prune -o -type f -print | head -100 && cat src/ttlcache/*.py 2>/dev/null; ls tests 2>/dev/null; cat tests/*.py 2>/dev/null | head -80",
+      "description": "Inspect repo layout and existing source"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 6989,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 6989
+    },
+    "output_tokens": 20,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "a41be605-3f34-4332-b6bf-9e0048d82b53",
+  "timestamp": "2026-10-14T08:13:20.125Z",
+  "request_id": "req_011Cg1o1ro7HQ9qSBTHDBTzZ"
+ },
+ {
+  "type": "rate_limit_event",
+  "rate_limit_info": {
+   "status": "allowed_warning",
+   "resetsAt": 1791966000,
+   "rateLimitType": "five_hour",
+   "utilization": 0.92,
+   "overageStatus": "rejected",
+   "overageDisabledReason": "org_level_disabled",
+   "isUsingOverage": false,
+   "surpassedThreshold": 0.9,
+   "unifiedWindows": {
+    "five_hour": {
+     "utilization": 0.92,
+     "resetsAt": 1791966000
+    },
+    "seven_day": {
+     "utilization": 0.36,
+     "resetsAt": 1792407600
+    }
+   },
+   "overageEnabled": false
+  },
+  "uuid": "f2ee225b-0ddf-4f8c-b517-9ba15ee47c0d",
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_018xhJTN1fJFGJHD8vsfDwDf",
+     "type": "tool_result",
+     "content": "./rules.lock\n./tests/conftest.py\n./tests/test_cache.py\n./.claude/settings.json\n./.gitignore\n./CLAUDE.md\n./.rulewarden/session.json\n./.rulewarden/approvers\n./.rulewarden/config.yaml\n./.rulewarden/rules/task.yaml\n./.rulewarden/audit.jsonl\n./src/ttlcache/cache.py\n./src/ttlcache/__init__.py\nfrom ttlcache.cache import TTLCache\n\n__all__ = [\"TTLCache\"]\nimport time\n\n\nclass TTLCache:\n    def __init__(self, maxsize, ttl, clock=time.monotonic):\n        raise NotImplementedError\nconftest.py\ntest_cache.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\nfrom ttlcache import TTLCache\n\n\ndef test_set_get():\n    c = TTLCache(2, 10)\n    c.set(\"a\", 1)\n    assert c.get(\"a\") == 1",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "c976fc69-02bd-4849-ad80-606b6b284b99",
+  "timestamp": "2026-10-14T08:13:21.350Z",
+  "tool_use_result": {
+   "stdout": "./rules.lock\n./tests/conftest.py\n./tests/test_cache.py\n./.claude/settings.json\n./.gitignore\n./CLAUDE.md\n./.rulewarden/session.json\n./.rulewarden/approvers\n./.rulewarden/config.yaml\n./.rulewarden/rules/task.yaml\n./.rulewarden/audit.jsonl\n./src/ttlcache/cache.py\n./src/ttlcache/__init__.py\nfrom ttlcache.cache import TTLCache\n\n__all__ = [\"TTLCache\"]\nimport time\n\n\nclass TTLCache:\n    def __init__(self, maxsize, ttl, clock=time.monotonic):\n        raise NotImplementedError\nconftest.py\ntest_cache.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\nfrom ttlcache import TTLCache\n\n\ndef test_set_get():\n    c = TTLCache(2, 10)\n    c.set(\"a\", 1)\n    assert c.get(\"a\") == 1",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_018xhJTN1fJFGJHD8vsfDwDf",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "174d720d-f852-414a-82db-cbd8630c83e2"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 250,
+  "estimated_tokens_delta": 200,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "38a4c248-a1a0-45e8-9025-b4162ab2fd88"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 500,
+  "estimated_tokens_delta": 250,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "db496c15-59e0-435f-965a-7dc49c3d0b63"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 850,
+  "estimated_tokens_delta": 350,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "87803478-d235-46c3-9478-f70e8738fd72"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1150,
+  "estimated_tokens_delta": 300,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "4048e82c-3282-4114-a3e5-9361643af6f2"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1400,
+  "estimated_tokens_delta": 250,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "69ff9f03-57c4-45e1-9b83-971d590f75ee"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1700,
+  "estimated_tokens_delta": 300,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "fc74d41f-d7e0-46c8-a029-ca2bcc6cb37d"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o26NCHHvVomcYNo5iJ",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": {
+      "__rw_chunks__": [
+       "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"
+      ]
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 546,
+    "cache_read_input_tokens": 17017,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 546
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "1eab8b6d-7074-4410-a351-5e0f8f483f0f",
+  "timestamp": "2026-10-14T08:13:30.484Z",
+  "request_id": "req_011Cg1o269Yj5NdTYz3G1w6h",
+  "thinking_duration_ms": 7968,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o26NCHHvVomcYNo5iJ",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01DCegKfg1q9QF24ZyNLh73j",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/src/ttlcache/cache.py",
+      "content": "import time\nfrom collections import OrderedDict\n\n\nclass TTLCache:\n    \"\"\"LRU cache whose entries expire `ttl` seconds after being set.\n\n    Entries are kept in recency order; an entry is live while\n    `clock() < expiry`. Expired entries are dropped lazily.\n    \"\"\"\n\n    def __init__(self, maxsize, ttl, clock=time.monotonic):\n        if maxsize <= 0:\n            raise ValueError(\"maxsize must be positive\")\n        if ttl <= 0:\n            raise ValueError(\"ttl must be positive\")\n        self._maxsize = maxsize\n        self._ttl = ttl\n        self._clock = clock\n        # Maps key -> (value, expiry), least recently used first.\n        self._data = OrderedDict()\n\n    def set(self, key, value):\n        now = self._clock()\n        if key not in self._data:\n            if len(self._data) >= self._maxsize:\n                self._drop_expired(now)\n            if len(self._data) >= self._maxsize:\n                self._data.popitem(last=False)\n        self._data[key] = (value, now + self._ttl)\n        self._data.move_to_end(key)\n\n    def get(self, key, default=None):\n        if not self._is_live(key, self._clock()):\n            return default\n        self._data.move_to_end(key)\n        return self._data[key][0]\n\n    def delete(self, key):\n        if not self._is_live(key, self._clock()):\n            raise KeyError(key)\n        del self._data[key]\n\n    def __contains__(self, key):\n        return self._is_live(key, self._clock())\n\n    def __len__(self):\n        self._drop_expired(self._clock())\n        return len(self._data)\n\n    def _is_live(self, key, now):\n        entry = self._data.get(key)\n        if entry is None:\n            return False\n        if now < entry[1]:\n            return True\n        del self._data[key]\n        return False\n\n    def _drop_expired(self, now):\n        expired = [key for key, (_, expiry) in self._data.items() if now >= expiry]\n        for key in expired:\n            del self._data[key]\n"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 546,
+    "cache_read_input_tokens": 17017,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 546
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "d9e5a5c6-f919-41fe-9a1e-f76e8358cb1b",
+  "timestamp": "2026-10-14T08:13:32.895Z",
+  "request_id": "req_011Cg1o269Yj5NdTYz3G1w6h"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01DCegKfg1q9QF24ZyNLh73j",
+     "type": "tool_result",
+     "content": "The file /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/src/ttlcache/cache.py has been updated successfully. (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "6602db51-8456-424d-ba83-c96e1095c20e",
+  "timestamp": "2026-10-14T08:13:33.095Z",
+  "tool_use_result": {
+   "type": "update",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/src/ttlcache/cache.py",
+   "content": "import time\nfrom collections import OrderedDict\n\n\nclass TTLCache:\n    \"\"\"LRU cache whose entries expire `ttl` seconds after being set.\n\n    Entries are kept in recency order; an entry is live while\n    `clock() < expiry`. Expired entries are dropped lazily.\n    \"\"\"\n\n    def __init__(self, maxsize, ttl, clock=time.monotonic):\n        if maxsize <= 0:\n            raise ValueError(\"maxsize must be positive\")\n        if ttl <= 0:\n            raise ValueError(\"ttl must be positive\")\n        self._maxsize = maxsize\n        self._ttl = ttl\n        self._clock = clock\n        # Maps key -> (value, expiry), least recently used first.\n        self._data = OrderedDict()\n\n    def set(self, key, value):\n        now = self._clock()\n        if key not in self._data:\n            if len(self._data) >= self._maxsize:\n                self._drop_expired(now)\n            if len(self._data) >= self._maxsize:\n                self._data.popitem(last=False)\n        self._data[key] = (value, now + self._ttl)\n        self._data.move_to_end(key)\n\n    def get(self, key, default=None):\n        if not self._is_live(key, self._clock()):\n            return default\n        self._data.move_to_end(key)\n        return self._data[key][0]\n\n    def delete(self, key):\n        if not self._is_live(key, self._clock()):\n            raise KeyError(key)\n        del self._data[key]\n\n    def __contains__(self, key):\n        return self._is_live(key, self._clock())\n\n    def __len__(self):\n        self._drop_expired(self._clock())\n        return len(self._data)\n\n    def _is_live(self, key, now):\n        entry = self._data.get(key)\n        if entry is None:\n            return False\n        if now < entry[1]:\n            return True\n        del self._data[key]\n        return False\n\n    def _drop_expired(self, now):\n        expired = [key for key, (_, expiry) in self._data.items() if now >= expiry]\n        for key in expired:\n            del self._data[key]\n",
+   "structuredPatch": [
+    {
+     "oldStart": 1,
+     "oldLines": 6,
+     "newStart": 1,
+     "newLines": 63,
+     "lines": [
+      " import time",
+      "+from collections import OrderedDict",
+      " ",
+      " ",
+      " class TTLCache:",
+      "+    \"\"\"LRU cache whose entries expire `ttl` seconds after being set.",
+      "+",
+      "+    Entries are kept in recency order; an entry is live while",
+      "+    `clock() < expiry`. Expired entries are dropped lazily.",
+      "+    \"\"\"",
+      "+",
+      "     def __init__(self, maxsize, ttl, clock=time.monotonic):",
+      "-        raise NotImplementedError",
+      "+        if maxsize <= 0:",
+      "+            raise ValueError(\"maxsize must be positive\")",
+      "+        if ttl <= 0:",
+      "+            raise ValueError(\"ttl must be positive\")",
+      "+        self._maxsize = maxsize",
+      "+        self._ttl = ttl",
+      "+        self._clock = clock",
+      "+        # Maps key -> (value, expiry), least recently used first.",
+      "+        self._data = OrderedDict()",
+      "+",
+      "+    def set(self, key, value):",
+      "+        now = self._clock()",
+      "+        if key not in self._data:",
+      "+            if len(self._data) >= self._maxsize:",
+      "+                self._drop_expired(now)",
+      "+            if len(self._data) >= self._maxsize:",
+      "+                self._data.popitem(last=False)",
+      "+        self._data[key] = (value, now + self._ttl)",
+      "+        self._data.move_to_end(key)",
+      "+",
+      "+    def get(self, key, default=None):",
+      "+        if not self._is_live(key, self._clock()):",
+      "+            return default",
+      "+        self._data.move_to_end(key)",
+      "+        return self._data[key][0]",
+      "+",
+      "+    def delete(self, key):",
+      "+        if not self._is_live(key, self._clock()):",
+      "+            raise KeyError(key)",
+      "+        del self._data[key]",
+      "+",
+      "+    def __contains__(self, key):",
+      "+        return self._is_live(key, self._clock())",
+      "+",
+      "+    def __len__(self):",
+      "+        self._drop_expired(self._clock())",
+      "+        return len(self._data)",
+      "+",
+      "+    def _is_live(self, key, now):",
+      "+        entry = self._data.get(key)",
+      "+        if entry is None:",
+      "+            return False",
+      "+        if now < entry[1]:",
+      "+            return True",
+      "+        del self._data[key]",
+      "+        return False",
+      "+",
+      "+    def _drop_expired(self, now):",
+      "+        expired = [key for key, (_, expiry) in self._data.items() if now >= expiry]",
+      "+        for key in expired:",
+      "+            del self._data[key]"
+     ]
+    }
+   ],
+   "originalFile": "import time\n\n\nclass TTLCache:\n    def __init__(self, maxsize, ttl, clock=time.monotonic):\n        raise NotImplementedError\n",
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01DCegKfg1q9QF24ZyNLh73j",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o2xTDHuBYPNioqRvho",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSiwYKEAgSGAI4AUIIdGhpbmtpbmcSDLJT+/1OBB7hPMYzBxoM1AVbLqwrYk/mVaaJIjCpYaL4yLkTHxKY4lTgRoBQ/M/xlf31XCiKqtwDO+197I22FzCkTWcdQCmiVSXFveUqqAWhEZRDFFFQyujzXM9sFo99jwe/MUrGwMV8jyA+pHFy2F0m6v5biUl4Yy324BFd7rskseBZG1j7Zu2Lne6GQzFwR5ZyMt/j9g8B0d2W14W+khChqdIg/AK47eB6lF0lV7WI7ZLt995LiHIFYApgwi1rmxREBPYTADLzmvCyj5WXn55rgyQ4nw2CJTNZKkrdkCtQxV+T1BmQAxSBTwiM6UCqHTgqvc13pADtZGGPzCoL70LLBW7QC/iurlvbrh9kgeWR7nqemMBSnIr7eByUsa/D7rLuTBz145qrmbG3THtKtWnR9jjqxbeOfOyqqygcD3DeJXt/S2uWSYSoCF+AZCyjnakT7nLR6IDtfNHM5jHCaLznuRCUNA+qPSkxNeGmEAC54t2I2zPGH9YWKzq5hd1vVVLql/W6faelQ1RMaJYyFOyPLpN965zXZLRptELE0w8wlwWsMTesqGPIR5MP88sCtBUnayBg8sURm3YhFZnAZX0qtGZKBRcHLKKOujn26hxKzXRWOy7tA9MkN+fDe3rtSXxgqQ8Y5fh6Yr3eCXse0TWl0t1MqCDvkRUYcTFWE9b2OYB7kHlo/ZWxjZxZX+VliWbQ23dGGC/XCJBJ3abN0bjhyazzX4PcJCEloCIlhuZVrb0pHHiAr6HBxH3rIL7cSGH/8O91cDokfCmFhEBbsUlvyjsEmV/pOuSOtXyvarr7Wydii1mOPJbm3lAh8HQZMz/3KwgcZ04JRyAO38iuN8j1V1VLkPMlF9LbgipuWlFg1eljs4FegAs09Jq6sHsJAFd6ZYiC6CifG9ALcMb0I07boqnlyKIvYxm9efTVFYCx0juAJY0iMJBKv+zoVrMrjmZEgfL75U0NCRy3SuWJ/WjPWGxzI7/GHcdAaIrZmrtQuFWP82FRKRgB"
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 2770,
+    "cache_read_input_tokens": 17563,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 2770
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "d630efa9-b954-41e8-8e4d-d9ba0e6f4b51",
+  "timestamp": "2026-10-14T08:13:34.969Z",
+  "request_id": "req_011Cg1o2xCLLE1UGywZz3mEC",
+  "thinking_duration_ms": 160,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o2xTDHuBYPNioqRvho",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01TCuaBnsphvyysY7mLvCWBv",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/tests/test_ttlcache_behaviour.py",
+      "content": {
+       "__rw_chunks__": [
+        "import pytest\n\nfrom ttlcache import TTLCache\n\n\nclass FakeClock:\n    def __init__(self):\n        self.now = 0.0\n\n    def __call__(self):\n        return self.now\n\n    def advance(self, seconds):\n        self.now += seconds\n\n\n@pytest.fixture\ndef clock():\n    return FakeClock()\n\n\ndef test_get_missing_returns_default():\n    c = TTLCache(2, 10)\n    assert c.get(\"missing\") is None\n    assert c.get(\"missing\", 42) == 42\n\n\ndef test_entry_expires_at_expiry_time(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(9.9)\n    assert c.get(\"a\") == 1\n    clock.advance(0.1)\n    assert c.get(\"a\", \"gone\") == \"gone\"\n\n\ndef test_set_existing_key_replaces_value_and_resets_expiry(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(8)\n    c.set(\"a\", 2)\n    clock.advance(8)\n    assert c.get(\"a\") == 2\n\n\ndef test_get_expired_entry_is_removed(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(10)\n    assert c.get(\"a\") is None\n    assert \"a\" not in c._data\n\n\ndef test_delete_removes_key():\n    c = TTLCache(2, 10)\n    c.set(\"a\", 1)\n    c.delete(\"a\")\n    assert \"a\" not in c\n    assert len(c) == 0\n\n\ndef test_delete_missing_raises_key_error():\n    c = TTLCache(2, 10)\n    with pytest.raises(KeyError):\n        c.delete(\"a\")\n\n\ndef test_delete_expired_raises_key_error(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(10)\n    with pytest.raises(KeyError):\n        c.delete(\"a\")\n\n\ndef test_contains_ignores_expired(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    assert \"a\" in c\n    clock.advance(10)\n    assert \"a\" not in c\n\n\ndef test_len_counts_only_live_entries(clock):\n    c = TTLCache(3, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(5)\n    c.set(\"b\", 2)\n    assert len(c) == 2\n    clock.advance(5)\n    assert len(c) == 1\n\n\ndef test_get_refreshes_recency_so_other_key_is_evicted():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    assert c.get(\"a\") == 1\n ",
+        "   c.set(\"c\", 3)\n    assert \"b\" not in c\n    assert c.get(\"a\") == 1\n    assert c.get(\"c\") == 3\n\n\ndef test_set_existing_key_makes_it_most_recently_used():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    c.set(\"a\", 10)\n    c.set(\"c\", 3)\n    assert \"b\" not in c\n    assert c.get(\"a\") == 10\n\n\ndef test_full_cache_evicts_least_recently_used():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    c.set(\"c\", 3)\n    assert len(c) == 2\n    assert \"a\" not in c\n    assert \"b\" in c and \"c\" in c\n\n\ndef test_insert_into_full_cache_drops_expired_before_evicting(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"old\", 1)\n    clock.advance(5)\n    c.set(\"new\", 2)\n    clock.advance(5)\n    # \"old\" is expired; \"new\" is live and must survive the insert.\n    c.set(\"x\", 3)\n    assert \"new\" in c\n    assert \"x\" in c\n    assert \"old\" not in c._data\n    assert len(c) == 2\n\n\ndef test_insert_when_expired_entries_free_space_does_not_evict_live(clock):\n    c = TTLCache(3, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(5)\n    c.set(\"b\", 2)\n    c.set(\"c\", 3)\n    clock.advance(5)\n    c.set(\"d\", 4)\n    assert \"b\" in c and \"c\" in c and \"d\" in c\n    assert \"a\" not in c\n\n\ndef test_overwriting_expired_key_does_not_evict_others(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    clock.advance(10)\n    c.set(\"a\", 3)\n    assert c.get(\"a\") == 3\n    assert \"b\" not in c\n    assert len(c) == 1\n\n\n@pytest.mark.parametrize(\"maxsize, ttl\", [(0, 10), (-1, 10), (2, 0), (2, -5)])\ndef test_non_positive_arguments_raise_value_error(maxsize, ttl):\n    with pytest.raises(ValueError):\n        TTLCache(maxsize, ttl)\n"
+       ]
+      }
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 2770,
+    "cache_read_input_tokens": 17563,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 2770
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "bdf542ae-05cf-4b9a-81bb-7838a349fadf",
+  "timestamp": "2026-10-14T08:13:40.343Z",
+  "request_id": "req_011Cg1o2xCLLE1UGywZz3mEC"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01TCuaBnsphvyysY7mLvCWBv",
+     "type": "tool_result",
+     "content": "File created successfully at: /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/tests/test_ttlcache_behaviour.py (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "95517682-3109-4d00-a30e-1c633101a4eb",
+  "timestamp": "2026-10-14T08:13:40.532Z",
+  "tool_use_result": {
+   "type": "create",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T14-ttl-cache-D-r1/tests/test_ttlcache_behaviour.py",
+   "content": {
+    "__rw_chunks__": [
+     "import pytest\n\nfrom ttlcache import TTLCache\n\n\nclass FakeClock:\n    def __init__(self):\n        self.now = 0.0\n\n    def __call__(self):\n        return self.now\n\n    def advance(self, seconds):\n        self.now += seconds\n\n\n@pytest.fixture\ndef clock():\n    return FakeClock()\n\n\ndef test_get_missing_returns_default():\n    c = TTLCache(2, 10)\n    assert c.get(\"missing\") is None\n    assert c.get(\"missing\", 42) == 42\n\n\ndef test_entry_expires_at_expiry_time(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(9.9)\n    assert c.get(\"a\") == 1\n    clock.advance(0.1)\n    assert c.get(\"a\", \"gone\") == \"gone\"\n\n\ndef test_set_existing_key_replaces_value_and_resets_expiry(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(8)\n    c.set(\"a\", 2)\n    clock.advance(8)\n    assert c.get(\"a\") == 2\n\n\ndef test_get_expired_entry_is_removed(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(10)\n    assert c.get(\"a\") is None\n    assert \"a\" not in c._data\n\n\ndef test_delete_removes_key():\n    c = TTLCache(2, 10)\n    c.set(\"a\", 1)\n    c.delete(\"a\")\n    assert \"a\" not in c\n    assert len(c) == 0\n\n\ndef test_delete_missing_raises_key_error():\n    c = TTLCache(2, 10)\n    with pytest.raises(KeyError):\n        c.delete(\"a\")\n\n\ndef test_delete_expired_raises_key_error(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(10)\n    with pytest.raises(KeyError):\n        c.delete(\"a\")\n\n\ndef test_contains_ignores_expired(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    assert \"a\" in c\n    clock.advance(10)\n    assert \"a\" not in c\n\n\ndef test_len_counts_only_live_entries(clock):\n    c = TTLCache(3, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(5)\n    c.set(\"b\", 2)\n    assert len(c) == 2\n    clock.advance(5)\n    assert len(c) == 1\n\n\ndef test_get_refreshes_recency_so_other_key_is_evicted():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    assert c.get(\"a\") == 1\n ",
+     "   c.set(\"c\", 3)\n    assert \"b\" not in c\n    assert c.get(\"a\") == 1\n    assert c.get(\"c\") == 3\n\n\ndef test_set_existing_key_makes_it_most_recently_used():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    c.set(\"a\", 10)\n    c.set(\"c\", 3)\n    assert \"b\" not in c\n    assert c.get(\"a\") == 10\n\n\ndef test_full_cache_evicts_least_recently_used():\n    c = TTLCache(2, 100)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    c.set(\"c\", 3)\n    assert len(c) == 2\n    assert \"a\" not in c\n    assert \"b\" in c and \"c\" in c\n\n\ndef test_insert_into_full_cache_drops_expired_before_evicting(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"old\", 1)\n    clock.advance(5)\n    c.set(\"new\", 2)\n    clock.advance(5)\n    # \"old\" is expired; \"new\" is live and must survive the insert.\n    c.set(\"x\", 3)\n    assert \"new\" in c\n    assert \"x\" in c\n    assert \"old\" not in c._data\n    assert len(c) == 2\n\n\ndef test_insert_when_expired_entries_free_space_does_not_evict_live(clock):\n    c = TTLCache(3, 10, clock=clock)\n    c.set(\"a\", 1)\n    clock.advance(5)\n    c.set(\"b\", 2)\n    c.set(\"c\", 3)\n    clock.advance(5)\n    c.set(\"d\", 4)\n    assert \"b\" in c and \"c\" in c and \"d\" in c\n    assert \"a\" not in c\n\n\ndef test_overwriting_expired_key_does_not_evict_others(clock):\n    c = TTLCache(2, 10, clock=clock)\n    c.set(\"a\", 1)\n    c.set(\"b\", 2)\n    clock.advance(10)\n    c.set(\"a\", 3)\n    assert c.get(\"a\") == 3\n    assert \"b\" not in c\n    assert len(c) == 1\n\n\n@pytest.mark.parametrize(\"maxsize, ttl\", [(0, 10), (-1, 10), (2, 0), (2, -5)])\ndef test_non_positive_arguments_raise_value_error(maxsize, ttl):\n    with pytest.raises(ValueError):\n        TTLCache(maxsize, ttl)\n"
+    ]
+   },
+   "structuredPatch": [],
+   "originalFile": null,
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01TCuaBnsphvyysY7mLvCWBv",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o3WF9h6vDaDHkmX4rt",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01PWHGh61HE9UCZnpnFZTJ5f",
+     "name": "Bash",
+     "input": {
+      "command": "python -m pytest -q 2>&1 | tail -30; git status --short",
+      "description": "Run test suite and show git status"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 2086,
+    "cache_read_input_tokens": 20333,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 2086
+    },
+    "output_tokens": 20,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "a8080966-5b37-4c2b-9aa9-272d44945c1f",
+  "timestamp": "2026-10-14T08:13:42.067Z",
+  "request_id": "req_011Cg1o3W2Fw4Roj5mc3DFMc"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01PWHGh61HE9UCZnpnFZTJ5f",
+     "type": "tool_result",
+     "content": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n....................                                                     [100%]\n20 passed in 0.01s\n M src/ttlcache/cache.py\n?? tests/test_ttlcache_behaviour.py",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "9282fbde-1491-41f3-b837-bbcea1c87c85",
+  "timestamp": "2026-10-14T08:13:42.367Z",
+  "tool_use_result": {
+   "stdout": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n....................                                                     [100%]\n20 passed in 0.01s\n M src/ttlcache/cache.py\n?? tests/test_ttlcache_behaviour.py",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01PWHGh61HE9UCZnpnFZTJ5f",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "69536bad-575e-41ea-ae6d-922adf365a39"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 233,
+  "estimated_tokens_delta": 183,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "a5cf2bcf-b6a8-42a4-9f8c-e577dbbab331"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o3e7gep5jhA7FGYhZ5",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSmQcKEAgSGAI4AUIIdGhpbmtpbmcSDNcLFynQTJ9inz9A2hoMBj6UxbiNfxuE+QVqIjCt6F2XUCYXI/isJcYlm4p9tp0ifu02RtQAzGVC7FsWUl6gx3RGkuPgVZDbn+ByLjcqtgb0RrR8687BRjfBAB/bfMdH/QTpLABJDsI+Kc4k5U/Jo/PBrGMZbd/WtKG24pg1EBa1PK0rmXmRT11fWwm6KGOJu0gjQ+8M1mTlTvFm8cjVFzIUgtI6l2PvoNW5x8d9gfGX8YI8WTV5JsPoul4k5AfYGxHAEtVCCTr48BbngzyLK/VJVZYjLKeEgR5OWv0YD6AR0O9Okcg3o7HMSqLjCYWeWy6G9ZNaSBPwaoAC0tmJH3idaDedqC+jDNOsHCok4iUuGVX5cr2wPVEf+Z4pHyxSmbqMmd6FTUHuK6yXke2cBejYt8V06nJXUqzCyjBZPkA0uP3ybJMhkninE/TbQtrYeJEERKL6CdqKwaQGLAnojNcsZKIV4zD9OXKhVb39W1pGxTsGdqbpGsh9qy7sd12kRZ62MEzO7qGFSX8EKKK6wWvnkG4/GXTFWL7UmkdU1VcrbtX7oR+B9VWIfi5hnyc6veuCDVAq05c/hdB3OwjnKPrxQxrnF56y3R10tUcVfCJMQEFfZcb3BQEXN4Rle0FGIGyGn6nP2KLk2DLreA7YpBhEyPNxTTJ0KeidSmecSLA3bwzE+B0VrA9N1D9D+YcCPdMlmAvlFt7OL5nPp1CFk1CkKvXBRq1WN4n9SXsBn7Sa3/dYrVrGwOPvDhJZqAR6JKUiQ2NYGZpInwVZc+s7LU5XKmz0AzMP0eeLjLyTNPgqH3FLdTjEtiEWRrmaXzIENWAdI603AAN10P7mLJc7BBUbSKaSro9jQur/6yQpuuB4W10n65M1C3jOj8xy9Utzw4COGt2e8LwOWGz06b/rcwbun5Ul4PnsckyLmNB10HAWEEoszUTB8yYBOyQyav1UlA8vejcf+0oxKBnjuORoXvTbSqMqj1e7MU5aQtSEJ2ll3ktL0RUJz+5tLyx5etbCuL7vI6Fd2/BiyS8oeD4PomC/uz+qhNj1xy/Ch1tgbZADRWVkzbx6clg5iDerYOqQt2gTEY+rgcjvuv2aZhUaen9fF8PxjcPupIKUrVHDstqJXFDw8UnF6AcVM0pW/BRueCO34D0Jbh3zOYCbAipIj1QGkPTePKQnPtrfRTT6zqP3MPnYUeoYAQ=="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 214,
+    "cache_read_input_tokens": 22419,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 214
+    },
+    "output_tokens": 6,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "8a8bf56f-5fbf-4ce2-bd2e-ed8e5f990718",
+  "timestamp": "2026-10-14T08:13:44.227Z",
+  "request_id": "req_011Cg1o3duGr6rcRDfAaHYDo",
+  "thinking_duration_ms": 36,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1o3e7gep5jhA7FGYhZ5",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "text",
+     "text": "`TTLCache` is implemented in `src/ttlcache/cache.py`, and the new tests are in `tests/test_ttlcache_behaviour.py`. `python -m pytest -q` passes: 20 tests, including the existing one.\n\nThe implementation uses an `OrderedDict` that maps each key to `(value, expiry)`, with the least recently used entry first. Expired entries are dropped when they are found, and `set` purges expired entries only when the cache is at capacity. The constructor raises `ValueError` for non-positive `maxsize` or `ttl`.\n\nTwo choices to be aware of:\n- `len()` also purges expired entries as a side effect, so it always reflects live entries only.\n- One test checks `c._data` directly to confirm an expired entry was removed. It is the only test that reaches into a private attribute; I can swap it for a behavioural check if you prefer.\n\nI did not modify the existing test file."
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 214,
+    "cache_read_input_tokens": 22419,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 214
+    },
+    "output_tokens": 6,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "uuid": "24e5ac1c-e5ad-46f6-9ef8-d36c9016fd62",
+  "timestamp": "2026-10-14T08:13:45.455Z",
+  "request_id": "req_011Cg1o3duGr6rcRDfAaHYDo"
+ },
+ {
+  "duration_api_ms": 25340,
+  "stop_reason": "end_turn",
+  "session_id": "11e30fbb-51dc-46ba-b803-803a041e77ab",
+  "total_cost_usd": 0.0060691,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 12605,
+   "cache_read_input_tokens": 87360,
+   "output_tokens": 5347,
+   "output_tokens_details": {
+    "thinking_tokens": 1876
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 12605,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 10,
+    "outputTokens": 5347,
+    "cacheReadInputTokens": 87360,
+    "cacheCreationInputTokens": 12605,
+    "webSearchRequests": 0,
+    "costUSD": 0.0060691,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1876,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 5,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "`TTLCache` is implemented in `src/ttlcache/cache.py`, and the new tests are in `tests/test_ttlcache_behaviour.py`. `python -m pytest -q` passes: 20 tests, including the existing one.\n\nThe implementation uses an `OrderedDict` that maps each key to `(value, expiry)`, with the least recently used entry first. Expired entries are dropped when they are found, and `set` purges expired entries only when the cache is at capacity. The constructor raises `ValueError` for non-positive `maxsize` or `ttl`.\n\nTwo choices to be aware of:\n- `len()` also purges expired entries as a side effect, so it always reflects live entries only.\n- One test checks `c._data` directly to confirm an expired entry was removed. It is the only test that reaches into a private attribute; I can swap it for a behavioural check if you prefer.\n\nI did not modify the existing test file.",
+  "ttft_ms": 1928,
+  "type": "result",
+  "duration_ms": 27399,
+  "uuid": "635a2896-3086-49d6-898c-26e8a02f29ca",
+  "ttft_stream_ms": 1249,
+  "time_to_request_ms": 27,
+  "first_content_frame_ms": 1250,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+]

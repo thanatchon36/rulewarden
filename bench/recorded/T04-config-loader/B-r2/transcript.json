@@ -1,0 +1,1072 @@
+[
+ {
+  "type": "system",
+  "subtype": "init",
+  "cwd": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2",
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "tools": [
+   "Task",
+   "Bash",
+   "CronCreate",
+   "CronDelete",
+   "CronList",
+   "Edit",
+   "EnterWorktree",
+   "ExitWorktree",
+   "Glob",
+   "Grep",
+   "ListAgents",
+   "NotebookEdit",
+   "Read",
+   "RemoteTrigger",
+   "ReportFindings",
+   "ScheduleWakeup",
+   "SendMessage",
+   "Skill",
+   "TaskStop",
+   "ToolSearch",
+   "WebFetch",
+   "WebSearch",
+   "Write"
+  ],
+  "mcp_servers": [],
+  "model": "claude-haiku-5-5",
+  "permissionMode": "acceptEdits",
+  "slash_commands": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring",
+   "agents",
+   "auto-mode-setup",
+   "autocompact",
+   "clear",
+   "color",
+   "compact",
+   "config",
+   "output-style",
+   "context",
+   "effort",
+   "fast",
+   "focus",
+   "heapdump",
+   "init",
+   "mcp",
+   "model",
+   "__remote-workflow",
+   "workflow-launch-exec",
+   "reload-plugins",
+   "reload-skills",
+   "rename",
+   "security-review",
+   "usage-credits",
+   "extra-usage",
+   "usage",
+   "insights",
+   "recap",
+   "goal",
+   "list-agents",
+   "team-onboarding"
+  ],
+  "terminal_slash_commands": [
+   "doctor",
+   "color",
+   "focus",
+   "reload-plugins"
+  ],
+  "apiKeySource": "none",
+  "claude_code_version": "2.1.299",
+  "output_style": "default",
+  "agents": [
+   "claude",
+   "Explore",
+   "general-purpose",
+   "Plan",
+   "statusline-setup"
+  ],
+  "skills": [
+   "dataviz",
+   "update-config",
+   "verify",
+   "debug",
+   "code-review",
+   "simplify",
+   "batch",
+   "fewer-permission-prompts",
+   "doctor",
+   "loop",
+   "schedule",
+   "claude-api",
+   "run",
+   "run-skill-generator",
+   "plugin-authoring"
+  ],
+  "plugins": [
+   {
+    "name": "cc-plugin-agents-md",
+    "path": "builtin",
+    "source": "cc-plugin-agents-md@builtin"
+   },
+   {
+    "name": "cc-plugin-plugin-authoring",
+    "path": "builtin",
+    "source": "cc-plugin-plugin-authoring@builtin"
+   }
+  ],
+  "capabilities": [
+   "interrupt_receipt_v1",
+   "interrupt_cancel_queued_v1",
+   "interrupt_send_now_v1",
+   "msg_lifecycle_v1",
+   "request_marker_lists_v1",
+   "sdk_mcp_tools_list_changed",
+   "sdk_mcp_manifests",
+   "mcp_read_resource_v1",
+   "mcp_tool_ui_meta_v1",
+   "ui_surface_v1"
+  ],
+  "analytics_disabled": true,
+  "product_feedback_disabled": true,
+  "uuid": "5ff4ab47-cd36-4d07-a1b6-bbd2a7f012af",
+  "memory_paths": {
+   "auto": "/Users/thanatchon36/.claude/projects/-private-tmp-claude-501--Users-thanatchon36-github-rulewarden-52944ca6-e0e0-4505-9300-460146c6dd03-scratchpad-bench-work-T04-config-loader-B-r2/memory/"
+  },
+  "messaging_socket_path": "/tmp/cc-socks/22767.sock",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "per_turn_effort_active": true,
+  "view_mode": "default"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myAhgPs4NjghHLUhxq",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSpAUKEAgSGAI4AUIIdGhpbmtpbmcSDMb729A1z3uB8iz9DhoMfLNLrjp0/qLgmn/iIjBWVbHFAUrhRRhL+76+EljgrkDX2q9jPQcgNcvNVhL0xyChFQsvju+13MzFrFEwoMcqwQTJ2RbHslJQ86fIAg5QrBDkcfgeKNmaDbuo6526NvHraTcUPSqqLmuMmZdFVHvEq0AgKIkOIqur894ie3gIxfgss4QrKA1+GnmqhOryptCEf0ttSEmqytreD/8WtaJel6eSGaDF0fycaPxCMIeIpSWwv4kjwLubfseKZqrDA37Yjhb6H+Mc8GRtDtKhSo68z5k9WdFJwCNyLUnDpMWcxNfDvTn7Qfl8/I9/akxfDniVBftljC70xpj19ACu9iViAM4Tl/YW2N3/zIRZNQWAYDIbVfxtY8yqp16LF+ChUi2jMuA5pnustdBAJ/eD/TJgk9gEBKwxZGAXJtRjPavrqI6S48IPLVuq/S96CDS8vl6zA2eiZhHaljAJdROgYT/91Df67BFIIWa1E5aatJ1x8Vazh0aE1Pqr4XDZJrtlzzivPWqsko96tAqudDw9CtEFIbnoqJ3NeORk+cjJu1L/h9EJ7joNRrq28zf9Yg9iGSQ+DwnXOVcX0OqbYckVrOKySZHt4EeP/CzWQEeqiH2fFLpydcuX/1h3LOdczbJiuTHNESeWY0OzLDRe1vxH8e7PLnBHA1vXmZf/rYf6VehfZHws2cYspoQnBteuLLVouGAyu6g3FzJ9BtXEg/c58eGbhlnlNoWDxW02hdhoAESX5XjP4gbp9A+9puiQCLCIQNGAbSjJWAfZHsci3tlIHL0tzxu0h0wtB7XZtR7wIjx3pj3OV/pgfLs80RBvgIp2luDA8NVEMMPVoX9q3u67Qq4FRnhNGAE="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7060,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7060
+    },
+    "output_tokens": 5,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "693c1f00-1003-4977-8b56-0e3652f1cdc1",
+  "timestamp": "2026-10-14T07:59:36.525Z",
+  "request_id": "req_011Cg1myAUXwMeHpN3QyMNUy",
+  "thinking_duration_ms": 325,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myAhgPs4NjghHLUhxq",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_017kKsZvCRuceBtopArHfsw2",
+     "name": "Bash",
+     "input": {
+      "command": "git status --short && find . -path ./.git -prune -o -type f -print | head -100 && cat src/appconfig/*.py 2>/dev/null | head -300",
+      "description": "Inspect repo layout and existing source"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7060,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7060
+    },
+    "output_tokens": 5,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "cb9f0d49-c793-4600-99ba-ac91b28b4e3c",
+  "timestamp": "2026-10-14T07:59:37.018Z",
+  "request_id": "req_011Cg1myAUXwMeHpN3QyMNUy"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myAhgPs4NjghHLUhxq",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01ATkKfY4ecpcagCqJXaG3mW",
+     "name": "Bash",
+     "input": {
+      "command": "ls -la src/appconfig tests 2>&1; cat src/appconfig/loader.py 2>&1; for f in tests/*.py; do echo \"== $f\"; cat \"$f\"; done; ls pyproject.toml setup.cfg requirements*.txt 2>&1",
+      "description": "Read loader module and existing tests"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7060,
+    "cache_read_input_tokens": 10028,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7060
+    },
+    "output_tokens": 5,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "66552f04-9b9f-4a14-a71b-90aab8beced8",
+  "timestamp": "2026-10-14T07:59:37.766Z",
+  "request_id": "req_011Cg1myAUXwMeHpN3QyMNUy"
+ },
+ {
+  "type": "rate_limit_event",
+  "rate_limit_info": {
+   "status": "allowed_warning",
+   "resetsAt": 1791966000,
+   "rateLimitType": "five_hour",
+   "utilization": 0.92,
+   "overageStatus": "rejected",
+   "overageDisabledReason": "org_level_disabled",
+   "isUsingOverage": false,
+   "surpassedThreshold": 0.9,
+   "unifiedWindows": {
+    "five_hour": {
+     "utilization": 0.92,
+     "resetsAt": 1791966000
+    },
+    "seven_day": {
+     "utilization": 0.36,
+     "resetsAt": 1792407600
+    }
+   },
+   "overageEnabled": false
+  },
+  "uuid": "629a65b8-0bf7-403a-8be3-378754a41b40",
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_017kKsZvCRuceBtopArHfsw2",
+     "type": "tool_result",
+     "content": "./tests/conftest.py\n./tests/test_loader.py\n./.gitignore\n./CLAUDE.md\n./src/appconfig/__init__.py\n./src/appconfig/loader.py\nfrom appconfig.loader import load_config\n\n__all__ = [\"load_config\"]\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    raise NotImplementedError",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "9e7b98f1-09b8-4acf-9e58-e63c9feaba4d",
+  "timestamp": "2026-10-14T07:59:38.076Z",
+  "tool_use_result": {
+   "stdout": "./tests/conftest.py\n./tests/test_loader.py\n./.gitignore\n./CLAUDE.md\n./src/appconfig/__init__.py\n./src/appconfig/loader.py\nfrom appconfig.loader import load_config\n\n__all__ = [\"load_config\"]\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    raise NotImplementedError",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_017kKsZvCRuceBtopArHfsw2",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "type": "tool_result",
+     "content": "Exit code 1\nsrc/appconfig:\ntotal 16\n-rw-r--r--  1 thanatchon36  wheel   68 Oct 14 14:30 __init__.py\ndrwxr-xr-x  4 thanatchon36  wheel  128 Oct 14 14:30 .\ndrwxr-xr-x  3 thanatchon36  wheel   96 Oct 14 14:30 ..\n-rw-r--r--  1 thanatchon36  wheel  198 Oct 14 14:30 loader.py\n\ntests:\ntotal 16\ndrwxr-xr-x  4 thanatchon36  wheel  128 Oct 14 14:30 .\ndrwxr-xr-x  7 thanatchon36  wheel  224 Oct 14 14:59 ..\n-rw-r--r--  1 thanatchon36  wheel  106 Oct 14 14:30 conftest.py\n-rw-r--r--  1 thanatchon36  wheel  215 Oct 14 14:30 test_loader.py\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    raise NotImplementedError\n== tests/conftest.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\n== tests/test_loader.py\nfrom appconfig import load_config\n\n\ndef test_reads_section(tmp_path):\n    p = tmp_path / \"app.ini\"\n    p.write_text(\"[server]\\nhost = localhost\\n\")\n    assert load_config(p, env={})[\"server\"][\"host\"] == \"localhost\"\n(eval):1: no matches found: requirements*.txt",
+     "is_error": true,
+     "tool_use_id": "toolu_01ATkKfY4ecpcagCqJXaG3mW"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "4f4f3f93-77f5-46ad-a4ef-b65ffb0e60b6",
+  "timestamp": "2026-10-14T07:59:38.097Z",
+  "tool_use_result": "Error: Exit code 1\nsrc/appconfig:\ntotal 16\n-rw-r--r--  1 thanatchon36  wheel   68 Oct 14 14:30 __init__.py\ndrwxr-xr-x  4 thanatchon36  wheel  128 Oct 14 14:30 .\ndrwxr-xr-x  3 thanatchon36  wheel   96 Oct 14 14:30 ..\n-rw-r--r--  1 thanatchon36  wheel  198 Oct 14 14:30 loader.py\n\ntests:\ntotal 16\ndrwxr-xr-x  4 thanatchon36  wheel  128 Oct 14 14:30 .\ndrwxr-xr-x  7 thanatchon36  wheel  224 Oct 14 14:59 ..\n-rw-r--r--  1 thanatchon36  wheel  106 Oct 14 14:30 conftest.py\n-rw-r--r--  1 thanatchon36  wheel  215 Oct 14 14:30 test_loader.py\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    raise NotImplementedError\n== tests/conftest.py\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"src\"))\n== tests/test_loader.py\nfrom appconfig import load_config\n\n\ndef test_reads_section(tmp_path):\n    p = tmp_path / \"app.ini\"\n    p.write_text(\"[server]\\nhost = localhost\\n\")\n    assert load_config(p, env={})[\"server\"][\"host\"] == \"localhost\"\n(eval):1: no matches found: requirements*.txt",
+  "tool_result_meta": [
+   {
+    "id": "toolu_01ATkKfY4ecpcagCqJXaG3mW",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "ae066fc3-9c52-469a-b506-88d956c306b0"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 300,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "bd52b507-0c19-48fb-aca4-b4c8cbbbceee"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 550,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "8113582b-cfeb-4864-901d-a50af37b7d8f"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 800,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "dcaf62dd-c8bc-4f62-b258-63d8b8a37bc0"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1100,
+  "estimated_tokens_delta": 300,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "030d3edd-2759-44cc-92b7-da4c8515b0dc"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1350,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "90746555-b6d0-4a6b-8a00-ab20072b6927"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1600,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "25fe5539-cd1f-405f-ae78-48f02b538dbc"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 1850,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "b235f0db-3001-4bd4-880f-0e2e67762b30"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2100,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "c813ded2-01ef-4819-9843-a74c20f12409"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2450,
+  "estimated_tokens_delta": 350,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "363d88a8-01b9-4f4a-9fa0-70e13e51ebb7"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 2750,
+  "estimated_tokens_delta": 300,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "7e1a4737-1a93-4f44-b15a-1376eeb9bbd6"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3050,
+  "estimated_tokens_delta": 300,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "38d39212-ca4c-4a1e-9f90-d6425c3a8071"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 3450,
+  "estimated_tokens_delta": 400,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "1702c55c-6089-48c4-a31a-3b99f1d888e5"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myQwwRoCdMmPMUji1S",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": {
+      "__rw_chunks__": [
+       "CAQSgUwKEAgSGAI4AUIIdGhpbmtpbmcSDLdy5Ei0NrGFNOptXBoMb8B2iHhjx0sl31xPIjACJ6QPrIsd6Ucb6ps+GGrB/P9LCCNGl4eNQXQq9JrmkVzlqjIAk7vprKYEpSMy788qnktch6jhPhDYEstJLmar13OcujpRFm5gRNz2WnIwdaya4lbVUDwcjEdg/Tk+6WEVJsA1bCyAZDZYxfDe61hSS/EP6p91aN7CCBQ0Vtwf/8ut1EeYggBP7VfvmZq40INzTacLPQ7vo4OHQENQocuYQ3kwy5BE4mPQEh92OmLGizYo+GAc/XfM8NWkEJ/aKIg7sMvTtSQp13fqCXvzPl+gmD77N55d5Sp6MjbG9TxhI01XmSbFzxPUkZGXiD9lInigTsaTS42dMFJCyhiMVENZzy05qm6DpERQ8WBmjRGIMzNapaQyh8atUGQxYIfLc/pepGsaxYoCVEfQfJYEMo70VaoilVXmmAJn9rfqgAMdEQ8PWvuLhGKzdLjJIvjLEvUXcbVBGVqVg5jdmiB+FtyBy5tmMVwl+yNYYRYAAszIG1qGPTAvQFlBRgN7lzbH2S+AKmoGqTI+pTghuZkB8yz1vVCW5w1v4NEygGAOvDiyEDIC2vzg9s6VD2GqEpXtROsRFFbXIgsfumcJgl+yhprQtycIFbVkAzoSJlS0gV8+zCIS4/LTR6M/IAzgFyobhTjbJDk89tTSOD2dhaOojr+bBdy4GefI+zKGshq27N0JoNEyx6JpwDzlyO1FlgOadxPg+bZeG1id7CaLlB1lh9KB7IzIprqtPK9D3dOYmXzmQw60R82fvUS3QSqgex+/Y9UYV8MHmFSwK47cJmYMeNHngqo15tkc3tLyxJcY3aBudzwpwW+oTNr7/ubHYBbLA3VQ0teIEMDZQCVqo/mUD/OEHmdy/OKI1qB4zFW6iSFcuTwjgpW1i1P6I14FrXOopd67cvNmp9rAI9iNQ+s5TKn6bBN6Ysf0w5+5tKVOCIAWnK4nBJIj0/tJ1f27oLgZX45yn07m4TPadmYtk8YeUSlO09qT2yNidJoO6Rw8zS5ZdKjdksujMZq/uEvKqZdXcK0xQ6CWx5HqOVirihRT4flh2C+Y6MDPsZsfne9xfTCnS8+WgNp+w7lgtvqjU3+uxC2+WdnVbgiQJboKKUkK3xO7yQp25cIRbOyCuayr9lsAalBM2vyHI4qI5zw9sbjWkMpYpc1MJm1QnIC2dpMvCoslG3iT5P1eNfLmqjY0TOfNKAD4QNe8mW8Ut5WFuUrkJjvvfmdvP2zFm/6EHp3dUE1qbBQ0BTscTUZGW4ulw2MXRYBsZZFJmGeftYidP0rBILY0/ke+Y8ThbSfrSUkgD7gDMBbSW6nLrNOamV1Kvzvk3MPtVWjOSJS1+LQDHcxveG22hHo1t7KSB6p5II/Y0WZI+hkTs7PdYOFVbHtNZWaRyeQEdjIdmTT9ZwVlyskNNLPkVcBxAVg3PE8hLVVINxkYr3hp6M3pM17ugNh+27GsN6BQjERxTv6vIMKDZ5p0HOdgvRLbTNVWSTpsNBtfjV4QIixdm7EfZxvCXqPESPs8BT2b16qW4fXWQx2QjkkP7bxG55OChF/+1xUr6LcqMifqK61+B8B4/RkjwPotOGgiJaI8p/F7wupLTyjqVLdRZ8dwuR7Juh6oNt2cQfbHa+Nl4vfvFAr96CbELGAMCpDmJuRfjEln5L5jA1cEjxboitz7a5+hxESDY4eq8+ummZlYf2rz89fLF3Sq6/WXENoEjN8YGD4cZctHu4EAZ6aGDIXpCX3pVQifPGD5cBIOCdTp3+mePqSsP6KxqegkOkNM8X5MpPly9XDqnTGMK82DblQCyKwXZei6QLWMtKg7+YVZBKBvj71S2DAyD1Ou3hYBzzqN/qffd3PNy2/SFnqGqPld7CdRsLLyUDlvjSFuSOn9jXKPPlnrKCh3F4/lRkYg4gCrXBDYPL7G0y0sSEYLwXfWVYkcoELG",
+       "LQCQ064959cqQfyklCHl18Q6m6iR9dic1/dpAf7AVMsk6aK1Lguhrf9b8qk2F3wTr/jT1tfJSRFhBZNWAFVFCLypuhHYwgT/nvv02kVV8TKWoWh2q3tL9aOKitQbx6tGwEXnw0tFElTVnqYjr8g7SFPgWzhmSPthLbe32CN1Uso+RiVpHnVYrob31wEGWAPLcoCkDyFbrkcWtQndMJpitnIEPRfCed2hhx0dOurlZNltUeXudXz5ZbU9hkHysLIYcdI2B3X0hLxEiZKeiScaE0dTVALrvw2irzn0GfY2ox/WUgbNyNuhTI5bzCxUDAbi7MjwNvB9a9vIi+JhQgHVNaHMpa89CacrexGFLxiTdu72QKfRjRdWfKZ498YS0ewyXHnTGa9rX/q4xB3IKVnSKKcws0Fr7MASZkTbgnnGohZlJwCvG4Kd04/36ZgL/JRfu+rvYz/M3mlasbucbuBexXdsdpiMfFYoRzb35/ei1y4GNTWGr4qz7bY0vfjhmLbN++Y/Si7/2ueIUGgwwOZzTEvqS79hW5c6V2xTciEM+nhqnBvcVyk3PwQ10O/MfQZJ6TjuzKimjMpqpnh1PsycFLxlsod2p9egH1R2wPGLXJsFmwGcKQ1p2X/c+HtRYg3alSQLWAXdyiEjlpfaBce2bLcM4gMRfKWe4rnVec7N4Fv8GuPObBrJnmeNIy5BoVCA4/nMdaJzMs8Fy0tE6yKG4bqVBXoIrXh/501wIeOQIcqavsBBglSxp+yn4TpTd9h/QWStdUX1E6M+b1IXHneohFRYDsdektH4CyWwmN/rksKOEV7EX19yGQAvIyXqX1kytKNdtuojHQwyH1x5AeXZ/syQ0wniledkLWntbdxXz5Zwat53DWefxYqhJ4RvX7Ax3Jorupk1I3DAiypuJUqr8E5KVSV9b0Rbt/R9H7GqaeNoQdJFFRri8+UUX+wD4UPLlgDQDQm1gKbPQdTY4K9rHWrIIwOiTKaSOCprbN29Z0NSf6lLB+AURRX2fvqkvZU6xyMa0ZSp6EB5as7ho0LkdegdeZOb+s6YHuW3aR7kYYS7SN1toi/MQwyHE2FAEzPVQlDeKiwQJVP+yoRjBmykjf3qbpZNpNBEu8VAseEDmCrhSIGgBQl7A6rXzIIqRFeRLaABwabMazGSr/uAaWtvNHGyD1qtz2ciTJWQyGJjNQgU7SPQjY/W4UD3xqQ2PyuGmUhcBonxFm7mEvnqrdsU4Xs2F2Bq1ZAe5VHYStar2SBIfyLmVCd7jjOQzMhAQuqABMH0Ntbh4qOTDDnLdpboEepU9ynjuvQGLA08GLjGEeyxy8jb6Xcnf9F4+KzG2TCLfgu617o3ax8cUKAZoNzFPvXCPrMnugt/jOJhi08WlFPXmShJJzxS312s5JMeqb1vGdrzELfSF3IEhIE/fbe8V1lcLU8kkXLk7+p+dOTJUPb3x8ZOZ8wxmsM/508Q9/xahQbqMM5ZNUjfYgWrRrRpHw+4EMSoeNSeHqyp6LTcSDSleMMP3O7Z/JiZyg5SOtfhJfxAJ7WFnoAKEFzSYFgmCXaTg1kAaU3GBx/lauQu8kZo0dNkJHHV+CAh7Ur70m9/27Q/AeA2Yuzz24aHkBP0rGcI2yO6prg3udAH+yStOAiFqDqIiaAwO50hZ0UnuHB4e8+7FcZqRkUKDasrfnq3hJXkeR6BCXaFfXhjkVq62R4r6y3ZgcufU7SylK0lPPqOqGuKpEsKrfdaFZDtiWl5MdVxn5BDDdxGYScmmvefoKG5Gj0Ol3XiNwtFjl5ZTUhjXFUM8LFSFRnX5j60Xjgq8S+uWBAI4q588FBN9UI2ddNL09nb4j+R41HQFoIS2Ke5MwOIYgbGL/fdc5tJFtKH8dKaaI+kmA0GJLLleJBQl6EWaQ+VO+7JaUGVLp06B8ZPn65BlIxjnP3B2F4Ntuh9xOMnK8pn2C9zYrb9O1K5fxNfgkrGkNxMn+je4uj3z31MGpZ8IDlD94Q35Yw7",
+       "r4DmpySfgcYmeqDSZjJlE3xHvvbM6cUKWR/HLpKnLbZ5K9fxFnvGH2oxBGvHMT7IwetIxnAeDaeW1vlBuFdEqIO3Pwl7iTDsQCbBtaHQoMB2VoQGPyKlFFFTJBrN0EISioagCvCp5g7oY5kyY0dkOf05qzgKZr7Pjd73mjDN2aQu2hbRjJCA69CoqkFM8qKGk7q7cZrMvFZzB+at8ekAys5iJU7DvsdRHZrvDpZaTXvIyE2fsBSkV4gUXJydvPMwh0NMA+D+W/lnzVDjpBzJhzByuBPyGBbXdfRQ9jB4zfYJHW4jJuvy6CzcpjhN/qAHWqKvXgWgPCm4bdiGxSvhfozcvXvDbAMdtqB0+B8zOyRNwS6mKpkjlx59kCjtQb9jn/ZyK//irrv3E4yV3FoJ1FC7mwTjdy3AglsoMt6d6lTFZQRidC9U3lhaAB7g5iJPVhX1/vPMddV+zjSzYew9BhlCH7yQ6mCUSTFUDHFCd1FiFyQX489Sjxeo6l8qNbIEz5LUN3pLDNu2zzLyEok+xprfq1Bz+Q3ccjRHxPvwPjno3JigNB6cugiasH2Iq5pdgLJESXiW/ayvzC2pu/Yc3ftKGrr19jdmENOXH2TVM7fcu9+gWrwvgIwthHXKUZyO1wEtF63p8yAhrkcCXDjFAsuTsUWE9gEMtdZJqQ2woSrHe1cAPR/4D/8wxb8wqVFMUno/sjteYa1E4H2vZRVLFj0XzKNiWeZTLzEVW++XCJObT7MPZrIiGFy+hFJyb63UGQ/oqsDQA9PdtVUWam3D5dJKzh5K4/12TEny794khbhadfpt26EW1Y8qqtWm9fUyAMATbOeKIDOljSfIiF+N968BRew8tc4pkBCD57IVrrGe4rtNXjMioY9xYYvoumg2kEzNCmu+dLdJTlF16dQofFebc65wyQLu/ClREWOVq8oVRlf5M03nla/QqT2B3pzEY1tEmkbxV9ox12rPsMldltt1ML9D5o/cXld8xN6dmKSEht7MY5ZhGq8MSKb9GXOVW3BZ66kNB7riReUM4kPytYDYKRBzZhlZ1rZfzVdap01Gz7ZQ9kshO2PlIl8a0BqAuF86LB4hNUgiYZIIZq/jWAIzhJ87KT4nssZcTA+5zfiCuna35hgzabOVPhDsOR4Z0Bf6euWyh7IjZ+535lHgdwCCAaxknsuA08J4i2S1KXCRlVy4c9xpfQ1renOeBY4XHn9LFK7PhqQTT5k0OkXNlXrjcCv3Dmcn3Du87FowglTq5pSQOmGhHrBBZ/bh+s2qEJQVuusj9yS3rbauL5mOWo9xewGj5B+G1nSmRzLBuEgg7ekVKUPV9h3TJPm1xUFaRf6/0kfvuRat7uk+5owrZ2/vWrDIrs7nJzuOeC9R7T8hDm+OLe++W4FtpMgHgoqVJV7mRWEw5SfRkq8Pl3f75vaaC6UQBb5PS+7m0/cc7IJ4tQcOEfgj1zyTvzfesIe76x1mgwQ3QjqSdOJqxujmWZNTgQP3+Yo5uASIaybtyyoCLHZaj9D4SF7aPX08+sPeYaGJzJ1ObT2DbAs4ISHORqJjRSaP9K1iEqkIAv+6i9D4J5PrH3kmAp6Ljk/RmbsCEz7n/fbLoQXV8RIaMW4wWbouHAsT4XV+KFjgOJAjpESHLfGrTtRNW7PIg1aalkatrIu1TolQB+Faw4gU/5lJcrUlneXVsOb6LGsUtv0cspp8mFZZWdBS2c3c31THEwmUDAH/tpaiGEqSx2syskRVleX+H5VsgO06bfj0DrAGTKCQsILB8mmXbStlYuXHq64+7fQSVYpJQvg3M+39LRNj5UcRfxgilVUw843od7EMN4eFbvJBVbx1sRRXMvKWX8dO0hLutw3bIsbNLSITfjem7j67VNKM58psZgU2q3oEEJp7Tj7fLVOcpBUf1fnEfOkAr7IahrMXmicUoCd46eKZfS93KnHwQz1+qCrLMlhOndQEkWokyWZLBsaQxKiZqhL83d/pes39ajWGyHt7",
+       "Wk4fU0o/BYACvqJ8CrEydNGlFTUmQZkjuYLt65oogB2HCkrIs4MkrfB3+581C92ce0UYoU01XnQ6fMAhQLSMxDLxow0XGsj8oMVneZHUjOJkHe8ynqxm+vxPzdZaSmCoYi7hxtGc0if16MwjylUunqbw0bKJLqb58Fo86+679+aIZJfgElofC72Giwr1tlIn6KVnsoMr2D5r03jPzP0LCeCMjdppXnWw8PbrcOHYjJMv5wpjqSpntX6jTw1XkWAspPYC+F0QZTu1YtBPSrtknWeSKQwn6iprSV0M/7W87GTym+KhjtjlSgwhnfcchXvMJ2T1N62VToSDzHccpSpIaj2N5qm4NBMMsrjYmZnOxb2WX3UpNS71dJi45SiMdgesytlbH/UP3gEWP3ZNwDHZN8Tqq83HQ1cZeu+KmTFaqt7NSe7QLKdzGInoOAIXH9SFEBgW+F/atjc5Tk4IeuIJQTZxD8CUnqvHOVdn1ue3RiwU5pnyBSF2Mp2AmAQMts7WL0MYB/NHwgZCYCc6a1mPX0Fn4JUN5NWVZLs9fUj1MhTA6A8S3zKOk3ux5rAGbl6X6TTclrvSQJXWljVBdHhuxbaFgn0BGKj7KQrABtNOXxO190W9tNhqdyCct1jF9Vr0PmyXNHGv65j89vc8EVu2cQbZN7e/YgKFwq7dj4JXFM++OKJhWoEtBgdI5cEoPZY6PXlWk0kZkjbnsnSwgdsErAReuq08DthMRG0gufL5qkf+jywTIV7Z0IyE4FpWcAZANGdrnAcjOby40/75IovZXNsKjKEBtXNrawRtWygCO6C+D6Fy47s9dZfeCDjqYSlJ4l2++0zu92X8bTvcxTZRKtrE/F4D9ncMjygx6bsL2QX7ICQemmnxUQxjFmIjil5zQtKQpTYNKAxvZOEil5ikppGuWdOGqP5oSsXjFHQGwCx/Mw45GlMn6MnKQ6Bk+nD0jJaHZ0DkCKfunbQafVaLDia2FJ5YnL+NlYIlzNjdPEZju+PhfmTJlMrFfdLv0ne032jFKwQrt0mzypxtoEJXMGOq48+gBGqKQbjWD3AuiHAmjKV+dN7E9frY32XuYARNxh51WmM+QqFQgl72VYYpDKjc7ESE9oCQEKO5f/GSQMMeL6N7Trr0O9yUx7sm6ZKINX4QtS5rcAquSAL7u0TDjrI/uDlpZFcOUMN0iekPpRP7w2yjC3v/55dCGMePLwbLVJHmm0HN+YHT3VF/Nh8KJOD6w9jmtMvCKlxwoaw03PNEuda8NvV/xoVWDVf+I7MMxnsuQE7hGk4Ngw5htrZP/auuUs45ZI+iTOVTgeC4tA9HKOYSbx8ePo1X7BYg2P10WPSTcEreJGyRV9NxXOG46a7/kVmGJpeWz5dj6tvJhi5BM5ji71xFPOFT93Ru4pbdiw4TuahRAlgDZMbovvixE2w8RfBIOA055eEj7aOGu0UUA/qGAj1vHlN9Y2x3NYeWGM8t6D729AqkJuYW88SPON7hKgQC8zxAcURk6Bt/78OJS5dtVMIM6izLOBtjxT253ubhLc2gyeqTVXu6ZCNQ+oPeJcqKhdp1InNoF7x4azma/an7gO7A7g1OeA9vQE7DWhPi3kGb6Rl07uHf4HNwwkeU+3nO/sFCu/gUgk3kRYIR6NlS0OWwcCbRVnFRP5/9kNcxXllu8vl6FA2t3LeQsdn5fB3o8ohDmR61meI9JyQ3/fJkOzOftYOU9Aj/yoI449dfswTR5yZEyTebCgZS7S0mkAGyyycNFx/+MSkaezyQGmK/bw728Lj+OhvsuvdxKVp8yIZqDhePxHXpSRBXAvcolJGqKznyEvgriXiRztab+BLArChnrDG7+/UENk64mwjVHeDz6AxcBlBWKCL+fLllI7z2Uh9Tv25If4y9Ef38xQqgdTyaggCMblyVhKmje62q0cTADYKOoFghJWQIVPGaSg7ACaH/R0UW46lNcazMBU9PcjFROF1y/GzOKET43tZWPoH/UU2Dohpz",
+       "CvRqh/+7bIgituKMg+Hs4+JwLpQJDsKtbYi9P0TfA/jksFmQ88s+N7GuHMuJ9nYjBglRNs6NChRZaVyQv0aj2gN+d+9jnD1mBKXn5TwNwQSbDHGAWqq7JGex33czhhUGO/LTD8w1MDC12idaJXojsWgrYE0QRTHPyp05dhzowRxpSxBr4IiaFaPPwUTpMmKzIc1sMM1ULipKl4592bnsPz33NWuwB24pIREV3nNHjbj4U4T4lm4Bqv+c2I0gSmnb97P8H4lyIh6B+/qFlh1XVqQcTe3uEplTopier4tmEOlLdiHiK3ZG6RjTvI1CG1FiusUT6ZYjZCvN+Q4YJt+XhJi0OC+fPak4aCUglWOVoVJcycY6K/nTn2kd7PJYRG7xH6l5XJN/blci9aokwSRGlgaxWL+YbWT3gz5tu2Nraq3u5BdBlrVqkhYjEE1flnwlu9MYwkLkAQRqCVqck23VMbBO2TmHo6bXInpqDP7SBMrbAGzQolj/dTYTrjhSS/rDsDbbuv1YWFvEqAjQZsDWPqNA/o10UMGeT2s2lAh5EFMa/4sidIoYvFapqhwbG0uDNHsvBB4hDJj//YgkPVQjUuk6vj6S+rR+UsgW/dmr3MsKql+6Rko1h4i+/xINRHsh+E4XQ7fK5fSxL00pfXk1tfJ55EV0fO2LUN4qCe/dStRb8fhQFCnRXy9qFfdn+LIbo2vPhCX2AHR/Nutp6NkJa3qKHzn8CHR1Ls9x/f1+J/IyRTeAHkOHq8jWJWWKs7T584hTUR4zVD1OmVwJ025jeXAlZdWvwqBx3EQEjkvXcnHFJllxlEBsUq/xu09EiA9cdS1rOOgzy4kyXacQhgLHxdHH6Vmfus7/y47KJXK652YUW40FaDz96hUJoaIMgrgNCzeyumHNgYBU99Aia3vztUzWKbRiX/B3munyNRNGJvyRRg8JxOIYsxyc0D133BLh4CAnMGpeHT30LX1u2m1Ja9DJ6OaVaDt4rwKccfSSogqWKWvfL+kmnnn+8rBjmXll1n8oTcuWfaEAK4DoYY28/HWNlwqjJrMXIkFl8rEakhjirhGL2xzuXan4PB/raQOamjqELo1/KDLrfclJHmAyBRyf2L/ZR/qD5wIUmPcyZiy6PNsIC6vlWg84ZrTyyEl8Y84V5MDJ+OKmUML2TylhrgxrWGGL75LwrimiHWogguBcmfFlcZ6bJsOMbFd+1yZ+8cyT2sCX7qWWfjkNIjt2eGa/5uw2IZGvw0VCHeBwnXEODwQuFB1EH84crbRZh22bazm13beIhKm7Jt0Ng5/yJabO0NdjUbRVMNeaaQ1dYplF7zpWuVHlZvyiZv4HkLVSqHb3fK2VoGNP6NIliudHmHvO4ZQR+vzGlZdDglPTg1iIhl22Aa88WVuOvgrZR79MkgCyBbleMN+WWA6Xh68E16Fap0yNvUYnHPRCqRSpi51osEGf1VJtZgZE9t3p9REKceb3xVWgsKN/VYBM46ghJFtwMfFwGSOO8xlbZflUXKEVAGpTBrBkqLIADrqZeqGpEKHHGV7KEnY8ig04udtIvpCO+1v2fohi0VC2cpotVmq+hMyvfUNqpLyCtYwbeAKMok/PAVSuRLEYikqyZLsDnzo7nKlb8hONpV/b78sA+eLoXinKsz21HnMQLLDstR/RFQvlqKVyQQdH8ByqQk1JP7ZUquY+nPJQnhZB/p4BcPeWiKATSZTrZtzrau1+EVLwDIz259FqPMTtPTRq4EoP7JQkmRi4dCQ7MYFLjqCMoVGpBqUU0fnl2aIPajSF4UdB+3pfbKwri3QpSPAe4INofQlkIVAUdO6OIRDWFl6bDYX8/gibchXCbDj63lZs/4gqDlc7CHMUKm9DF4pQnqKSkAdVR2iEkmHC9v3AV1xa3pvYcaDxqI9vnLBGni1b8Z7Ov1cXyY14A/TRmLgz8s93fALO9tw0a3AP4yuYeVyq+RAfFZH4jE88h2cvRhIIyJibYlhOorwivwDagleN",
+       "tnW4bQzWSf6t9I3qhmastzVG+rhLIpwo4WgWN/xXivXrizjfiUmW3uDu3MAO8VdqbLKb8pmekjXpqwkCppzy7wAsJRvEU/aTsdU2vItETrk0YXxUW9ew0l3lf6ASxxM+fC5IwJAxXxkosUM3LCdS5GY3stgF+gfgQRlJRvgaRdgjuIsjA+GjKQr56HYgqvS4CQrOxmmzjgiS9Ikb6e+qO7Cag3/UdeAvqR6LWHxm+4tDN64S0Tjhqt8Ew65I2zF/EzTAMaBbA6Zm0UMLBtSVdmpV3W0Xgnkp+RQ6KU0cEfOEMe+AmPCe+6EEUoH/WZkCxhhxJ/98VjAa/IiVzoNnzm882YsB3gX7Simq3swerltsLfB4ho1Rb+71XzRR/6MTgagSJWXXb3LhqIitwgbqWcagqwDBZZ668ozFYKgxXWhDG1JlAD9SAeYqKJclgz9rH4nh1fQDX8+x4gX09UkzdnROO8YenNEVtPMs3rLMU7pDpNEtVkKUWNKYwuD+Z4bq7b+J94H4mjLHuV1vUqqCjw6u9dVNWmiSlFcB8nxQwn92SykU2YiqyMTL+HtmQGNPd18rSiM477qYYEMRUntkj6Yd96E6uHLu3rtAmajtx97Lv1EO0OmuLKISUEeEb7HDBCV6SU/bZta2UgkjDiXDRnD1m/NCYsnllqeBDG1xTF7LI0KipQAPcXSjI8GVxsZ+wncECCi0DRjrZgTd6HluSjdN97UMBRc8mLtqIT/HKwqMFc0/cHpYgdlozYCjfs95IughpfRg2qB3X7e7OBip4DeNdX7bB7GvwuFBz9g0GW1Ng+OuJxGYzAXL9onAXcJSw8szNZ1ugj4s/MsGrccIO9ERNugB39QHTBRANABDjCCp66WKWaa43+WqgcdKnRjc3bEme92ejmm2AJv97cSs6R+geP6Mg2P8serLOoOwCGJNWhVSiPvUTWDb7Laqj/8xXuxwAwJMSM2cbx8AbrYCa8vLABC+m4bRSmbda9z8YXKlTKrzvoU+pH5h9CMOOVD9u3KsM5JYqEld48C1F6SMZluw0USlXR1qSasnxNPoQ5PO0Dfj9wF2/Mmk4PW3tk5dStuuUandsz8lZY4oY6GAUVWkRw4GEms52810inaQ80k2ZAP8vx4m2v3Wr9K8fMZiONoVo4JyK25mJwjlmzwCAvpsa+fqGfIetQ+voU4c7+Em7UYa4PxTlfVcJj9uQHd2xslq9KRUeUjnj7aVEWucVPaNslO77MpQad4AjvvIrISo4Z7jNByw1rAvQ5IofpdgJgCf+PrOL/7ISPqCqb1lQ/GLt8sAOuoj4cYCZqiqxVVqt+4Yn5ySVyEOyFt9SybdoFM5SAuZVIKBcWYVzU6jAY9m62irN5OTOA3GFrnKw/WLyRiL4ryqOfJdjvSnry5TyGe2SVaYWM1VL/MehshyIQ9DXzNCvyeNQR2qsBz+QWlIWboFbkUGHN/fi3OitqAIZpODkGsXzLX9KIJKOEUvlaJwFQ+NzMk/L8SIAUL/km3Jvu9dfxP6ZqUU9eqFCVR08OdcV8nrqh43BiyhzXJOh3LjHqYfRa+scFw58P4Z7PG3inDLl0gD66CXo0kUrThkzRJWG130EF0nhLUs2LbM2YHXIcT7P0StFVedsRa6rhoipoS9EXt27lxbfwxUTEri5Ur2Zmy2SaUG6HDirqU5IRz9A7q05AlL0ZC0DftQEyjjrWLpXHbVvldjLXeyLe9ZMXfUHJZxDohOyWmjhEhzdk2rk+vFBt3FomtXxPHttCcXY9qk5KjUOOmqdXuYERiXYD0ZVTJU/lyTHjux34J0I2xXp+ZN6S2QedBzIWNPRfpKI/ffzQbndnaVaiO4xu/4yeuOvXaDUiqMSKWrB6YmF5+GxzkWg4X2cDXkyoLqRjhKKmkkkSbOu2RahY+pR515G+Q6qY3+YNktRSITIj/HOrttUVkvlg3A2YPhMHqrDcjeeeUQEJVOWeg4a3je3SYq+pLDV2numzQn3OzK",
+       "h2lL64UA5XjMXRqUhxbDpQ5SgdUh6vHnVFV2QflbGTkAnOO7hkayMJlGY0lfFfB54Pl0g72GxNnkB6XUBL18JeXnWQw5o7zEvIGg8KaYLdX38LIs+9cmwxdu7X8dTzBoNpP15uxhfY/nyXxBPSOgkWUqbSZb/EcUkzFUoeNhVQ5HN0Ydt+Cp+cNNjb7F/oPmoA3albqVMzfaQUrnOwwRZtf1GfqCkvSFfMTLGCqsMrpH+V1BwOqT91F3z3fL8vdk33Kh25QtLZ909iBsZ3QIj0AFMQsZiFnfVof4FnH7wlp9B7hyBne5kqJUUt35dUr60Q69fzkZuCxI0wnMQIC6ntgns8IMVNwfBEtJjt/WL1KXEDek/SFxS8PtPOP/Bcv5EkpJUXmMVdtEBl5Uh83Q8MXOaFZj4Gz7iaPQAnkUiksG+II5Xq/NwUhHs4xLS18uSLZzcmPpT0Tc0rsE3mE/WbksMoJ7VFvKGvweyc+ytC0ONx3hFyhbVGbmXGTKiqvoOBSfHyA+wZ5ckxkPPHD8pVGCjcvIRprvMIkEqzFDmbjBUzRX6pkxhaeSTRAG2YETr3/9l/h4nWg/nePVw8c7gJecU4IlatTYLYHFTowzzcpf6+3Bmfy837kMNMuMQoi59oVlY/NjFg0UtqFLpUMqPgJz8NhV/L2OlB2URpLDadZVknUThswRLJ3+g8g3s6nLKB/WUnAr5QkZONRIZBqRxbwfXmpyBK0Lgj3pQ8C1zuVlOzwcQhe1q0g8cMuJqAfX6W6WGGU5owp9+tdQZgQkXonEloSj/lqHVFJslUOW5bUwvCowiEmcijV1idmhp97n4vZ+TvblrnETLCg+bxZNZaPcV5HFRJ+2iShgj3QyRW/YIgzhRfsvHflogwzEEUEFDB9kRSR1SSGuXg/0E8H0ApcxwP4B25V+QRmlCXxiQw7Bdaj8n3vVSgHhOWdA5F5QSFvRMHNferSGJQrL5RwYAQ=="
+      ]
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1156,
+    "cache_read_input_tokens": 17088,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1156
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "23504643-b547-49c0-9177-29a898b4b104",
+  "timestamp": "2026-10-14T07:59:54.854Z",
+  "request_id": "req_011Cg1myQiJME76ZwrrswE3g",
+  "thinking_duration_ms": 15321,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myQwwRoCdMmPMUji1S",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01X2zeVL3PZPAu5V4JPAUy6m",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/src/appconfig/loader.py",
+      "content": {
+       "__rw_chunks__": [
+        "import configparser\nimport os\nimport re\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n_VARIABLE = re.compile(r\"\\$\\$|\\$\\{([^}]*)\\}\")\n_TRUE = {\"true\", \"yes\", \"on\"}\n_FALSE = {\"false\", \"no\", \"off\"}\n_INT = re.compile(r\"[+-]?[0-9]+\")\n_FLOAT = re.compile(r\"[+-]?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)\")\n\n\ndef _interpolate(raw: str, env: Mapping[str, str]) -> str:\n    \"\"\"Expand ``${NAME}`` from ``env`` and ``$$`` to ``$`` in a single pass.\"\"\"\n\n    def replace(match: re.Match[str]) -> str:\n        if match.group(0) == \"$$\":\n            return \"$\"\n        name = match.group(1)\n        if name not in env:\n            raise KeyError(name)\n        return env[name]\n\n    return _VARIABLE.sub(replace, raw)\n\n\ndef _convert(value: str) -> object:\n    text = value.strip()\n    lowered = text.lower()\n    if lowered in _TRUE:\n        return True\n    if lowered in _FALSE:\n        return False\n    if _INT.fullmatch(text):\n        return int(text)\n    if _FLOAT.fullmatch(text):\n        return float(text)\n    return text\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    \"\"\"Load an INI file into typed sections, applying ``${NAME}`` interpolation.\n\n    ``APP_<SECTION>_<KEY>`` entries in ``env`` replace the file value without\n    interpolation. ``env`` defaults to ``os.environ``.\n    \"\"\"\n    source = Path(path)\n    if not source.exists():\n        raise FileNotFoundError(f\"config file not found: {source}\")\n    if env is None:\n        env = os.environ\n\n    parser = configparser.ConfigParser(interpolation=None)\n    with source.open(encoding=\"utf-8\") as handle:\n        parser.read_file(handle)\n\n    result: dict[str, dict[str, object]] = {}\n    for section in parser.sections():\n        values: dict[str, object] = {}\n        for key, raw in parser.items(section):\n            override = f\"APP_{section.upper()}_{key.upper()}\"\n            if override in env:\n                text = env[override]\n            else:\n                text = _inter",
+        "polate(raw, env)\n            values[key] = _convert(text)\n        result[section] = values\n    return result\n"
+       ]
+      }
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1156,
+    "cache_read_input_tokens": 17088,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1156
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "3a92569d-221e-474d-bec8-b7fb03ba429d",
+  "timestamp": "2026-10-14T07:59:57.732Z",
+  "request_id": "req_011Cg1myQiJME76ZwrrswE3g"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01X2zeVL3PZPAu5V4JPAUy6m",
+     "type": "tool_result",
+     "content": "The file /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/src/appconfig/loader.py has been updated successfully. (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "ebf3e698-72c9-4c49-a577-cbdcc74384b7",
+  "timestamp": "2026-10-14T07:59:57.750Z",
+  "tool_use_result": {
+   "type": "update",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/src/appconfig/loader.py",
+   "content": {
+    "__rw_chunks__": [
+     "import configparser\nimport os\nimport re\nfrom collections.abc import Mapping\nfrom pathlib import Path\n\n_VARIABLE = re.compile(r\"\\$\\$|\\$\\{([^}]*)\\}\")\n_TRUE = {\"true\", \"yes\", \"on\"}\n_FALSE = {\"false\", \"no\", \"off\"}\n_INT = re.compile(r\"[+-]?[0-9]+\")\n_FLOAT = re.compile(r\"[+-]?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)\")\n\n\ndef _interpolate(raw: str, env: Mapping[str, str]) -> str:\n    \"\"\"Expand ``${NAME}`` from ``env`` and ``$$`` to ``$`` in a single pass.\"\"\"\n\n    def replace(match: re.Match[str]) -> str:\n        if match.group(0) == \"$$\":\n            return \"$\"\n        name = match.group(1)\n        if name not in env:\n            raise KeyError(name)\n        return env[name]\n\n    return _VARIABLE.sub(replace, raw)\n\n\ndef _convert(value: str) -> object:\n    text = value.strip()\n    lowered = text.lower()\n    if lowered in _TRUE:\n        return True\n    if lowered in _FALSE:\n        return False\n    if _INT.fullmatch(text):\n        return int(text)\n    if _FLOAT.fullmatch(text):\n        return float(text)\n    return text\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    \"\"\"Load an INI file into typed sections, applying ``${NAME}`` interpolation.\n\n    ``APP_<SECTION>_<KEY>`` entries in ``env`` replace the file value without\n    interpolation. ``env`` defaults to ``os.environ``.\n    \"\"\"\n    source = Path(path)\n    if not source.exists():\n        raise FileNotFoundError(f\"config file not found: {source}\")\n    if env is None:\n        env = os.environ\n\n    parser = configparser.ConfigParser(interpolation=None)\n    with source.open(encoding=\"utf-8\") as handle:\n        parser.read_file(handle)\n\n    result: dict[str, dict[str, object]] = {}\n    for section in parser.sections():\n        values: dict[str, object] = {}\n        for key, raw in parser.items(section):\n            override = f\"APP_{section.upper()}_{key.upper()}\"\n            if override in env:\n                text = env[override]\n            else:\n                text = _inter",
+     "polate(raw, env)\n            values[key] = _convert(text)\n        result[section] = values\n    return result\n"
+    ]
+   },
+   "structuredPatch": [
+    {
+     "oldStart": 1,
+     "oldLines": 6,
+     "newStart": 1,
+     "newLines": 69,
+     "lines": [
+      "+import configparser",
+      "+import os",
+      "+import re",
+      " from collections.abc import Mapping",
+      " from pathlib import Path",
+      " ",
+      "+_VARIABLE = re.compile(r\"\\$\\$|\\$\\{([^}]*)\\}\")",
+      "+_TRUE = {\"true\", \"yes\", \"on\"}",
+      "+_FALSE = {\"false\", \"no\", \"off\"}",
+      "+_INT = re.compile(r\"[+-]?[0-9]+\")",
+      "+_FLOAT = re.compile(r\"[+-]?(?:[0-9]+\\.[0-9]*|\\.[0-9]+)\")",
+      " ",
+      "+",
+      "+def _interpolate(raw: str, env: Mapping[str, str]) -> str:",
+      "+    \"\"\"Expand ``${NAME}`` from ``env`` and ``$$`` to ``$`` in a single pass.\"\"\"",
+      "+",
+      "+    def replace(match: re.Match[str]) -> str:",
+      "+        if match.group(0) == \"$$\":",
+      "+            return \"$\"",
+      "+        name = match.group(1)",
+      "+        if name not in env:",
+      "+            raise KeyError(name)",
+      "+        return env[name]",
+      "+",
+      "+    return _VARIABLE.sub(replace, raw)",
+      "+",
+      "+",
+      "+def _convert(value: str) -> object:",
+      "+    text = value.strip()",
+      "+    lowered = text.lower()",
+      "+    if lowered in _TRUE:",
+      "+        return True",
+      "+    if lowered in _FALSE:",
+      "+        return False",
+      "+    if _INT.fullmatch(text):",
+      "+        return int(text)",
+      "+    if _FLOAT.fullmatch(text):",
+      "+        return float(text)",
+      "+    return text",
+      "+",
+      "+",
+      " def load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:",
+      "-    raise NotImplementedError",
+      "+    \"\"\"Load an INI file into typed sections, applying ``${NAME}`` interpolation.",
+      "+",
+      "+    ``APP_<SECTION>_<KEY>`` entries in ``env`` replace the file value without",
+      "+    interpolation. ``env`` defaults to ``os.environ``.",
+      "+    \"\"\"",
+      "+    source = Path(path)",
+      "+    if not source.exists():",
+      "+        raise FileNotFoundError(f\"config file not found: {source}\")",
+      "+    if env is None:",
+      "+        env = os.environ",
+      "+",
+      "+    parser = configparser.ConfigParser(interpolation=None)",
+      "+    with source.open(encoding=\"utf-8\") as handle:",
+      "+        parser.read_file(handle)",
+      "+",
+      "+    result: dict[str, dict[str, object]] = {}",
+      "+    for section in parser.sections():",
+      "+        values: dict[str, object] = {}",
+      "+        for key, raw in parser.items(section):",
+      "+            override = f\"APP_{section.upper()}_{key.upper()}\"",
+      "+            if override in env:",
+      "+                text = env[override]",
+      "+            else:",
+      "+                text = _interpolate(raw, env)",
+      "+            values[key] = _convert(text)",
+      "+        result[section] = values",
+      "+    return result"
+     ]
+    }
+   ],
+   "originalFile": "from collections.abc import Mapping\nfrom pathlib import Path\n\n\ndef load_config(path: str | Path, env: Mapping[str, str] | None = None) -> dict[str, dict[str, object]]:\n    raise NotImplementedError\n",
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01X2zeVL3PZPAu5V4JPAUy6m",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myQwwRoCdMmPMUji1S",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01Wcms1tuoBTX2QZ3crDUBYU",
+     "name": "Write",
+     "input": {
+      "file_path": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/tests/test_loader_behaviour.py",
+      "content": {
+       "__rw_chunks__": [
+        "import pytest\n\nfrom appconfig import load_config\n\n\ndef write_ini(tmp_path, text):\n    p = tmp_path / \"app.ini\"\n    p.write_text(text, encoding=\"utf-8\")\n    return p\n\n\ndef test_missing_file_raises(tmp_path):\n    with pytest.raises(FileNotFoundError):\n        load_config(tmp_path / \"absent.ini\", env={})\n\n\ndef test_accepts_str_path(tmp_path):\n    p = write_ini(tmp_path, \"[a]\\nk = v\\n\")\n    assert load_config(str(p), env={}) == {\"a\": {\"k\": \"v\"}}\n\n\ndef test_default_section_excluded_and_applied_to_every_section(tmp_path):\n    p = write_ini(tmp_path, \"[DEFAULT]\\nshared = 1\\n[one]\\nx = a\\n[two]\\nshared = 2\\n\")\n    cfg = load_config(p, env={})\n    assert set(cfg) == {\"one\", \"two\"}\n    assert cfg[\"one\"][\"shared\"] == 1\n    assert cfg[\"two\"][\"shared\"] == 2\n\n\ndef test_keys_are_lowercased(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nMixedKey = v\\n\")\n    assert load_config(p, env={})[\"s\"] == {\"mixedkey\": \"v\"}\n\n\ndef test_interpolates_env_variable(tmp_path):\n    p = write_ini(tmp_path, \"[db]\\nurl = postgres://${HOST}:5432\\n\")\n    assert load_config(p, env={\"HOST\": \"db.local\"})[\"db\"][\"url\"] == \"postgres://db.local:5432\"\n\n\ndef test_missing_variable_raises_key_error_with_name(tmp_path):\n    p = write_ini(tmp_path, \"[db]\\nurl = ${NOPE}\\n\")\n    with pytest.raises(KeyError) as exc:\n        load_config(p, env={})\n    assert exc.value.args == (\"NOPE\",)\n\n\ndef test_double_dollar_is_literal_dollar(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nprice = $$5 and $${HOST}\\n\")\n    assert load_config(p, env={\"HOST\": \"x\"})[\"s\"][\"price\"] == \"$5 and ${HOST}\"\n\n\ndef test_interpolated_value_is_not_reexpanded(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = ${A}\\n\")\n    assert load_config(p, env={\"A\": \"$${B}\"})[\"s\"][\"v\"] == \"$${B}\"\n\n\ndef test_percent_is_not_special(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = 50%% off %(x)s\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == \"50%% off %(x)s\"\n\n\ndef test_env_override_replaces_value(tmp_path):\n    p = write_ini(tmp_path, \"[server]\\nport = 80\\n\")\n    assert l",
+        "oad_config(p, env={\"APP_SERVER_PORT\": \"9000\"})[\"server\"][\"port\"] == 9000\n\n\ndef test_env_override_skips_interpolation_of_file_value(tmp_path):\n    p = write_ini(tmp_path, \"[server]\\nhost = ${UNDEFINED}\\n\")\n    cfg = load_config(p, env={\"APP_SERVER_HOST\": \"example.com\"})\n    assert cfg[\"server\"][\"host\"] == \"example.com\"\n\n\ndef test_env_override_is_not_interpolated(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = a\\n\")\n    assert load_config(p, env={\"APP_S_V\": \"$${X}\"})[\"s\"][\"v\"] == \"$${X}\"\n\n\ndef test_env_override_applies_to_default_inherited_key(tmp_path):\n    p = write_ini(tmp_path, \"[DEFAULT]\\nlevel = 1\\n[svc]\\n\")\n    assert load_config(p, env={\"APP_SVC_LEVEL\": \"5\"})[\"svc\"][\"level\"] == 5\n\n\ndef test_env_override_uses_uppercased_section_and_key(tmp_path):\n    p = write_ini(tmp_path, \"[my-svc]\\nretry.count = 1\\n\")\n    assert load_config(p, env={\"APP_MY-SVC_RETRY.COUNT\": \"7\"})[\"my-svc\"][\"retry.count\"] == 7\n\n\ndef test_env_defaults_to_os_environ(tmp_path, monkeypatch):\n    monkeypatch.setenv(\"APP_S_V\", \"from-environ\")\n    monkeypatch.setenv(\"HOST_FOR_TEST\", \"h\")\n    p = write_ini(tmp_path, \"[s]\\nv = a\\nw = ${HOST_FOR_TEST}\\n\")\n    assert load_config(p) == {\"s\": {\"v\": \"from-environ\", \"w\": \"h\"}}\n\n\n@pytest.mark.parametrize(\"raw\", [\"true\", \"yes\", \"on\", \"TRUE\", \"Yes\", \"ON\"])\ndef test_truthy_strings_become_true(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] is True\n\n\n@pytest.mark.parametrize(\"raw\", [\"false\", \"no\", \"off\", \"FALSE\", \"No\", \"Off\"])\ndef test_falsy_strings_become_false(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] is False\n\n\ndef test_integers_become_int(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\na = 42\\nb = -7\\nc = +3\\nd = 0\\n\")\n    cfg = load_config(p, env={})[\"s\"]\n    assert cfg == {\"a\": 42, \"b\": -7, \"c\": 3, \"d\": 0}\n    assert all(type(v) is int for v in cfg.values())\n\n\ndef test_decimals_become_float(tmp_path):\n    p = write_ini(tmp_path, \"[s",
+        "]\\na = 3.5\\nb = -0.25\\nc = .5\\nd = 2.\\n\")\n    cfg = load_config(p, env={})[\"s\"]\n    assert cfg == {\"a\": 3.5, \"b\": -0.25, \"c\": 0.5, \"d\": 2.0}\n    assert all(type(v) is float for v in cfg.values())\n\n\n@pytest.mark.parametrize(\"raw\", [\"nan\", \"inf\", \"1_000\", \"1e5\", \"0x1f\", \"1.2.3\"])\ndef test_other_numeric_looking_text_stays_string(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == raw\n\n\ndef test_plain_strings_are_stripped(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = hello world  \\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == \"hello world\"\n\n\ndef test_interpolated_value_is_stripped_before_conversion(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = ${A}\\n\")\n    cfg = load_config(p, env={\"A\": \"  12  \"})\n    assert cfg[\"s\"][\"v\"] == 12\n\n\ndef test_empty_section_yields_empty_dict(tmp_path):\n    p = write_ini(tmp_path, \"[empty]\\n\")\n    assert load_config(p, env={}) == {\"empty\": {}}\n"
+       ]
+      }
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1156,
+    "cache_read_input_tokens": 17088,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1156
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "a5b4a894-b296-4e94-a7a7-0ca561f5fa3a",
+  "timestamp": "2026-10-14T08:00:06.135Z",
+  "request_id": "req_011Cg1myQiJME76ZwrrswE3g"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01Wcms1tuoBTX2QZ3crDUBYU",
+     "type": "tool_result",
+     "content": "File created successfully at: /private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/tests/test_loader_behaviour.py (file state is current in your context — no need to Read it back)"
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "27317294-1425-4b2f-a5df-b0c6bde713ce",
+  "timestamp": "2026-10-14T08:00:06.144Z",
+  "tool_use_result": {
+   "type": "create",
+   "filePath": "/private/tmp/claude-501/-Users-thanatchon36-github-rulewarden/52944ca6-e0e0-4505-9300-460146c6dd03/scratchpad/bench-work/T04-config-loader-B-r2/tests/test_loader_behaviour.py",
+   "content": {
+    "__rw_chunks__": [
+     "import pytest\n\nfrom appconfig import load_config\n\n\ndef write_ini(tmp_path, text):\n    p = tmp_path / \"app.ini\"\n    p.write_text(text, encoding=\"utf-8\")\n    return p\n\n\ndef test_missing_file_raises(tmp_path):\n    with pytest.raises(FileNotFoundError):\n        load_config(tmp_path / \"absent.ini\", env={})\n\n\ndef test_accepts_str_path(tmp_path):\n    p = write_ini(tmp_path, \"[a]\\nk = v\\n\")\n    assert load_config(str(p), env={}) == {\"a\": {\"k\": \"v\"}}\n\n\ndef test_default_section_excluded_and_applied_to_every_section(tmp_path):\n    p = write_ini(tmp_path, \"[DEFAULT]\\nshared = 1\\n[one]\\nx = a\\n[two]\\nshared = 2\\n\")\n    cfg = load_config(p, env={})\n    assert set(cfg) == {\"one\", \"two\"}\n    assert cfg[\"one\"][\"shared\"] == 1\n    assert cfg[\"two\"][\"shared\"] == 2\n\n\ndef test_keys_are_lowercased(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nMixedKey = v\\n\")\n    assert load_config(p, env={})[\"s\"] == {\"mixedkey\": \"v\"}\n\n\ndef test_interpolates_env_variable(tmp_path):\n    p = write_ini(tmp_path, \"[db]\\nurl = postgres://${HOST}:5432\\n\")\n    assert load_config(p, env={\"HOST\": \"db.local\"})[\"db\"][\"url\"] == \"postgres://db.local:5432\"\n\n\ndef test_missing_variable_raises_key_error_with_name(tmp_path):\n    p = write_ini(tmp_path, \"[db]\\nurl = ${NOPE}\\n\")\n    with pytest.raises(KeyError) as exc:\n        load_config(p, env={})\n    assert exc.value.args == (\"NOPE\",)\n\n\ndef test_double_dollar_is_literal_dollar(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nprice = $$5 and $${HOST}\\n\")\n    assert load_config(p, env={\"HOST\": \"x\"})[\"s\"][\"price\"] == \"$5 and ${HOST}\"\n\n\ndef test_interpolated_value_is_not_reexpanded(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = ${A}\\n\")\n    assert load_config(p, env={\"A\": \"$${B}\"})[\"s\"][\"v\"] == \"$${B}\"\n\n\ndef test_percent_is_not_special(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = 50%% off %(x)s\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == \"50%% off %(x)s\"\n\n\ndef test_env_override_replaces_value(tmp_path):\n    p = write_ini(tmp_path, \"[server]\\nport = 80\\n\")\n    assert l",
+     "oad_config(p, env={\"APP_SERVER_PORT\": \"9000\"})[\"server\"][\"port\"] == 9000\n\n\ndef test_env_override_skips_interpolation_of_file_value(tmp_path):\n    p = write_ini(tmp_path, \"[server]\\nhost = ${UNDEFINED}\\n\")\n    cfg = load_config(p, env={\"APP_SERVER_HOST\": \"example.com\"})\n    assert cfg[\"server\"][\"host\"] == \"example.com\"\n\n\ndef test_env_override_is_not_interpolated(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = a\\n\")\n    assert load_config(p, env={\"APP_S_V\": \"$${X}\"})[\"s\"][\"v\"] == \"$${X}\"\n\n\ndef test_env_override_applies_to_default_inherited_key(tmp_path):\n    p = write_ini(tmp_path, \"[DEFAULT]\\nlevel = 1\\n[svc]\\n\")\n    assert load_config(p, env={\"APP_SVC_LEVEL\": \"5\"})[\"svc\"][\"level\"] == 5\n\n\ndef test_env_override_uses_uppercased_section_and_key(tmp_path):\n    p = write_ini(tmp_path, \"[my-svc]\\nretry.count = 1\\n\")\n    assert load_config(p, env={\"APP_MY-SVC_RETRY.COUNT\": \"7\"})[\"my-svc\"][\"retry.count\"] == 7\n\n\ndef test_env_defaults_to_os_environ(tmp_path, monkeypatch):\n    monkeypatch.setenv(\"APP_S_V\", \"from-environ\")\n    monkeypatch.setenv(\"HOST_FOR_TEST\", \"h\")\n    p = write_ini(tmp_path, \"[s]\\nv = a\\nw = ${HOST_FOR_TEST}\\n\")\n    assert load_config(p) == {\"s\": {\"v\": \"from-environ\", \"w\": \"h\"}}\n\n\n@pytest.mark.parametrize(\"raw\", [\"true\", \"yes\", \"on\", \"TRUE\", \"Yes\", \"ON\"])\ndef test_truthy_strings_become_true(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] is True\n\n\n@pytest.mark.parametrize(\"raw\", [\"false\", \"no\", \"off\", \"FALSE\", \"No\", \"Off\"])\ndef test_falsy_strings_become_false(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] is False\n\n\ndef test_integers_become_int(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\na = 42\\nb = -7\\nc = +3\\nd = 0\\n\")\n    cfg = load_config(p, env={})[\"s\"]\n    assert cfg == {\"a\": 42, \"b\": -7, \"c\": 3, \"d\": 0}\n    assert all(type(v) is int for v in cfg.values())\n\n\ndef test_decimals_become_float(tmp_path):\n    p = write_ini(tmp_path, \"[s",
+     "]\\na = 3.5\\nb = -0.25\\nc = .5\\nd = 2.\\n\")\n    cfg = load_config(p, env={})[\"s\"]\n    assert cfg == {\"a\": 3.5, \"b\": -0.25, \"c\": 0.5, \"d\": 2.0}\n    assert all(type(v) is float for v in cfg.values())\n\n\n@pytest.mark.parametrize(\"raw\", [\"nan\", \"inf\", \"1_000\", \"1e5\", \"0x1f\", \"1.2.3\"])\ndef test_other_numeric_looking_text_stays_string(tmp_path, raw):\n    p = write_ini(tmp_path, f\"[s]\\nv = {raw}\\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == raw\n\n\ndef test_plain_strings_are_stripped(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = hello world  \\n\")\n    assert load_config(p, env={})[\"s\"][\"v\"] == \"hello world\"\n\n\ndef test_interpolated_value_is_stripped_before_conversion(tmp_path):\n    p = write_ini(tmp_path, \"[s]\\nv = ${A}\\n\")\n    cfg = load_config(p, env={\"A\": \"  12  \"})\n    assert cfg[\"s\"][\"v\"] == 12\n\n\ndef test_empty_section_yields_empty_dict(tmp_path):\n    p = write_ini(tmp_path, \"[empty]\\n\")\n    assert load_config(p, env={}) == {\"empty\": {}}\n"
+    ]
+   },
+   "structuredPatch": [],
+   "originalFile": null,
+   "userModified": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01Wcms1tuoBTX2QZ3crDUBYU",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1myQwwRoCdMmPMUji1S",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_01QqEMW7kytXJKo445HkXRTB",
+     "name": "Bash",
+     "input": {
+      "command": "python -m pytest -q 2>&1 | tail -40",
+      "description": "Run the full test suite"
+     },
+     "caller": {
+      "type": "direct"
+     }
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 1156,
+    "cache_read_input_tokens": 17088,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 1156
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "92feb4b0-903f-471b-932f-34ec5689d016",
+  "timestamp": "2026-10-14T08:00:06.324Z",
+  "request_id": "req_011Cg1myQiJME76ZwrrswE3g"
+ },
+ {
+  "type": "user",
+  "message": {
+   "role": "user",
+   "content": [
+    {
+     "tool_use_id": "toolu_01QqEMW7kytXJKo445HkXRTB",
+     "type": "tool_result",
+     "content": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n.......................................                                  [100%]\n39 passed in 0.03s",
+     "is_error": false
+    }
+   ]
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "4eba8c08-4715-41af-aa6d-0816a1148dba",
+  "timestamp": "2026-10-14T08:00:06.460Z",
+  "tool_use_result": {
+   "stdout": "No entry for terminal type \"xterm-ghostty\";\nusing dumb terminal settings.\n.......................................                                  [100%]\n39 passed in 0.03s",
+   "stderr": "",
+   "interrupted": false,
+   "isImage": false,
+   "noOutputExpected": false
+  },
+  "tool_result_meta": [
+   {
+    "id": "toolu_01QqEMW7kytXJKo445HkXRTB",
+    "permission_decision": {
+     "decision": "accept",
+     "source": "config",
+     "reason_type": "rule"
+    }
+   }
+  ]
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "f8ec37d5-001f-40c9-a068-b6aae64101db"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 300,
+  "estimated_tokens_delta": 250,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "21daa987-d023-4bf9-9efb-f8f11773cabd"
+ },
+ {
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 369,
+  "estimated_tokens_delta": 69,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "ccf88192-da42-45a4-9fd7-6324673d9f0d"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1n1Wb4wKYVpn7HSXLud",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": "CAQSuwsKEAgSGAI4AUIIdGhpbmtpbmcSDLofTT4QCCy/PMgGSRoMBEMg/GY4N+/G3Ah+IjA+Cb0L4ucuC30CD/TAA+CoTlmd8364pVj5l9oqW69X4qB2wIR+cZOUEPoWsfGxGiUq2ApH9+M6aGHBp9SHxOks9lQRz3Feb4cOyZIIeEEQKlmfbsrYtvZr6Qo0EABgSDpB24UpAP6SJtMmzkzjXHQkasrLMs3nKrWOQIM5fduq6F9TfMW/PI7NC5ZklZbOtYECNObYzLdY9xSW+5IVZe5Tio4xfzA6Onp1Mk3vpJUZNiyfrvhmA5tt0NxN+6swVNHDX5hOLQ123R6cMP2SyCmeWmrcEmcet6PX6N2DjBy2jIBKtBFiF+uS6t6Q+jHqHk1eNJHs8ujiNlIsc4BisY8UJAoLhSfmTX0/7NbrU1R2FrQCUdH1TBdI5AjemVZM5YzufrkZIeccvihsqx5/U1ue4Jv/O+f5ab9eoxL+B1wF6ujFDVbJlpC1VtJA0Fw0uW961GgLYTXdXDa66qpHZKN0lOIpjrvXB8dwjr3Nd7w6Ok3nwxkSKedrrxaJEIwtjzeMTH/4AVNc4EoC8yRRAAXczF9FVf48r/8uVdIumc6B5PfdmTmM1Jh+uPtMm+N1rsiTMZbgkHLZPgeeIA5EcsPZKtHVUp3fYS4ZiqOBU0kiObi0JrHlMa6cxOUxwJsaLXUOFAOz6uLgZqcR3zYdWvemV/4XMEYAE/JySlonkJ1p0nap0ioRe0HymqJxuavWPHJxSMnAkH9QACbg48OTn99DlnRZsHVkHLREdk1OJaQV7GH/uOaedGbVNruJ3d3iWfl+01jOgRDV7E52M8I94Q9rk090mPDdjeFXOxXXo+Tyoaf9+VAN+i/oaoAMjhGstUWQnBHTpzDjtJaDF0hhXyOvRaLgH46npSHt9XXRXH/d2Cyd6scMxgUbE5a3hxYfmuclSkfmItz8Ju4WQk7ZD5WLORiPGBPWdHiu5QEOMa80a1WWixiHEgW3o1wj7lFzlqDhutNcuhz+Jm86UMd51Rdr2FhMOjCVzSUzF1BxJRYlNVsF30GsLb0YUrWBILN7hWUZ9vILgeOf7Z/dkiXUi7Xt8cWvn/B+6gV9HQV+2hnPB+qdx8o2ygpkx0Ove4nQ7dFyk3Ae7emf9hdPQJIG+jga1bREIW9s0iQsXNRlk2iP/gi7On52H/PhWLYPggX09giRP2zhgXQKM3vDPiNeR8ZTvUkJfVVkzNFRcC2evNpWgmdsFsUQesbQUKEbRYAi1UOYHblzCyl6Q/h4bpNKAu2/PrS+ThCr/e7+0oYAFOJvmf0W0up9pNHuWx8MZ0FmiKNVjr+7K2Rs91CnoTvQ4KC8ouq/QHgEPSVSbM8pk2z9RzTGlrgrk3FSNsaw+rX+aTaK3LmcP/y/rT+DVHIPlchsTdQaR2jyAO5o7Ne+69RyHIf0y7WbiOmSr9Dd9vylbmku3b7IUjJaQfiYKA2pT0pwVl+HI6u6MBMLQUiXflOPCJxRia2dSNU3lWYOKvzTtgPeLTBPbbfQxpna7tIhDhg9aJ5mJEUA5PHj4A7TuGkCLq84OxXywQVIZPcy1pSDtxaWVoCeiZgRRcD9lAYVbPVeUtV63iy3hTdrRAs3hr5P5o38mzRJDxbxM4VnfGTaDuTQMoHgaXTVkli0APxS0LHvx2usZoNHqeFkr5vng154ulc4ouDl/G+qsER4EIOiR/lpKvxueGREU+Mt0WfoBBMxB3V5/X8LbA7MLWkU6eh8evI0HLfV3UOekyoa1n8ihlo4zNUXFvpbqfcwuQTde9QiX0Fy1velhS9Dp/OIuWtIIlB6QfwhnxANpedP80rU77nh3WJ3Kt4iNgJsB7GEysK8XF4nNBuRAXf/gfULkipus6IYkIRJ3CftwZH0pE/WmvpOvDjlYyzqD6wnzDVGso9dwg+KGN+MVkMBQBEYAQ=="
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7883,
+    "cache_read_input_tokens": 18244,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7883
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "076f7cd1-cbe7-441a-a565-e60ed8bf232b",
+  "timestamp": "2026-10-14T08:00:09.695Z",
+  "request_id": "req_011Cg1n1VkicDcCSJd41R4TF",
+  "thinking_duration_ms": 1281,
+  "thinking_display": "updates"
+ },
+ {
+  "type": "assistant",
+  "message": {
+   "model": "claude-haiku-5-5",
+   "id": "msg_011Cg1n1Wb4wKYVpn7HSXLud",
+   "type": "message",
+   "role": "assistant",
+   "content": [
+    {
+     "type": "text",
+     "text": "`load_config` is implemented in `src/appconfig/loader.py`, with the new tests in `tests/test_loader_behaviour.py`. `python -m pytest -q` passes: 39 tests, including the existing one, which I left untouched.\n\nChoices I made where the spec was open:\n\n- **Numbers:** \"decimal numbers\" means a value with a decimal point (`3.5`, `.5`, `2.`). Exponent forms like `1e5`, `nan`, `inf` and `1_000` stay strings.\n- **Missing path:** `FileNotFoundError` is raised when the path does not exist. A directory path is not checked separately, so it fails later with `IsADirectoryError`.\n- **`${NAME}` syntax:** a `${` with no closing brace is left as literal text. Anything inside the braces is treated as a variable name, so a malformed name like `${a-b}` raises `KeyError` if it is not in `env`.\n- **Overrides:** an `APP_<SECTION>_<KEY>` value is converted like any other value, and it is not interpolated.\n- **Parser:** `configparser` runs with `interpolation=None`, so `%` is literal and only `${NAME}` and `$$` are processed.\n\nI did not commit anything."
+    }
+   ],
+   "container": null,
+   "stop_reason": null,
+   "stop_sequence": null,
+   "stop_details": null,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 7883,
+    "cache_read_input_tokens": 18244,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 7883
+    },
+    "output_tokens": 8,
+    "service_tier": "standard",
+    "inference_geo": "global"
+   },
+   "input_transformations": [],
+   "diagnostics": null,
+   "context_management": null
+  },
+  "parent_tool_use_id": null,
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "uuid": "ad328ffa-ab61-4162-826e-44f9b1b8b9eb",
+  "timestamp": "2026-10-14T08:00:11.251Z",
+  "request_id": "req_011Cg1n1VkicDcCSJd41R4TF"
+ },
+ {
+  "duration_api_ms": 35990,
+  "stop_reason": "end_turn",
+  "session_id": "96a656d2-cb87-4160-8b10-38e071b71517",
+  "total_cost_usd": 0.008033,
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 16099,
+   "cache_read_input_tokens": 45360,
+   "output_tokens": 8718,
+   "output_tokens_details": {
+    "thinking_tokens": 4045
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 16099,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 6,
+    "outputTokens": 8718,
+    "cacheReadInputTokens": 45360,
+    "cacheCreationInputTokens": 16099,
+    "webSearchRequests": 0,
+    "costUSD": 0.008033,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4045,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 6,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "`load_config` is implemented in `src/appconfig/loader.py`, with the new tests in `tests/test_loader_behaviour.py`. `python -m pytest -q` passes: 39 tests, including the existing one, which I left untouched.\n\nChoices I made where the spec was open:\n\n- **Numbers:** \"decimal numbers\" means a value with a decimal point (`3.5`, `.5`, `2.`). Exponent forms like `1e5`, `nan`, `inf` and `1_000` stay strings.\n- **Missing path:** `FileNotFoundError` is raised when the path does not exist. A directory path is not checked separately, so it fails later with `IsADirectoryError`.\n- **`${NAME}` syntax:** a `${` with no closing brace is left as literal text. Anything inside the braces is treated as a variable name, so a malformed name like `${a-b}` raises `KeyError` if it is not in `env`.\n- **Overrides:** an `APP_<SECTION>_<KEY>` value is converted like any other value, and it is not interpolated.\n- **Parser:** `configparser` runs with `interpolation=None`, so `%` is literal and only `${NAME}` and `$$` are processed.\n\nI did not commit anything.",
+  "ttft_ms": 1749,
+  "type": "result",
+  "duration_ms": 36485,
+  "uuid": "23808c5d-9e67-415f-a701-1dbd91545bf3",
+  "ttft_stream_ms": 1423,
+  "time_to_request_ms": 41,
+  "first_content_frame_ms": 1423,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+]

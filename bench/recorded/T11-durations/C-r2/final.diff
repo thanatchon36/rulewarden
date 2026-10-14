@@ -1,0 +1,165 @@
+diff --git a/src/durations/core.py b/src/durations/core.py
+index 5592d64..83b45ac 100644
+--- a/src/durations/core.py
++++ b/src/durations/core.py
+@@ -1,6 +1,63 @@
++import re
++
++_UNIT_SECONDS = {"d": 86400, "h": 3600, "m": 60, "s": 1}
++_UNIT_ORDER = "dhms"
++_UNIT_PARTS = re.compile(r"([0-9]+)([dhms])", re.IGNORECASE)
++_UNIT_FORM = re.compile(r"[0-9]+[dhms](?:\s*[0-9]+[dhms])*", re.IGNORECASE)
++_CLOCK_FORM = re.compile(r"([0-9]+):([0-5][0-9]):([0-5][0-9])|([0-5][0-9]):([0-5][0-9])")
++
++
+ def parse_duration(text: str) -> int:
+-    raise NotImplementedError
++    """Return the number of seconds denoted by ``text``.
++
++    Accepts unit form (``"1d2h"``, ``"2h 15m"``) or clock form
++    (``"MM:SS"``, ``"HH:MM:SS"``). Raises ValueError on anything else.
++    """
++    if not isinstance(text, str):
++        raise ValueError(f"duration must be a string, got {type(text).__name__}")
++    stripped = text.strip()
++
++    clock = _CLOCK_FORM.fullmatch(stripped)
++    if clock:
++        if clock.group(1) is not None:
++            hours, minutes, seconds = clock.group(1), clock.group(2), clock.group(3)
++        else:
++            hours, minutes, seconds = "0", clock.group(4), clock.group(5)
++        return int(hours) * 3600 + int(minutes) * 60 + int(seconds)
++
++    if not _UNIT_FORM.fullmatch(stripped):
++        raise ValueError(f"invalid duration: {text!r}")
++
++    total = 0
++    last_index = -1
++    for number, unit in _UNIT_PARTS.findall(stripped):
++        unit = unit.lower()
++        index = _UNIT_ORDER.index(unit)
++        if index <= last_index:
++            raise ValueError(f"units out of order or repeated: {text!r}")
++        last_index = index
++        total += int(number) * _UNIT_SECONDS[unit]
++    return total
+ 
+ 
+ def format_duration(seconds: int) -> str:
+-    raise NotImplementedError
++    """Return ``seconds`` as a unit string such as ``"1d 2h 3m 4s"``.
++
++    Zero-valued parts are omitted and ``0`` gives ``"0s"``.
++    Raises ValueError for negative or non-int input.
++    """
++    if isinstance(seconds, bool) or not isinstance(seconds, int):
++        raise ValueError(f"seconds must be an int, got {type(seconds).__name__}")
++    if seconds < 0:
++        raise ValueError(f"seconds must be non-negative, got {seconds}")
++    if seconds == 0:
++        return "0s"
++
++    parts = []
++    remaining = seconds
++    for unit in _UNIT_ORDER:
++        size = _UNIT_SECONDS[unit]
++        count, remaining = divmod(remaining, size)
++        if count:
++            parts.append(f"{count}{unit}")
++    return " ".join(parts)
+diff --git a/tests/test_parse_format.py b/tests/test_parse_format.py
+new file mode 100644
+index 0000000..7c15b51
+--- /dev/null
++++ b/tests/test_parse_format.py
+@@ -0,0 +1,89 @@
++import pytest
++
++from durations import format_duration, parse_duration
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("1d2h", 93600),
++        ("90s", 90),
++        ("2h 15m", 8100),
++        ("1D 1S", 86401),
++        ("1d2h3m4s", 93784),
++        ("1d 2h 3m 4s", 93784),
++        ("  5m  ", 300),
++        ("0s", 0),
++    ],
++)
++def test_parse_unit_form(text, expected):
++    assert parse_duration(text) == expected
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("01:30", 90),
++        ("00:00", 0),
++        ("59:59", 3599),
++        ("1:00:00", 3600),
++        ("100:00:01", 360001),
++        (" 00:05 ", 5),
++    ],
++)
++def test_parse_clock_form(text, expected):
++    assert parse_duration(text) == expected
++
++
++@pytest.mark.parametrize(
++    "text",
++    [
++        "",
++        "   ",
++        "5x",
++        "1h1h",
++        "1m1h",
++        "1s1m",
++        "-5s",
++        "1.5h",
++        "h",
++        "1h-2m",
++        "1 2h",
++        "1:60",
++        "1:5",
++        "00:60:00",
++        "1:2:3",
++        "1:00:60",
++        "m:ss",
++    ],
++)
++def test_parse_rejects_invalid(text):
++    with pytest.raises(ValueError):
++        parse_duration(text)
++
++
++@pytest.mark.parametrize(
++    "seconds, expected",
++    [
++        (93784, "1d 2h 3m 4s"),
++        (0, "0s"),
++        (90, "1m 30s"),
++        (86400, "1d"),
++        (3600, "1h"),
++        (3601, "1h 1s"),
++        (60, "1m"),
++    ],
++)
++def test_format(seconds, expected):
++    assert format_duration(seconds) == expected
++
++
++@pytest.mark.parametrize("value", [-1, 1.5, "90", None, True])
++def test_format_rejects_invalid(value):
++    with pytest.raises(ValueError):
++        format_duration(value)
++
++
++@pytest.mark.parametrize("seconds", [0, 1, 59, 3600, 93784, 1234567])
++def test_round_trip(seconds):
++    assert parse_duration(format_duration(seconds)) == seconds

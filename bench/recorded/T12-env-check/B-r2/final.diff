@@ -1,0 +1,219 @@
+diff --git a/scripts/check-env.sh b/scripts/check-env.sh
+index 7578737..bfe4479 100755
+--- a/scripts/check-env.sh
++++ b/scripts/check-env.sh
+@@ -1,3 +1,60 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 2
++# Check that environment variables and commands listed in a requirements file are present.
++#
++# Usage: check-env.sh [FILE]     (FILE defaults to env.required in the current directory)
++#
++# Each line of FILE is one of:
++#   NAME       environment variable NAME must be set and non-empty
++#   cmd:NAME   command NAME must be found on PATH
++# Blank lines and lines starting with '#' are ignored; surrounding whitespace is ignored.
++#
++# Exit status: 0 if all requirements are present, 1 if any is missing or invalid,
++# 2 if FILE does not exist.
++
++set -euo pipefail
++
++file="${1:-env.required}"
++
++if [[ ! -f "$file" ]]; then
++  echo "check-env: no such file: $file" >&2
++  exit 2
++fi
++
++var_re='^[A-Za-z_][A-Za-z0-9_]*$'
++cmd_re='^[A-Za-z0-9_.+-]+$'
++status=0
++
++while IFS= read -r line || [[ -n "$line" ]]; do
++  # Strip leading and trailing whitespace.
++  line="${line#"${line%%[![:space:]]*}"}"
++  line="${line%"${line##*[![:space:]]}"}"
++
++  if [[ -z "$line" || "$line" == \#* ]]; then
++    continue
++  fi
++
++  if [[ "$line" == cmd:* ]]; then
++    name="${line#cmd:}"
++    if [[ ! $name =~ $cmd_re ]]; then
++      echo "invalid $line"
++      status=1
++    elif type -P -- "$name" >/dev/null 2>&1; then
++      echo "ok cmd $name"
++    else
++      echo "missing cmd $name"
++      status=1
++    fi
++  elif [[ "$line" =~ $var_re ]]; then
++    if [[ -n "${!line:-}" ]]; then
++      echo "ok $line"
++    else
++      echo "missing $line"
++      status=1
++    fi
++  else
++    echo "invalid $line"
++    status=1
++  fi
++done < "$file"
++
++exit "$status"
+diff --git a/tests/test_check_env_requirements.py b/tests/test_check_env_requirements.py
+new file mode 100644
+index 0000000..d5e83da
+--- /dev/null
++++ b/tests/test_check_env_requirements.py
+@@ -0,0 +1,146 @@
++import os
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check-env.sh"
++ABSENT_CMD = "check_env_no_such_command_xyz"
++
++
++def run(tmp_path, requirements, env_extra=None, args=None, cwd=None):
++    """Write requirements to a file in tmp_path and run the script on it."""
++    req = tmp_path / "reqs.txt"
++    req.write_text(requirements)
++    bin_dir = tmp_path / "bin"
++    bin_dir.mkdir(exist_ok=True)
++    env = {"PATH": f"{bin_dir}:/usr/bin:/bin"}
++    env.update(env_extra or {})
++    cmd = ["bash", str(SCRIPT)] + (args if args is not None else [str(req)])
++    return subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=cwd or tmp_path)
++
++
++def make_command(tmp_path, name):
++    tool = tmp_path / "bin" / name
++    tool.parent.mkdir(exist_ok=True)
++    tool.write_text("#!/bin/sh\nexit 0\n")
++    tool.chmod(0o755)
++
++
++def test_set_variable_is_ok(tmp_path):
++    r = run(tmp_path, "CHECK_ENV_A\n", env_extra={"CHECK_ENV_A": "x"})
++    assert r.returncode == 0
++    assert r.stdout == "ok CHECK_ENV_A\n"
++
++
++def test_unset_variable_is_missing(tmp_path):
++    r = run(tmp_path, "CHECK_ENV_UNSET\n")
++    assert r.returncode == 1
++    assert r.stdout == "missing CHECK_ENV_UNSET\n"
++
++
++def test_empty_variable_is_missing(tmp_path):
++    r = run(tmp_path, "CHECK_ENV_EMPTY\n", env_extra={"CHECK_ENV_EMPTY": ""})
++    assert r.returncode == 1
++    assert r.stdout == "missing CHECK_ENV_EMPTY\n"
++
++
++def test_command_on_path_is_ok(tmp_path):
++    make_command(tmp_path, "check_env_tool")
++    r = run(tmp_path, "cmd:check_env_tool\n")
++    assert r.returncode == 0
++    assert r.stdout == "ok cmd check_env_tool\n"
++
++
++def test_command_not_on_path_is_missing(tmp_path):
++    r = run(tmp_path, f"cmd:{ABSENT_CMD}\n")
++    assert r.returncode == 1
++    assert r.stdout == f"missing cmd {ABSENT_CMD}\n"
++
++
++def test_output_follows_file_order(tmp_path):
++    make_command(tmp_path, "check_env_tool")
++    r = run(
++        tmp_path,
++        f"cmd:{ABSENT_CMD}\nCHECK_ENV_B\ncmd:check_env_tool\nCHECK_ENV_A\n",
++        env_extra={"CHECK_ENV_A": "1", "CHECK_ENV_B": "1"},
++    )
++    assert r.returncode == 1
++    assert r.stdout.splitlines() == [
++        f"missing cmd {ABSENT_CMD}",
++        "ok CHECK_ENV_B",
++        "ok cmd check_env_tool",
++        "ok CHECK_ENV_A",
++    ]
++
++
++def test_all_present_exits_zero(tmp_path):
++    make_command(tmp_path, "check_env_tool")
++    r = run(tmp_path, "CHECK_ENV_A\ncmd:check_env_tool\n", env_extra={"CHECK_ENV_A": "1"})
++    assert r.returncode == 0
++    assert r.stderr == ""
++
++
++def test_blank_lines_and_comments_are_ignored(tmp_path):
++    r = run(
++        tmp_path,
++        "\n# a comment\n   \n# CHECK_ENV_X\n",
++        env_extra={"CHECK_ENV_X": "1"},
++    )
++    assert r.returncode == 0
++    assert r.stdout == ""
++
++
++def test_surrounding_whitespace_is_ignored(tmp_path):
++    r = run(tmp_path, "  \tCHECK_ENV_W\t  \n", env_extra={"CHECK_ENV_W": "1"})
++    assert r.returncode == 0
++    assert r.stdout == "ok CHECK_ENV_W\n"
++
++
++def test_last_line_without_newline_is_checked(tmp_path):
++    r = run(tmp_path, "CHECK_ENV_LAST", env_extra={"CHECK_ENV_LAST": "1"})
++    assert r.returncode == 0
++    assert r.stdout == "ok CHECK_ENV_LAST\n"
++
++
++def test_invalid_variable_name_is_invalid_and_counts_as_missing(tmp_path):
++    r = run(tmp_path, "1BAD\nBAD-NAME\nA=B\n")
++    assert r.returncode == 1
++    assert r.stdout.splitlines() == ["invalid 1BAD", "invalid BAD-NAME", "invalid A=B"]
++
++
++def test_malformed_cmd_line_is_invalid(tmp_path):
++    r = run(tmp_path, "cmd:\ncmd:a/b\ncmd: git\n")
++    assert r.returncode == 1
++    assert r.stdout.splitlines() == ["invalid cmd:", "invalid cmd:a/b", "invalid cmd: git"]
++
++
++def test_invalid_line_does_not_stop_later_checks(tmp_path):
++    r = run(tmp_path, "1BAD\nCHECK_ENV_LATER\n", env_extra={"CHECK_ENV_LATER": "1"})
++    assert r.returncode == 1
++    assert r.stdout.splitlines() == ["invalid 1BAD", "ok CHECK_ENV_LATER"]
++
++
++def test_missing_file_exits_two_with_stderr_message(tmp_path):
++    missing = tmp_path / "none.required"
++    r = run(tmp_path, "", args=[str(missing)])
++    assert r.returncode == 2
++    assert r.stdout == ""
++    assert str(missing) in r.stderr
++
++
++def test_default_file_is_env_required_in_cwd(tmp_path):
++    (tmp_path / "env.required").write_text("CHECK_ENV_DEF\n")
++    r = run(
++        tmp_path,
++        "",
++        env_extra={"CHECK_ENV_DEF": "1"},
++        args=[],
++        cwd=tmp_path,
++    )
++    assert r.returncode == 0
++    assert r.stdout == "ok CHECK_ENV_DEF\n"
++
++
++def test_default_file_missing_exits_two(tmp_path):
++    r = run(tmp_path, "", args=[], cwd=tmp_path)
++    assert r.returncode == 2
++    assert "env.required" in r.stderr

@@ -1,0 +1,210 @@
+diff --git a/scripts/render.sh b/scripts/render.sh
+index efba8c1..5e7f8df 100755
+--- a/scripts/render.sh
++++ b/scripts/render.sh
+@@ -1,3 +1,52 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++# Renders TEMPLATE by replacing {{path}} placeholders with values from the VALUES JSON object.
++
++if [[ $# -ne 2 ]]; then
++  echo "usage: render.sh TEMPLATE VALUES" >&2
++  exit 2
++fi
++
++template=$1
++values=$2
++
++if [[ ! -r $template ]]; then
++  echo "render.sh: cannot read template: $template" >&2
++  exit 1
++fi
++if [[ ! -r $values ]]; then
++  echo "render.sh: cannot read values: $values" >&2
++  exit 1
++fi
++if ! jq -e 'type == "object"' "$values" >/dev/null 2>&1; then
++  echo "render.sh: values is not a valid JSON object: $values" >&2
++  exit 1
++fi
++
++# Placeholder names in order of first appearance, without duplicates.
++read -r -d '' placeholders_def <<'JQ' || true
++def placeholders:
++  [match("\\{\\{([A-Za-z0-9_.]+)\\}\\}"; "g") | .captures[0].string]
++  | reduce .[] as $p ([]; if index([$p]) == null then . + [$p] else . end);
++def lookup($p): $v[0] | try getpath($p | split(".")) catch null;
++JQ
++
++bad_keys=$(jq -Rrs --slurpfile v "$values" "$placeholders_def"'
++  placeholders[]
++  | select(lookup(.) as $x | $x == null or ($x | type) == "object" or ($x | type) == "array")
++' < "$template")
++
++if [[ -n $bad_keys ]]; then
++  while IFS= read -r key; do
++    printf 'render.sh: bad key %s\n' "$key" >&2
++  done <<< "$bad_keys"
++  exit 1
++fi
++
++# gsub's replacement is a jq expression, so the inserted text is never interpreted as a regex or escape.
++# -j keeps the template's final newline (or its absence) unchanged.
++jq -Rrsj --slurpfile v "$values" "$placeholders_def"'
++  gsub("\\{\\{(?<p>[A-Za-z0-9_.]+)\\}\\}";
++    .p as $p | lookup($p) | if type == "string" then . else tojson end)
++' < "$template"
+diff --git a/tests/test_render_placeholders.py b/tests/test_render_placeholders.py
+new file mode 100644
+index 0000000..24cc709
+--- /dev/null
++++ b/tests/test_render_placeholders.py
+@@ -0,0 +1,145 @@
++import json
++import subprocess
++from pathlib import Path
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "render.sh"
++
++
++def render(tmp_path, template: bytes, values):
++    template_path = tmp_path / "template.txt"
++    template_path.write_bytes(template)
++    values_path = tmp_path / "values.json"
++    if isinstance(values, str):
++        values_path.write_text(values)
++    else:
++        values_path.write_text(json.dumps(values))
++    return subprocess.run(
++        ["bash", str(SCRIPT), str(template_path), str(values_path)],
++        capture_output=True,
++    )
++
++
++def test_dotted_and_plain_paths(tmp_path):
++    result = render(
++        tmp_path,
++        b"host={{db.host}} name={{name}}\n",
++        {"db": {"host": "localhost"}, "name": "app"},
++    )
++    assert result.returncode == 0
++    assert result.stdout == b"host=localhost name=app\n"
++    assert result.stderr == b""
++
++
++def test_numbers_and_booleans_are_json_text(tmp_path):
++    result = render(
++        tmp_path,
++        b"port={{db.port}} debug={{debug}} off={{off}}",
++        {"db": {"port": 5432}, "debug": True, "off": False},
++    )
++    assert result.returncode == 0
++    assert result.stdout == b"port=5432 debug=true off=false"
++
++
++def test_special_characters_are_inserted_literally(tmp_path):
++    value = 'a/b&c\\d\n$1 "q" {{other}} \\& \\n'
++    result = render(tmp_path, b"[{{v}}]", {"v": value})
++    assert result.returncode == 0
++    assert result.stdout == ("[" + value + "]").encode()
++
++
++def test_repeated_placeholder_is_replaced_each_time(tmp_path):
++    result = render(tmp_path, b"{{a}}-{{a}}-{{a}}", {"a": "x&y"})
++    assert result.returncode == 0
++    assert result.stdout == b"x&y-x&y-x&y"
++
++
++def test_trailing_newline_is_kept(tmp_path):
++    result = render(tmp_path, b"v={{v}}\n", {"v": "1"})
++    assert result.stdout == b"v=1\n"
++
++
++def test_missing_trailing_newline_is_not_added(tmp_path):
++    result = render(tmp_path, b"v={{v}}", {"v": "1"})
++    assert result.stdout == b"v=1"
++
++
++def test_empty_template_renders_empty_output(tmp_path):
++    result = render(tmp_path, b"", {})
++    assert result.returncode == 0
++    assert result.stdout == b""
++
++
++def test_missing_and_null_keys_are_reported_in_order_once(tmp_path):
++    result = render(
++        tmp_path,
++        b"{{b}} {{a}} {{b}} {{c.d}} {{a}}",
++        {"a": None},
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == (
++        b"render.sh: bad key b\n"
++        b"render.sh: bad key a\n"
++        b"render.sh: bad key c.d\n"
++    )
++
++
++def test_object_and_array_values_are_bad_keys(tmp_path):
++    result = render(
++        tmp_path,
++        b"{{obj}} {{arr}} {{ok}}",
++        {"obj": {"x": 1}, "arr": [1, 2], "ok": "fine"},
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == (
++        b"render.sh: bad key obj\nrender.sh: bad key arr\n"
++    )
++
++
++def test_path_through_non_object_is_bad_key(tmp_path):
++    result = render(tmp_path, b"{{a.b.c}}", {"a": 5})
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr == b"render.sh: bad key a.b.c\n"
++
++
++def test_wrong_argument_count_prints_usage(tmp_path):
++    result = subprocess.run(
++        ["bash", str(SCRIPT), str(tmp_path / "only-one")],
++        capture_output=True,
++    )
++    assert result.returncode == 2
++    assert result.stdout == b""
++    assert b"usage" in result.stderr
++
++
++def test_missing_template_file_fails(tmp_path):
++    values_path = tmp_path / "values.json"
++    values_path.write_text("{}")
++    result = subprocess.run(
++        ["bash", str(SCRIPT), str(tmp_path / "missing.txt"), str(values_path)],
++        capture_output=True,
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""
++
++
++def test_missing_values_file_fails(tmp_path):
++    template_path = tmp_path / "template.txt"
++    template_path.write_text("{{a}}")
++    result = subprocess.run(
++        ["bash", str(SCRIPT), str(template_path), str(tmp_path / "missing.json")],
++        capture_output=True,
++    )
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""
++
++
++def test_invalid_json_values_fails(tmp_path):
++    result = render(tmp_path, b"{{a}}", '{"a": ')
++    assert result.returncode == 1
++    assert result.stdout == b""
++    assert result.stderr != b""

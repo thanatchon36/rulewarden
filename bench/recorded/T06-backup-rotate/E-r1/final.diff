@@ -1,0 +1,266 @@
+diff --git a/scripts/backup.sh b/scripts/backup.sh
+index efba8c1..e18e64b 100755
+--- a/scripts/backup.sh
++++ b/scripts/backup.sh
+@@ -1,3 +1,59 @@
+ #!/usr/bin/env bash
+-echo "not implemented" >&2
+-exit 1
++set -euo pipefail
++
++# Usage: backup.sh SRC_DIR DEST_DIR [KEEP]
++# Writes DEST_DIR/backup-<STAMP>.tar.gz with the contents of SRC_DIR, then
++# deletes all but the newest KEEP backup archives in DEST_DIR.
++# STAMP is $BACKUP_NOW when set, otherwise the local time as YYYYmmdd-HHMMSS.
++
++usage() {
++  echo "usage: backup.sh SRC_DIR DEST_DIR [KEEP]" >&2
++  exit 2
++}
++
++if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
++  usage
++fi
++
++src=$1
++dest=$2
++keep_arg=${3-5}
++
++case $keep_arg in
++  ''|*[!0-9]*) usage ;;
++esac
++
++keep=$((10#$keep_arg))
++if [ "$keep" -eq 0 ]; then
++  usage
++fi
++
++if [ ! -d "$src" ]; then
++  echo "error: SRC_DIR is not a directory: $src" >&2
++  exit 1
++fi
++
++mkdir -p -- "$dest"
++dest=$(cd -- "$dest" && pwd)
++
++stamp=${BACKUP_NOW:-$(date +%Y%m%d-%H%M%S)}
++archive="$dest/backup-$stamp.tar.gz"
++
++# COPYFILE_DISABLE stops macOS tar from adding AppleDouble entries.
++COPYFILE_DISABLE=1 tar -czf "$archive" -C "$src" .
++
++backups=()
++for f in "$dest"/backup-*.tar.gz; do
++  if [ -f "$f" ]; then
++    backups+=("$f")
++  fi
++done
++
++if [ "${#backups[@]}" -gt "$keep" ]; then
++  printf '%s\n' "${backups[@]}" | LC_ALL=C sort -r | tail -n +"$((keep + 1))" |
++    while IFS= read -r old; do
++      rm -f -- "$old"
++    done
++fi
++
++printf '%s\n' "$archive"
+diff --git a/tests/test_backup_rotate.py b/tests/test_backup_rotate.py
+new file mode 100644
+index 0000000..261ee0f
+--- /dev/null
++++ b/tests/test_backup_rotate.py
+@@ -0,0 +1,194 @@
++import os
++import subprocess
++import tarfile
++from pathlib import Path
++
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "backup.sh"
++
++
++def run_backup(*args, now=None):
++    env = {k: v for k, v in os.environ.items() if k != "BACKUP_NOW"}
++    if now is not None:
++        env["BACKUP_NOW"] = now
++    return subprocess.run(
++        ["bash", str(SCRIPT), *map(str, args)],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++
++
++@pytest.fixture
++def src(tmp_path):
++    d = tmp_path / "src"
++    (d / "sub").mkdir(parents=True)
++    (d / "a.txt").write_text("alpha")
++    (d / "sub" / "b.txt").write_text("beta")
++    return d
++
++
++def make_archives(dest, stamps):
++    dest.mkdir(parents=True, exist_ok=True)
++    for stamp in stamps:
++        (dest / f"backup-{stamp}.tar.gz").write_bytes(b"old")
++
++
++def remaining(dest):
++    return sorted(p.name for p in dest.glob("backup-*.tar.gz"))
++
++
++def test_archive_holds_source_contents_with_relative_paths(src, tmp_path):
++    dest = tmp_path / "dest"
++    result = run_backup(src, dest, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    archive = dest / "backup-20260101-120000.tar.gz"
++    assert result.stdout.strip() == str(archive)
++    with tarfile.open(archive, "r:gz") as tar:
++        names = {n.lstrip("./") for n in tar.getnames()} - {""}
++        assert names == {"a.txt", "sub", "sub/b.txt"}
++        assert tar.extractfile("./a.txt").read() == b"alpha"
++        assert tar.extractfile("./sub/b.txt").read() == b"beta"
++
++
++def test_source_directory_itself_is_not_archived(src, tmp_path):
++    dest = tmp_path / "dest"
++    result = run_backup(src, dest, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    with tarfile.open(dest / "backup-20260101-120000.tar.gz", "r:gz") as tar:
++        assert all(not n.startswith("src") for n in tar.getnames())
++
++
++def test_creates_missing_destination_directory(src, tmp_path):
++    dest = tmp_path / "new" / "nested"
++    result = run_backup(src, dest, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert (dest / "backup-20260101-120000.tar.gz").is_file()
++
++
++def test_stamp_defaults_to_local_time(src, tmp_path):
++    dest = tmp_path / "dest"
++    result = run_backup(src, dest)
++
++    assert result.returncode == 0, result.stderr
++    names = remaining(dest)
++    assert len(names) == 1
++    stamp = names[0][len("backup-") : -len(".tar.gz")]
++    assert len(stamp) == 15 and stamp[8] == "-" and stamp.replace("-", "").isdigit()
++
++
++def test_default_keep_is_five(src, tmp_path):
++    dest = tmp_path / "dest"
++    make_archives(dest, [f"2025010{i}-000000" for i in range(1, 8)])
++
++    result = run_backup(src, dest, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert remaining(dest) == [
++        "backup-20250104-000000.tar.gz",
++        "backup-20250105-000000.tar.gz",
++        "backup-20250106-000000.tar.gz",
++        "backup-20250107-000000.tar.gz",
++        "backup-20260101-120000.tar.gz",
++    ]
++
++
++def test_explicit_keep_retains_newest_archives(src, tmp_path):
++    dest = tmp_path / "dest"
++    make_archives(dest, ["20250101-000000", "20250102-000000", "20250103-000000"])
++
++    result = run_backup(src, dest, 2, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert remaining(dest) == [
++        "backup-20260101-120000.tar.gz",
++        "backup-20250103-000000.tar.gz",
++    ]
++
++
++def test_keep_accepts_leading_zero(src, tmp_path):
++    dest = tmp_path / "dest"
++    make_archives(dest, ["20250101-000000", "20250102-000000"])
++
++    result = run_backup(src, dest, "01", now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert remaining(dest) == ["backup-20260101-120000.tar.gz"]
++
++
++def test_rotation_never_deletes_other_files(src, tmp_path):
++    dest = tmp_path / "dest"
++    make_archives(dest, ["20250101-000000", "20250102-000000"])
++    other = ["notes.txt", "backup-old.zip", "backup-x.tar.gz.bak", "archive.tar.gz"]
++    for name in other:
++        (dest / name).write_text("keep me")
++    (dest / "backup-dir.tar.gz").mkdir()
++
++    result = run_backup(src, dest, 1, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert remaining(dest) == ["backup-20260101-120000.tar.gz", "backup-dir.tar.gz"]
++    for name in other:
++        assert (dest / name).read_text() == "keep me"
++
++
++def test_no_rotation_when_under_keep_limit(src, tmp_path):
++    dest = tmp_path / "dest"
++    make_archives(dest, ["20250101-000000"])
++
++    result = run_backup(src, dest, 3, now="20260101-120000")
++
++    assert result.returncode == 0, result.stderr
++    assert remaining(dest) == [
++        "backup-20250101-000000.tar.gz",
++        "backup-20260101-120000.tar.gz",
++    ]
++
++
++@pytest.mark.parametrize("bad", ["0", "-1", "abc", "", "1.5", "2x", "+3"])
++def test_invalid_keep_exits_2_with_usage(src, tmp_path, bad):
++    dest = tmp_path / "dest"
++    result = run_backup(src, dest, bad, now="20260101-120000")
++
++    assert result.returncode == 2
++    assert "usage: backup.sh" in result.stderr
++    assert not dest.exists()
++
++
++@pytest.mark.parametrize("args", [[], ["only-one"]])
++def test_too_few_arguments_exit_2_with_usage(tmp_path, args):
++    result = run_backup(*args)
++
++    assert result.returncode == 2
++    assert "usage: backup.sh" in result.stderr
++
++
++def test_too_many_arguments_exit_2_with_usage(src, tmp_path):
++    result = run_backup(src, tmp_path / "dest", 3, "extra")
++
++    assert result.returncode == 2
++    assert "usage: backup.sh" in result.stderr
++
++
++def test_missing_source_exits_1_and_creates_nothing(tmp_path):
++    dest = tmp_path / "dest"
++    result = run_backup(tmp_path / "missing", dest, now="20260101-120000")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++    assert not dest.exists()
++
++
++def test_file_as_source_exits_1(tmp_path):
++    src_file = tmp_path / "file.txt"
++    src_file.write_text("x")
++    dest = tmp_path / "dest"
++    result = run_backup(src_file, dest, now="20260101-120000")
++
++    assert result.returncode == 1
++    assert "not a directory" in result.stderr
++    assert not dest.exists()

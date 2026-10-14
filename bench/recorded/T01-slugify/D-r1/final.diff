@@ -1,0 +1,159 @@
+diff --git a/src/textkit/slug.py b/src/textkit/slug.py
+index 13b4508..51ac2b9 100644
+--- a/src/textkit/slug.py
++++ b/src/textkit/slug.py
+@@ -1,2 +1,51 @@
++import re
++import unicodedata
++
++_SPECIAL = str.maketrans(
++    {
++        "ß": "ss",
++        "ẞ": "SS",
++        "æ": "ae",
++        "Æ": "AE",
++        "ø": "o",
++        "Ø": "O",
++        "ł": "l",
++        "Ł": "L",
++    }
++)
++_WORD = re.compile(r"[a-z0-9]+")
++
++
++def _transliterate(text: str) -> str:
++    decomposed = unicodedata.normalize("NFKD", text.translate(_SPECIAL))
++    return decomposed.encode("ascii", "ignore").decode("ascii")
++
++
+ def slugify(text: str, max_length: int | None = None, separator: str = "-") -> str:
+-    raise NotImplementedError
++    """Return a lowercase ASCII slug of text, words joined by separator.
++
++    Accents are stripped and non-alphanumeric runs become separator.
++    If max_length is set, cut at the last separator that fits, or hard cut.
++    """
++    if not separator:
++        raise ValueError("separator must be a non-empty string")
++    if max_length is not None and max_length < 1:
++        raise ValueError("max_length must be at least 1")
++
++    words = _WORD.findall(_transliterate(text).lower())
++    if max_length is None:
++        return separator.join(words)
++
++    kept: list[str] = []
++    for word in words:
++        if len(separator.join(kept + [word])) > max_length:
++            break
++        kept.append(word)
++
++    if kept:
++        result = separator.join(kept)
++    else:
++        result = separator.join(words)[:max_length]
++    while separator and result.endswith(separator):
++        result = result[: -len(separator)]
++    return result
+diff --git a/tests/test_slugify_behaviour.py b/tests/test_slugify_behaviour.py
+new file mode 100644
+index 0000000..52784f0
+--- /dev/null
++++ b/tests/test_slugify_behaviour.py
+@@ -0,0 +1,81 @@
++import pytest
++
++from textkit import slugify
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("ß", "ss"),
++        ("Straße", "strasse"),
++        ("Æsir", "aesir"),
++        ("ØRSTED", "orsted"),
++        ("Łódź", "lodz"),
++        ("Å", "a"),
++    ],
++)
++def test_transliteration(text, expected):
++    assert slugify(text) == expected
++
++
++def test_other_non_ascii_is_dropped():
++    assert slugify("日本語") == ""
++    assert slugify("a☃b") == "a-b"
++
++
++def test_runs_collapse_and_strip():
++    assert slugify("  --Hello!!  ") == "hello"
++
++
++def test_custom_separator():
++    assert slugify("Hello World", separator="_") == "hello_world"
++
++
++def test_multi_char_separator():
++    assert slugify("a b c", separator="::") == "a::b::c"
++
++
++@pytest.mark.parametrize("separator", ["\\", "$1", r"\g<0>"])
++def test_separator_is_literal(separator):
++    assert slugify("a b", separator=separator) == f"a{separator}b"
++
++
++def test_empty_separator_raises():
++    with pytest.raises(ValueError):
++        slugify("hello", separator="")
++
++
++@pytest.mark.parametrize("max_length", [0, -1])
++def test_max_length_below_one_raises(max_length):
++    with pytest.raises(ValueError):
++        slugify("hello", max_length=max_length)
++
++
++def test_no_max_length_keeps_full_slug():
++    assert slugify("the quick brown fox") == "the-quick-brown-fox"
++
++
++def test_max_length_exact_fit_is_unchanged():
++    assert slugify("abc def", max_length=7) == "abc-def"
++
++
++def test_max_length_cuts_at_last_fitting_separator():
++    assert slugify("the quick brown fox", max_length=12) == "the-quick"
++
++
++def test_max_length_never_ends_with_separator():
++    assert slugify("hello world", max_length=6) == "hello"
++
++
++def test_max_length_hard_cut_when_no_separator_fits():
++    assert slugify("internationalization", max_length=5) == "inter"
++    assert slugify("abcdefgh ij", max_length=3) == "abc"
++
++
++def test_max_length_uses_custom_separator():
++    assert slugify("one two three", max_length=8, separator="__") == "one__two"
++
++
++def test_max_length_result_within_limit():
++    for limit in range(1, 25):
++        assert len(slugify("The Quick, Brown Fox Jumps!", max_length=limit)) <= limit
+diff --git a/tests/test_slugify_nonascii.py b/tests/test_slugify_nonascii.py
+new file mode 100644
+index 0000000..7ed4149
+--- /dev/null
++++ b/tests/test_slugify_nonascii.py
+@@ -0,0 +1,9 @@
++from textkit import slugify
++
++
++def test_non_ascii_inside_word_is_dropped_not_split():
++    assert slugify("a☃b") == "ab"
++
++
++def test_non_ascii_between_words_is_a_separator():
++    assert slugify("a ☃ b") == "a-b"

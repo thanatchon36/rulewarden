@@ -1,0 +1,163 @@
+diff --git a/src/logsum/summary.py b/src/logsum/summary.py
+index a2ad388..e6fafba 100644
+--- a/src/logsum/summary.py
++++ b/src/logsum/summary.py
+@@ -1,5 +1,55 @@
++import re
++from collections import Counter
+ from collections.abc import Iterable
+ 
++# Combined log format; a status outside 2xx-5xx is treated as malformed.
++_LINE = re.compile(
++    r'(?P<ip>\S+) \S+ \S+ \[[^\]]+\] '
++    r'"\S+ (?P<path>\S+)(?: [^"]*)?" '
++    r'(?P<status>[2-5]\d{2}) (?P<size>\d+|-) '
++    r'"[^"]*" "[^"]*"'
++)
++
++TOP_N = 3
++
+ 
+ def summarize(lines: Iterable[str]) -> dict[str, object]:
+-    raise NotImplementedError
++    records, malformed = _parse(lines)
++    return {
++        "total": len(records),
++        "status": _status_classes(records),
++        "top_paths": _top_paths(records),
++        "unique_ips": len({m.group("ip") for m in records}),
++        "bytes": sum(_size(m.group("size")) for m in records),
++        "malformed": malformed,
++    }
++
++
++def _parse(lines: Iterable[str]) -> tuple[list[re.Match[str]], int]:
++    records: list[re.Match[str]] = []
++    malformed = 0
++    for raw in lines:
++        line = raw.strip()
++        if not line:
++            continue
++        match = _LINE.fullmatch(line)
++        if match is None:
++            malformed += 1
++        else:
++            records.append(match)
++    return records, malformed
++
++
++def _status_classes(records: list[re.Match[str]]) -> dict[str, int]:
++    counts = Counter(m.group("status")[0] + "xx" for m in records)
++    return dict(sorted(counts.items()))
++
++
++def _top_paths(records: list[re.Match[str]]) -> list[str]:
++    counts = Counter(m.group("path").split("?", 1)[0] for m in records)
++    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
++    return [path for path, _ in ranked[:TOP_N]]
++
++
++def _size(field: str) -> int:
++    return 0 if field == "-" else int(field)
+diff --git a/tests/test_summarize_behaviour.py b/tests/test_summarize_behaviour.py
+new file mode 100644
+index 0000000..7add943
+--- /dev/null
++++ b/tests/test_summarize_behaviour.py
+@@ -0,0 +1,96 @@
++from logsum import summarize
++
++OK = '203.0.113.9 - - [10/Oct/2026:13:55:36 +0000] "GET /index.html HTTP/1.1" 200 2326 "-" "curl/8.0"'
++
++
++def _line(ip="203.0.113.9", path="/index.html", status=200, size="100"):
++    return f'{ip} - - [10/Oct/2026:13:55:36 +0000] "GET {path} HTTP/1.1" {status} {size} "-" "curl/8.0"'
++
++
++def test_empty_input():
++    assert summarize([]) == {
++        "total": 0,
++        "status": {},
++        "top_paths": [],
++        "unique_ips": 0,
++        "bytes": 0,
++        "malformed": 0,
++    }
++
++
++def test_full_summary_of_sample_line():
++    assert summarize([OK]) == {
++        "total": 1,
++        "status": {"2xx": 1},
++        "top_paths": ["/index.html"],
++        "unique_ips": 1,
++        "bytes": 2326,
++        "malformed": 0,
++    }
++
++
++def test_status_classes_counted_and_only_present_ones_reported():
++    lines = [_line(status=200), _line(status=302), _line(status=404), _line(status=404), _line(status=503)]
++    assert summarize(lines)["status"] == {"2xx": 1, "3xx": 1, "4xx": 2, "5xx": 1}
++
++
++def test_top_paths_strip_query_string():
++    lines = [_line(path="/a?x=1"), _line(path="/a?x=2"), _line(path="/a")]
++    assert summarize(lines)["top_paths"] == ["/a"]
++
++
++def test_top_paths_limited_to_three_most_frequent():
++    lines = (
++        [_line(path="/a")] * 4
++        + [_line(path="/b")] * 3
++        + [_line(path="/c")] * 2
++        + [_line(path="/d")]
++    )
++    assert summarize(lines)["top_paths"] == ["/a", "/b", "/c"]
++
++
++def test_top_paths_ties_broken_alphabetically():
++    lines = [_line(path="/z"), _line(path="/m"), _line(path="/b"), _line(path="/b")]
++    assert summarize(lines)["top_paths"] == ["/b", "/m", "/z"]
++
++
++def test_unique_ips_counts_distinct_clients():
++    lines = [_line(ip="10.0.0.1"), _line(ip="10.0.0.1"), _line(ip="10.0.0.2")]
++    assert summarize(lines)["unique_ips"] == 2
++
++
++def test_dash_size_counts_as_zero_bytes():
++    lines = [_line(size="-"), _line(size="50")]
++    result = summarize(lines)
++    assert result["bytes"] == 50
++    assert result["total"] == 2
++
++
++def test_malformed_lines_are_counted_and_excluded():
++    lines = [OK, "not a log line", '1.2.3.4 - - [bad] "GET / HTTP/1.1" 200 5 "-" "x"']
++    result = summarize(lines)
++    assert result["malformed"] == 2
++    assert result["total"] == 1
++    assert result["bytes"] == 2326
++
++
++def test_status_outside_2xx_to_5xx_is_malformed():
++    result = summarize([_line(status=100)])
++    assert result == {
++        "total": 0,
++        "status": {},
++        "top_paths": [],
++        "unique_ips": 0,
++        "bytes": 0,
++        "malformed": 1,
++    }
++
++
++def test_blank_lines_ignored_entirely():
++    result = summarize([OK, "", "   \n", OK + "\n"])
++    assert result["total"] == 2
++    assert result["malformed"] == 0
++
++
++def test_accepts_lines_with_trailing_newlines():
++    assert summarize([OK + "\n"])["total"] == 1

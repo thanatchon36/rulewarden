@@ -1,0 +1,46 @@
+diff --git a/src/numstats/core.py b/src/numstats/core.py
+index 1c688af..c2ff9b2 100644
+--- a/src/numstats/core.py
++++ b/src/numstats/core.py
+@@ -6,17 +6,23 @@ def median(values):
+ 
+     Raises ValueError for an empty sequence.
+     """
+-    n = len(values)
++    if not values:
++        raise ValueError("median() of empty sequence")
++    s = sorted(values)
++    n = len(s)
+     mid = n // 2
+     if n % 2:
+-        return values[mid]
+-    return (values[mid] + values[mid + 1]) / 2
++        return s[mid]
++    return (s[mid - 1] + s[mid]) / 2
+ 
+ 
+ def mode(values):
+     """Most common value; on ties, the smallest of the tied values. ValueError if empty."""
++    if not values:
++        raise ValueError("mode() of empty sequence")
+     counts = Counter(values)
+-    return counts.most_common(1)[0][0]
++    top = max(counts.values())
++    return min(v for v, c in counts.items() if c == top)
+ 
+ 
+ def percentile(values, p):
+@@ -24,8 +30,12 @@ def percentile(values, p):
+ 
+     Uses rank = p / 100 * (n - 1) on the sorted values. ValueError if empty or p out of range.
+     """
++    if not values:
++        raise ValueError("percentile() of empty sequence")
++    if not 0 <= p <= 100:
++        raise ValueError("p must be between 0 and 100")
+     s = sorted(values)
+-    rank = p / 100 * len(s)
++    rank = p / 100 * (len(s) - 1)
+     lo = int(rank)
+     hi = min(lo + 1, len(s) - 1)
+     return s[lo] + (s[hi] - s[lo]) * (rank - lo)

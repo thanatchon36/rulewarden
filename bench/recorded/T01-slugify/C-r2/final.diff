@@ -1,0 +1,155 @@
+diff --git a/src/textkit/slug.py b/src/textkit/slug.py
+index 13b4508..11bbad7 100644
+--- a/src/textkit/slug.py
++++ b/src/textkit/slug.py
+@@ -1,2 +1,58 @@
++import re
++import unicodedata
++
++_SPECIAL = {
++    "ß": "ss",
++    "ẞ": "SS",
++    "æ": "ae",
++    "Æ": "AE",
++    "ø": "o",
++    "Ø": "O",
++    "ł": "l",
++    "Ł": "L",
++}
++_WORD = re.compile(r"[a-z0-9]+")
++
++
++def _transliterate(text: str) -> str:
++    out = []
++    for ch in text:
++        if ch in _SPECIAL:
++            out.append(_SPECIAL[ch])
++        else:
++            decomposed = unicodedata.normalize("NFD", ch)
++            out.append("".join(c for c in decomposed if c.isascii()))
++    return "".join(out)
++
++
+ def slugify(text: str, max_length: int | None = None, separator: str = "-") -> str:
+-    raise NotImplementedError
++    """Return an ASCII slug of text, with words joined by separator.
++
++    If max_length is exceeded, cut at the last separator that fits;
++    if no separator fits, cut hard at max_length.
++    """
++    if not separator:
++        raise ValueError("separator must be a non-empty string")
++    if max_length is not None and max_length < 1:
++        raise ValueError("max_length must be at least 1")
++
++    words = _WORD.findall(_transliterate(text).lower())
++    slug = separator.join(words)
++    if max_length is None or len(slug) <= max_length:
++        return slug
++
++    kept = []
++    length = 0
++    for word in words:
++        added = len(word) if not kept else len(separator) + len(word)
++        if length + added > max_length:
++            break
++        kept.append(word)
++        length += added
++    if kept:
++        return separator.join(kept)
++
++    hard = slug[:max_length]
++    while hard.endswith(separator):
++        hard = hard[: -len(separator)]
++    return hard
+diff --git a/tests/test_slugify_behaviour.py b/tests/test_slugify_behaviour.py
+new file mode 100644
+index 0000000..302d9e0
+--- /dev/null
++++ b/tests/test_slugify_behaviour.py
+@@ -0,0 +1,85 @@
++import pytest
++
++from textkit import slugify
++
++
++@pytest.mark.parametrize(
++    "text, expected",
++    [
++        ("Åsa Ängström", "asa-angstrom"),
++        ("Straße", "strasse"),
++        ("Æble", "aeble"),
++        ("Søren", "soren"),
++        ("Łódź", "lodz"),
++        ("ẞ", "ss"),
++    ],
++)
++def test_transliteration(text, expected):
++    assert slugify(text) == expected
++
++
++def test_non_ascii_without_mapping_is_dropped():
++    assert slugify("a€b") == "ab"
++    assert slugify("日本語") == ""
++
++
++def test_lowercases_and_collapses_separators():
++    assert slugify("  --Hello   &&  World--  ") == "hello-world"
++
++
++def test_empty_and_symbol_only_input():
++    assert slugify("") == ""
++    assert slugify("!!!") == ""
++
++
++def test_custom_separator():
++    assert slugify("a b c", separator="_") == "a_b_c"
++
++
++def test_multi_character_separator():
++    assert slugify("a b c", separator="__") == "a__b__c"
++
++
++def test_separator_is_not_treated_as_a_pattern():
++    assert slugify("a b", separator="\\1") == "a\\1b"
++
++
++def test_max_length_not_exceeded_is_unchanged():
++    assert slugify("ab cd", max_length=5) == "ab-cd"
++
++
++def test_max_length_cuts_at_last_fitting_separator():
++    assert slugify("the quick brown fox", max_length=12) == "the-quick"
++    assert slugify("ab cd ef", max_length=6) == "ab-cd"
++
++
++def test_max_length_cut_at_separator_with_no_room_for_next_word():
++    assert slugify("ab cd ef", max_length=4) == "ab"
++
++
++def test_max_length_with_multi_character_separator():
++    assert slugify("aa bb cc", max_length=6, separator="--") == "aa--bb"
++    assert slugify("aa bb cc", max_length=5, separator="--") == "aa"
++
++
++def test_max_length_hard_cut_when_first_word_too_long():
++    assert slugify("abcdefghij", max_length=4) == "abcd"
++    assert slugify("abcdefgh ij", max_length=5) == "abcde"
++
++
++def test_result_never_ends_with_separator():
++    for max_length in range(1, 12):
++        result = slugify("ab cd ef gh", max_length=max_length)
++        assert not result.endswith("-")
++        assert len(result) <= max_length
++
++
++def test_empty_separator_raises():
++    with pytest.raises(ValueError):
++        slugify("hello world", separator="")
++
++
++@pytest.mark.parametrize("max_length", [0, -1])
++def test_max_length_below_one_raises(max_length):
++    with pytest.raises(ValueError):
++        slugify("hello world", max_length=max_length)
