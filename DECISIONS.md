@@ -314,3 +314,12 @@ fonts the template names). The published package is unchanged.
 - **Publishing the site is not done here.** GitHub Pages would make the paper and docs public while the repository is
   private (NEEDS_HUMAN H2), and the workflow that deploys it is a protected file. A prepared change is in
   `proposals/docs-site/`.
+
+## ADR-019 — Release 0.1.1 (2026-10-14)
+
+The human asked for PyPI to show the new README. PyPI takes a project's description from the release, so this needs
+a new version. `pyproject.toml` changes only the version, `0.1.0` → `0.1.1`. **No dependency changes.** A patch
+release is enough: the one code change is a new line in `init`'s output naming the pack rules that already cover
+compiled instruction-file lines; no rule, engine, schema or exit code changes. `rules.lock` records the tool version
+but verification checks only the lock format version, so the bump does not invalidate existing locks. The human
+pushes the tag `v0.1.1`; `release.yml` publishes through the trusted publisher, as for 0.1.0 (ADR-017).

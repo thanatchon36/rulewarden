@@ -6,17 +6,17 @@ change an agent makes, and measure how far that is possible.**
 [![CI](https://github.com/thanatchon36/rulewarden/actions/workflows/ci.yml/badge.svg)](https://github.com/thanatchon36/rulewarden/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/rulewarden.svg)](https://pypi.org/project/rulewarden/)
 [![Python](https://img.shields.io/pypi/pyversions/rulewarden.svg)](https://pypi.org/project/rulewarden/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/thanatchon36/rulewarden/blob/main/LICENSE)
 
 📄 **[Read the paper on the web](https://thanatchon36.github.io/rulewarden/paper/)** ·
-⬇️ **[Download the PDF](paper/paper.pdf)** ·
+⬇️ **[Download the PDF](https://github.com/thanatchon36/rulewarden/raw/main/paper/paper.pdf)** ·
 📚 **[Documentation](https://thanatchon36.github.io/rulewarden/)**
 
 rulewarden turns instruction-file rules into checks that run in a pre-tool hook, a git hook and CI, and fails
 closed. The same repository is a corpus study of 300 public instruction files and a pre-registered benchmark of
 headless Claude Code runs, with every null result and every tool defect reported.
 
-Status: alpha (0.1.0). Research prototype accompanying the paper in [`paper/`](paper/).
+Status: alpha (0.1.1). Research prototype accompanying the paper in [`paper/`](https://github.com/thanatchon36/rulewarden/tree/main/paper).
 
 ## Why
 
@@ -106,7 +106,7 @@ recorded example.
 | Any agent, or none: git hooks only | `rulewarden init --no-claude`, review, `rulewarden lock` | every commit and push |
 | CI only | commit `rules/` and `rules.lock`, then run `rulewarden hook ci origin/main` in the pipeline | every pull request |
 
-See [`docs/integrations.md`](docs/integrations.md) for Claude Code, git hooks, pre-commit, GitHub Actions,
+See [`docs/integrations.md`](https://github.com/thanatchon36/rulewarden/blob/main/docs/integrations.md) for Claude Code, git hooks, pre-commit, GitHub Actions,
 OpenCode, Codex and Gemini CLI.
 
 ### A block and a self-correction (recorded)
@@ -140,7 +140,7 @@ edit, and I won't route around that guard with a different write path."* It put 
 file and reported what was left. The hidden tests passed and the final diff had no violations.
 
 The file was one the agent had created itself in that session, so this block was a **false positive** in rulewarden
-(amendment A1 in [`bench/ANALYSIS_PLAN.md`](bench/ANALYSIS_PLAN.md)). The benchmark ran with the defect; it was
+(amendment A1 in [`bench/ANALYSIS_PLAN.md`](https://github.com/thanatchon36/rulewarden/blob/main/bench/ANALYSIS_PLAN.md)). The benchmark ran with the defect; it was
 fixed afterwards, and the fix is covered by a regression test.
 
 ## What is in the box
@@ -187,10 +187,10 @@ Enforce Agent Instruction Files.*
 | | |
 |---|---|
 | 📄 **Read it on the web** | **<https://thanatchon36.github.io/rulewarden/paper/>**: one reading column with the abstract, the pre-registered results, figures and references |
-| ⬇️ **Download the PDF** | **[`paper/paper.pdf`](paper/paper.pdf)**, typeset with Typst |
-| 📝 Markdown source | [`paper/paper.md`](paper/paper.md), rendered from [`paper/main.md`](paper/main.md) |
+| ⬇️ **Download the PDF** | **[`paper/paper.pdf`](https://github.com/thanatchon36/rulewarden/raw/main/paper/paper.pdf)**, typeset with Typst |
+| 📝 Markdown source | [`paper/paper.md`](https://github.com/thanatchon36/rulewarden/blob/main/paper/paper.md), rendered from [`paper/main.md`](https://github.com/thanatchon36/rulewarden/blob/main/paper/main.md) |
 | 🔢 Every number in it | filled from generated results (`corpus/data/summary.json`, `bench/results/summary.json`, `bench/results/rq3.json`, `paper/data/dogfood_audit.json`); an unresolved number or an unverified citation fails the build |
-| 🧪 Pre-registration | [`bench/ANALYSIS_PLAN.md`](bench/ANALYSIS_PLAN.md), fixed before the benchmark ran, with dated amendments |
+| 🧪 Pre-registration | [`bench/ANALYSIS_PLAN.md`](https://github.com/thanatchon36/rulewarden/blob/main/bench/ANALYSIS_PLAN.md), fixed before the benchmark ran, with dated amendments |
 
 The manuscript, the tool, the corpus pipeline and the benchmark were written by Claude Opus 5.5 (Anthropic) under
 the author's specification, with the constraint that every number is generated and every null result and tool
@@ -226,8 +226,8 @@ make replay     # RQ2–RQ5 from bench/recorded/, no API key needed
 make paper      # verify references, render paper/paper.md, the PDF and the web reader
 ```
 
-This repository was built by a coding agent under rulewarden's own hooks. [`STATUS.md`](STATUS.md) and
-[`DECISIONS.md`](DECISIONS.md) record that, including an incident in which the agent proposed disabling its own
+This repository was built by a coding agent under rulewarden's own hooks. [`STATUS.md`](https://github.com/thanatchon36/rulewarden/blob/main/STATUS.md) and
+[`DECISIONS.md`](https://github.com/thanatchon36/rulewarden/blob/main/DECISIONS.md) record that, including an incident in which the agent proposed disabling its own
 monitor (ADR-010).
 
 ## Development
@@ -248,7 +248,7 @@ compiler.
 
 The most useful contributions are rules with fixtures for checks that people write in instruction files, adapters
 for more agent harnesses, and reports of false positives (with the diff that triggered them). See
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/thanatchon36/rulewarden/blob/main/CONTRIBUTING.md).
 
 ## Citation
 
@@ -258,11 +258,11 @@ for more agent harnesses, and reports of false positives (with the diff that tri
   title   = {rulewarden: Deterministic Runtime Assurance for AI Coding Agents},
   year    = {2026},
   url     = {https://github.com/thanatchon36/rulewarden},
-  version = {0.1.0}
+  version = {0.1.1}
 }
 ```
 
-See [CITATION.cff](CITATION.cff). Release notes are in [CHANGELOG.md](CHANGELOG.md).
+See [CITATION.cff](https://github.com/thanatchon36/rulewarden/blob/main/CITATION.cff). Release notes are in [CHANGELOG.md](https://github.com/thanatchon36/rulewarden/blob/main/CHANGELOG.md).
 
 ## Licence
 

@@ -3,7 +3,7 @@
 All notable changes to this project are documented here. The format follows Keep a Changelog, and the project uses
 semantic versioning.
 
-## [Unreleased]
+## [0.1.1] — 2026-10-14
 
 ### Added
 - Documentation site (`docs/mkdocs.yml`, `make docs`) with a generated CLI reference and rule catalogue.
@@ -14,6 +14,7 @@ semantic versioning.
 ### Changed
 - `rulewarden init` names the instruction-file rules that the vendored packs already enforce, instead of
   reporting them as compiled with no file written.
+- README links are absolute, so they work on PyPI; `docs/integrations.md` pins the published version.
 
 ## [0.1.0] — 2026-10-14
 

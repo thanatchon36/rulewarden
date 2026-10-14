@@ -89,7 +89,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install rulewarden==0.1.0  # not on PyPI yet (NEEDS_HUMAN.md H3); until then install from git
+      - run: pip install rulewarden==0.1.1
       - run: rulewarden lock --check
       - run: rulewarden hook ci "origin/${{ github.base_ref }}"
 ```
