@@ -17,7 +17,7 @@ PyPI). The benchmark budget (`BENCH_MAX_RUNS=150`) was used in full.
 | Paper builds from scripts; numbers traceable; references verified; limitations; fair competitors | Yes (`make paper`; 58/59 references) |
 | The repo's audit log shows enforcement during development | Yes (Appendix A; 600+ entries, chain intact) |
 | Independent verifier found no unfixed bypass | Yes, after fixes (ADR-016) |
-| FINAL_REPORT, NEEDS_HUMAN, CHANGELOG written; committed and pushed; PyPI left to the human | Yes: pushed by the human at 9ca58ee (H4); PyPI left to the human (H3) |
+| FINAL_REPORT, NEEDS_HUMAN, CHANGELOG written; committed and pushed; PyPI left to the human | Yes: pushed by the human (H4); v0.1.0 released to PyPI by the human's tag through trusted publishing (H3, run 38542918465) |
 
 ## What shipped
 
@@ -99,5 +99,5 @@ clean clone of `9cdacbd`.
 
 ## Needs a human (NEEDS_HUMAN.md)
 
-H1 confirm the name · H2 make the repository public · H3 PyPI release · H4 push the local commits · H5 pre-commit
+Done: H1 name, H3 PyPI 0.1.0, H4 push. Open: H2 make the repository public · H5 pre-commit
 consumer manifest · H6 anchor the PRT-002 path pattern · H7 run the hooks from a pinned install.
