@@ -11,6 +11,10 @@ semantic versioning.
   by `make paper`.
 - `CITATION.cff` and `CONTRIBUTING.md`; README rewritten, with its findings table generated from the result files.
 
+### Changed
+- `rulewarden init` names the instruction-file rules that the vendored packs already enforce, instead of
+  reporting them as compiled with no file written.
+
 ## [0.1.0] — 2026-10-14
 
 ### Added

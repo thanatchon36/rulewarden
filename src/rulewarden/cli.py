@@ -498,6 +498,18 @@ def _scaffold(cfg: Config, packs: str) -> None:
             if not any(t.removeprefix("from-pack:") in vendored_ids for t in r.get("tags", []))
         ]
         click.echo(report_text(res), nl=False)
+        covered = sorted(
+            {
+                t.removeprefix("from-pack:")
+                for r in res.rules
+                for t in r.get("tags", [])
+                if t.removeprefix("from-pack:") in vendored_ids
+            }
+        )
+        if covered:
+            click.echo(
+                f"{len(covered)} already enforced by the vendored packs: {', '.join(covered)}"
+            )
         if novel:
             res.rules = novel
             target = rules_dir / f"compiled-{candidate.lstrip('.').replace('.', '-').lower()}.yaml"
