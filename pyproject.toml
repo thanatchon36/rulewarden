@@ -1,6 +1,6 @@
 [project]
 name = "rulewarden"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Deterministic runtime assurance for AI coding agents: enforce CLAUDE.md / AGENTS.md rules on diffs, fail-closed."
 readme = "README.md"
 license = "Apache-2.0"
@@ -54,6 +54,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rulewarden"]
+
+# The sdist ships the package only. Research data, recordings and corpus excerpts stay in the
+# repository; publishing them is a separate human decision (NEEDS_HUMAN H2).
+[tool.hatch.build.targets.sdist]
+include = ["/src/rulewarden", "/README.md", "/LICENSE", "/CHANGELOG.md", "/docs/integrations.md", "/docs/security.md"]
 
 [tool.ruff]
 line-length = 100

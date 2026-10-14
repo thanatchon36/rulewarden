@@ -275,3 +275,17 @@ now decoded as well (BOM and 4-byte NUL pattern; three more test cases). Recorde
 credentials inside compressed streams (gzip) or base64, keys split by a NUL byte inside the key, and NUL bytes at
 irregular intervals. In each of these the file no longer contains the credential as readable text. A secrets scanner
 that decodes archives and encodings is out of scope for a diff-level enforcer and belongs in a dedicated tool.
+
+## ADR-017 — Release 0.1.0 and the scope of published artifacts (2026-10-14)
+
+The human confirmed the name (H1), configured the PyPI trusted publisher (environment `pypi`, matching
+`release.yml`) and authorised the v0.1.0 release. `pyproject.toml` changes: version `0.1.0.dev0` → `0.1.0`, and an
+explicit sdist include list. **No dependency changes.**
+
+By default hatch's sdist contained the whole repository (5.5 MB): benchmark transcripts with local paths, corpus
+excerpts from 300 third-party repositories, research notes. Publishing those to PyPI would have made them public
+while the GitHub repository is still private, and before the licence and path review that H2 requires. The sdist
+is therefore limited to `src/rulewarden`, README, LICENSE, CHANGELOG and the two user docs (76 KB). The wheel
+(92 KB) contains the package and its seven rule packs. A clean venv installed from the wheel passes all 122 shipped
+fixtures. H5–H7 were not applied before the release (human choice); they change only this repository's own
+configuration, not the published package.

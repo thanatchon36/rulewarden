@@ -21,7 +21,7 @@ PyPI). The benchmark budget (`BENCH_MAX_RUNS=150`) was used in full.
 
 ## What shipped
 
-- **rulewarden 0.1.0.dev0** (Apache-2.0): a deterministic, fail-closed rule engine. It has 6 check engines, a
+- **rulewarden 0.1.0** (Apache-2.0): a deterministic, fail-closed rule engine. It has 6 check engines, a
   human-only lock that records rule-file and protected-path hashes, fixture qualification, alarm-managed reports,
   deviations with approvers, a hash-chained audit log, and `report`, `stats` and `doctor`.
 - **Adapters**: Claude Code (4 events; Stop is a warning gate), git hooks, pre-commit framework, CI (GitHub
@@ -35,7 +35,7 @@ PyPI). The benchmark budget (`BENCH_MAX_RUNS=150`) was used in full.
 - **Paper** (`paper/main.md` → `make paper`): every number is rendered from generated results, and the build fails on
   an unresolved number or an unverified citation (58/59 references verified).
 - **Docs**: README (with a recorded block-and-correct demo), `docs/integrations.md`, `docs/security.md`, CHANGELOG,
-  DECISIONS (ADR-001–015), STATUS.
+  DECISIONS (ADR-001–016), STATUS.
 
 ## Key results
 

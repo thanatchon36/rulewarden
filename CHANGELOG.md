@@ -3,7 +3,7 @@
 All notable changes to this project are documented here. The format follows Keep a Changelog, and the project uses
 semantic versioning.
 
-## [Unreleased] — 0.1.0
+## [0.1.0] — 2026-10-14
 
 ### Added
 - Deterministic rule engine: YAML schema with severity (advisory/required/critical) and decidability

@@ -12,7 +12,7 @@ checks that run on every change an agent makes, in a pre-tool hook, a git hook a
 - **Qualified rules.** A rule without a passing and a failing fixture does not load.
 - **Readable reports.** Severity first, deduplicated, capped, one `Fix:` line per finding.
 
-Status: alpha (0.1.0.dev0). Research prototype accompanying the paper in `paper/`.
+Status: alpha (0.1.0). Research prototype accompanying the paper in `paper/`.
 
 ## Demo: a block and a self-correction (recorded)
 
@@ -51,7 +51,7 @@ is covered by a regression test.
 ## Install and set up
 
 ```bash
-pip install git+https://github.com/thanatchon36/rulewarden   # repo still private, PyPI pending (NEEDS_HUMAN H2, H3)
+pip install rulewarden
 cd your-repo
 rulewarden init                     # vendor starter packs, compile CLAUDE.md/AGENTS.md, install git hooks
 # review rules/ (a human), then:
