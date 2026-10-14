@@ -20,7 +20,7 @@ BENCH = Path(__file__).resolve().parent
 ROOT = BENCH.parent
 sys.path.insert(0, str(ROOT))
 
-from bench.harness import workspace  # noqa: E402
+from bench.harness import transcripts, workspace  # noqa: E402
 
 RECORDED = BENCH / "recorded"
 RESULTS = BENCH / "results"
@@ -54,16 +54,7 @@ def pilots() -> list[Path]:
 
 
 def _events(run: Path) -> list[dict[str, Any]]:
-    out = []
-    t = run / "transcript.jsonl"
-    if not t.exists():
-        return out
-    for line in t.read_text(encoding="utf-8").splitlines():
-        try:
-            out.append(json.loads(line))
-        except ValueError:
-            continue
-    return out
+    return [e for e in transcripts.load(run) if isinstance(e, dict)]
 
 
 def circumvention(run: Path) -> tuple[int, int]:

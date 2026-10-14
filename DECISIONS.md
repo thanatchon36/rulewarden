@@ -212,3 +212,21 @@ expectation encoded the behaviour this ADR removes. The test now asserts the new
 Also observed: PRT-003 denies a Bash command whose *text* contains a human-only command, even inside a heredoc that
 writes documentation. That is a false positive of command-string matching. The rule stays as it is (fail-closed). Prose
 that quotes those commands is written with the Edit/Write tools, which are checked as diffs instead.
+
+## ADR-014 — Corpus labelling and benchmark recording choices (2026-10-14)
+
+1. **Model labelling under the subscription.** Corpus lines are labelled with `claude -p --model haiku` (no tools,
+   no settings, no MCP). The CLI reports a notional `total_cost_usd`; it runs under the subscription that runs this
+   session, so it is within the $0 budget. The same applies to benchmark runs.
+2. **`is_rule` added to the prompt before any model run.** A 40-line rubric sample showed that the extractor also
+   catches descriptive lines. Asking the model was cheaper and more transparent than tightening the extractor, which
+   `rulewarden compile` shares.
+3. **Benchmark rule library in `bench/ruleset/`, not `bench/rules/`.** See NEEDS_HUMAN H6 (PRT-002 over-match).
+4. **Transcripts are stored chunked (`bench/harness/transcripts.py`).** The first stage-1 recordings contained
+   stream-json lines over 20,000 characters, which SEC-001 cannot verify, so the session's PostToolUse hook reported a
+   critical unverifiable finding. Compressing the transcripts would have cleared the finding by making them
+   unscannable, which defeats the rule. Instead, strings over 2,000 characters are split into chunk lists and the
+   file is pretty-printed. `decode()` restores the events exactly, and the migration refuses to rewrite a file unless
+   the round trip is identical. Secrets are scrubbed from the full text before chunking, so splitting cannot hide a
+   credential that the scrubber would have caught. Runs recorded before the change are migrated with
+   `python -m bench.harness.transcripts migrate` (format only, verified lossless).

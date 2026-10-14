@@ -42,12 +42,113 @@ Section 3 turns each of these into a testable requirement (P1–P12).
 
 # 3 Design
 
+**Architecture.** rulewarden is a harness-agnostic core with thin adapters. The core takes a change (a unified
+diff, a proposed file content, or a shell command), evaluates a locked rule set on it, and returns a report and an
+exit code (0 pass or advisory only, 1 blocking findings, 3 engine error). Adapters translate harness events into
+core calls: Claude Code (PreToolUse, PostToolUse, Stop, SessionStart), plain git hooks and the pre-commit
+framework, CI, and pre-tool adapters for Codex, Gemini CLI and OpenCode. The layers form defence in depth. The agent
+hook denies a tool call before it acts; the git hook works with any agent or none; CI is the final gate, which the
+agent cannot reach. No model is called anywhere in the enforcement path.
+
+**Threat model.** The agent is *untrusted but mediated*: every write and shell command passes through a harness
+hook. The agent may make mistakes, cut corners under pressure, or try to make checks pass by editing the checks.
+Bypasses that need a misconfigured harness, such as hooks that are not installed or a harness that ignores
+`onFailure`, are out of scope and listed as limitations. Section 6 reports one such bypass that went through the
+human operator instead.
+
+**Requirements P1–P12.** Each safety-critical concept from §2.2 becomes a requirement with an implementation and a
+test (Table 4).
+
+| # | Concept | Requirement | Implementation and evidence |
+|---|---|---|---|
+| P1 | Simplex / runtime assurance | The agent proposes; a simple monitor accepts or rejects; no model in the enforcement path | PreToolUse evaluates the *proposed* content of Edit/Write before anything is written (`adapters/claude_code.py`); `tests/test_adapters.py` |
+| P2 | Independence of verification | The agent cannot modify its monitor | `rules.lock` records SHA-256 of every rule file and protected path; a protected-path change is critical unless it matches the lock; only a human runs `lock`; command rules deny shell writes to protected paths (`engine/lock.py`, `protected-set` pack) |
+| P3 | MISRA decidability | Every rule declares `deterministic`, `heuristic` or `undecidable`; only deterministic rules block | Schema rejects a blocking heuristic rule; undecidable rules carry no check and are listed, never evaluated (`engine/schema.py`) |
+| P4 | Integrity levels | `advisory`, `required`, `critical` | Severity orders the report and sets blocking; critical marks independence violations |
+| P5 | Fail-closed, bounded execution | Timeouts, budgets, ReDoS-safe regex; engine errors on blocking rules block | Static star-height screen for regexes, input caps, a forked watchdog with a wall-clock budget; harness `onFailure: block` (`engine/bounded.py`, `engine/regexsafe.py`) |
+| P6 | Tool qualification | A rule without a passing and a failing fixture cannot load; the lock certifies qualification | `test-rules`; `lock` refuses to write unless every fixture passes (`engine/fixtures.py`) |
+| P7 | Alarm management | Severity first, stable order, dedupe, advisory cap, one `Fix:` per finding, bounded length | `engine/report.py`; the flat reporter is the RQ4 ablation |
+| P8 | Deviation procedure | Inline deviations with reason, approver, expiry; agent deviations of blocking rules are themselves critical | Approvers in a protected file; blocking-rule deviations valid only when registered by a human lock (`engine/deviations.py`) |
+| P9 | Traceability | Rule ids, source line, hash-chained audit log keyed by diff and rule-set hash | `.rulewarden/audit.jsonl`, `report` verifies the chain (`engine/audit.py`) |
+| P10 | Near-miss reporting | Violations per rule, self-correction cycles, rules that never fire | `rulewarden stats` |
+| P11 | STPA | A guided procedure from losses to rules | Not implemented (v3, documentation only) |
+| P12 | Assurance case | Evidence summary mapped to governance frameworks | `report --framework nist-ai-rmf` |
+
+*Table 4. Requirements and their implementation.*
+
+**Decidability of compliance.** Schneider's result [@schneider2000enforceable] says which properties a monitor can
+enforce: safety properties that are decidable on finite prefixes. Our deterministic tier is the subset that is
+decidable *on a single diff or command* with a bounded regex, glob, syntax-tree query or plugin. "No `print()` in
+library code" qualifies; "write clean code" does not. A heuristic rule (for example "comments should not restate the
+code") is approximated with known false positives, so it may only warn. This is the design decision that the corpus
+study (§4) tests against what developers actually write.
+
+**Determinism contract.** The same diff, rule set and configuration produce a byte-identical JSON report (sorted
+keys, stable ordering, no timestamps outside the audit log, locale- and timezone-independent). `doctor` checks this
+by running the engine in three processes with different `TZ`, locale and hash seeds and comparing report hashes.
+
 # 4 Corpus study (RQ1)
 
 **RQ1.** What fraction of rules in real-world agent instruction files is deterministically checkable, heuristic, or
 undecidable, and what rule categories dominate?
 
-*Results pending (Phase 4).*
+**Method.** On {{corpus:collection.query_date}} we collected {{corpus:n_files|int}} instruction files through GitHub code
+search, 60 per file type (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `GEMINI.md`, `.windsurfrules`), in API order.
+We skipped forks, second files from an already sampled repository, files over 200 KB, and repositories without an
+OSI-approved licence. This is a convenience sample, not a random one (`corpus/README.md`). The extractor that
+`rulewarden compile` uses found {{corpus:n_lines|int}} rule-like lines (median {{corpus:lines_per_file_median|int}}
+per file). Every line received two independent sets of labels. (1) A deterministic regex rubric (`corpus/label.py`)
+assigns a category and a decidability tier relative to a checker that sees only the diff and the agent's commands.
+(2) A model (Claude Haiku 5.5 through `claude -p`, no tools, fixed prompt `corpus/prompts/label_v1.txt`) labelled
+every line twice in independent passes. It also says whether the line is a rule at all or merely describes the project.
+All labels, raw model responses and scripts are published. The labels are rubric-based and model-assisted; no human
+labelled the corpus.
+
+**Reliability.** The two model passes agree substantially on decidability (Cohen's κ =
+{{corpus:model.kappa_p1_p2_decidability|f2}}) and strongly on category (κ = {{corpus:model.kappa_p1_p2_category|f2}})
+and on rule-versus-description (κ = {{corpus:model.kappa_p1_p2_is_rule|f2}}). The rubric and the model barely agree on
+decidability (κ = {{corpus:model.kappa_rubric_p1_decidability|f2}}; raw agreement
+{{corpus:model.rubric_model_agreement.share|pct}}). Table 2 shows where they diverge. Most lines the rubric calls
+deterministic, because they name a concrete token, the model calls heuristic. An example is "Use `REAL*8` for all
+floating-point variables", where a regex can flag violations but cannot confirm compliance everywhere. We therefore
+report both labellings and treat their spread as the uncertainty of the estimate.
+
+{{table:corpus_decidability}}
+
+*Table 1. Decidability of {{corpus:n_lines|int}} rule-like lines (95% CIs from a bootstrap over files).*
+
+{{table:corpus_confusion}}
+
+*Table 2. Rubric (rows) against model pass 1 (columns).*
+
+**Results.** Deterministically checkable rules are a minority under every labelling: the rubric
+{{corpus:rubric_decidability.deterministic.share|pct}} ({{corpus:rubric_decidability.deterministic.ci95|ci}}),
+the model {{corpus:model.decidability_p1.deterministic.share|pct}}
+({{corpus:model.decidability_p1.deterministic.ci95|ci}}), and both together only
+{{corpus:model.rubric_model_agreement.deterministic_by_both_share_of_all|pct}}. Restricting to lines the model calls
+rules in both passes ({{corpus:model.rules_only.share_of_lines|pct}} of lines) barely changes this
+(rubric {{corpus:model.rules_only.rubric.deterministic.share|pct}}, model
+{{corpus:model.rules_only.model_p1.deterministic.share|pct}}). The rest splits differently by labeller: the rubric
+calls most of it undecidable ({{corpus:rubric_decidability.undecidable.share|pct}}), while the model calls
+{{corpus:model.decidability_p1.heuristic.share|pct}} heuristic and
+{{corpus:model.decidability_p1.undecidable.share|pct}} undecidable. Per file, the median share of rubric-deterministic
+lines is {{corpus:per_file_deterministic_share.median|pct}}, and {{corpus:per_file_deterministic_share.files_with_no_deterministic_rule|int}}
+files contain none. The shipped `compile` templates match only {{corpus:compilable.share_all|pct}} of lines
+({{corpus:compilable.n|int}} lines; most often tool substitutions such as "use pnpm, not npm" and forbidden tokens).
+Style ({{corpus:model.category_p1.style|pct}} by the model), process ({{corpus:model.category_p1.process|pct}}),
+tooling ({{corpus:model.category_p1.tooling|pct}}) and testing ({{corpus:model.category_p1.testing|pct}}) dominate;
+security ({{corpus:model.category_p1.security|pct}}) and scope ({{corpus:model.category_p1.scope|pct}}) rules are rare
+but are the categories most often deterministic (Table 3).
+
+{{table:corpus_categories}}
+
+*Table 3. Rubric category against rubric decidability.*
+
+**Implications.** A deterministic enforcer can cover at most a third of what developers write into instruction files,
+and plausibly closer to a tenth. That fraction is what rulewarden guarantees, which is why it reports the rest
+instead of pretending to enforce it (`compile` lists every line it could not compile). The low rubric–model agreement
+is itself a finding: whether a rule is "checkable" depends on whether the checker must confirm compliance or only
+detect violations, and instruction files rarely say which.
 
 # 5 Evaluation
 

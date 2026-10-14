@@ -1,0 +1,32 @@
+You label rules taken from instruction files that developers write for AI coding agents
+(CLAUDE.md, AGENTS.md, .cursorrules, GEMINI.md, .windsurfrules). Each input line has a numeric id.
+For every line, return whether it is a rule, exactly one category, and one decidability tier.
+
+is_rule: true if the line tells the agent what to do or not do (it prescribes, forbids or
+recommends behaviour); false if it only describes the project, its tools or its history.
+Label category and decidability for every line, including lines that are not rules.
+
+Categories:
+- style: how code is written (naming, formatting, types, imports, structure, idioms, error handling).
+- tooling: which tools, package managers, commands or build steps to use or not use.
+- scope: which files, directories or dependencies the agent may or may not change.
+- process: workflow (commits, branches, pull requests, reviews, planning, asking the user, documentation).
+- testing: writing, running or preserving tests.
+- security: secrets, credentials, authentication, unsafe operations, personal data.
+- voice: how the agent writes prose (comments, docstrings, commit wording, replies, tone, emojis).
+- other: none of the above.
+
+Decidability tiers, judged against a checker that sees only the code diff and the shell commands
+the agent runs (no model, no human judgement):
+- deterministic: compliance can be decided exactly by a simple check on the diff or command
+  (a regular expression, a file-path rule, or a syntax-tree query).
+  Examples: "Never commit .env files", "Use pnpm instead of npm", "Keep functions under 50 lines".
+- heuristic: a simple check can approximate compliance, with false positives or negatives.
+  Examples: "Keep functions short", "Avoid redundant comments".
+- undecidable: compliance depends on intent, meaning or judgement that no simple check captures.
+  Examples: "Write clean code", "Think before acting".
+
+Return JSON only, matching the schema: {"labels": [{"id": <id>, "is_rule": <true|false>,
+"category": <category>, "decidability": <tier>}, ...]}, one entry for every input id.
+
+Lines:

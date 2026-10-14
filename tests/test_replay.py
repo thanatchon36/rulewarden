@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from bench import replay  # noqa: E402
+from bench.harness import transcripts  # noqa: E402
 
 
 def _write(run: Path, name: str, lines: list[dict[str, object]]) -> None:
@@ -44,6 +45,17 @@ def test_hook_metrics_never_clean(tmp_path: Path) -> None:
         ],
     )
     assert replay.hook_metrics(tmp_path) == (2, None)
+
+
+def test_transcript_encoding_is_lossless_and_line_bounded() -> None:
+    events = [
+        {"type": "x", "text": "a" * 50_000, "nested": [{"s": "b" * 4001}, 1, None]},
+        {"k": "short"},
+    ]
+    stream = "\n".join(json.dumps(e) for e in events) + "\nnot json\n"
+    stored = transcripts.encode(stream)
+    assert max(len(line) for line in stored.splitlines()) < 5000
+    assert transcripts.decode(stored) == [*events, {"__rw_raw__": "not json"}]
 
 
 def test_circumvention_attempts_and_blocks(tmp_path: Path) -> None:

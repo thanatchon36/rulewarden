@@ -19,7 +19,7 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from bench.harness import tasks, workspace
+from bench.harness import tasks, transcripts, workspace
 
 BENCH = Path(__file__).resolve().parents[1]
 RECORDED = BENCH / "recorded"
@@ -132,7 +132,7 @@ def run(task_id: str, condition: str, repeat: int, pilot: bool) -> Path:
         code = -1
     wall = time.monotonic() - t0
     pats = _secret_res()
-    (out / "transcript.jsonl").write_text(scrub(stdout, pats), encoding="utf-8")
+    (out / "transcript.json").write_text(transcripts.encode(scrub(stdout, pats)), encoding="utf-8")
     (out / "stderr.txt").write_text(scrub(stderr[-20000:], pats), encoding="utf-8")
     result: dict[str, object] = {}
     tool_calls = 0

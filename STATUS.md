@@ -45,6 +45,14 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
 - [ ] `.pre-commit-hooks.yaml` consumer manifest — NEEDS_HUMAN H5 (outside SCP-001 allowed paths)
 - [ ] Live Claude Code demo (block + self-correct) for the README — recorded in Phase 5 with the benchmark runner
 ## Phase 4 — Corpus
+- [x] Collected 300 files (60 per stratum, OSI-licensed only) on 2026-10-14 → `corpus/data/files.csv`
+- [x] 3,844 rule-like lines extracted with the `compile` extractor, scrubbed → `rules.csv`
+- [x] Rubric labels (`corpus/label.py`, pinned by `tests/test_corpus_rubric.py`) and two model passes (Haiku 5.5,
+      fixed prompt, raw responses in `corpus/data/model_raw/`)
+- [x] Analysis with file-cluster bootstrap CIs and κ → `summary.json`, `paper/tables/corpus_*.md`, figures
+- [x] Paper §4 written with generated numbers (`paper/render.py` fills placeholders; unresolved = build failure)
+- Finding: rubric and model disagree on decidability (κ ≈ 0.09). Deterministic share is 19% (model) to 34% (rubric),
+  9% by both; shipped compile templates match about 5% of lines.
 ## Phase 5 — Benchmark
 ## Phase 6 — Paper
 ## Phase 7 — Hardening, verification, release prep
