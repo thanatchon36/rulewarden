@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-from pathlib import Path
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from rulewarden.engine.checks import EngineContext, Hit, Target, require_keys
