@@ -179,7 +179,7 @@ everywhere. We therefore report both labellings and treat their spread as the un
 
 *Table 3. Rubric (rows) against model pass 1 (columns).*
 
-![Decidability per file type under the rubric (left) and model pass 1 (right). Bars show the share of each file type's rule-like lines in each tier; the figure inside the dark segment is the deterministic share, and n is the number of lines.](figures/corpus_decidability.png)
+![Decidability per file type under (a) the rubric and (b) model pass 1. Bars show the share of each file type's rule-like lines in each tier, file types ordered by their rubric deterministic share; the figure inside the dark segment is the deterministic share, and n is the number of lines.](figures/corpus_decidability.png)
 
 **Results.** Deterministically checkable rules are a minority under every labelling: the rubric gives
 {{corpus:rubric_decidability.deterministic.share|pct}} ({{corpus:rubric_decidability.deterministic.ci95|ci}}), the

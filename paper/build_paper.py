@@ -1,9 +1,10 @@
 """Typeset paper/paper.md into paper/paper.pdf and the web reader docs/pages/paper/index.html.
 
 One source, two outputs, so they cannot disagree. pandoc converts paper.md (rendered from main.md
-by render.py) to Typst with paper/rulewarden.typ, compiled by the typst wheel, and to an HTML
-page with paper/reader.html (figures copied next to it, so every line stays scannable). The
-reader's masthead and results strip (paper/findings.py) come from the generated summaries.
+by render.py) to Typst with paper/rulewarden.typ, compiled by the typst wheel with each figure's
+SVG swapped in for its PNG so the PDF figures are vector, and to an HTML page with
+paper/reader.html (PNG figures copied next to it, so every line stays scannable). The reader's
+masthead and results strip (paper/findings.py) come from the generated summaries.
 """
 
 from __future__ import annotations
@@ -48,6 +49,21 @@ def _common_args() -> list[str]:
     ]
 
 
+_FIGURE_PNG = re.compile(r'image\("\.\./figures/([\w.-]+)\.png"')
+
+
+def vector_figures(typst_source: str) -> str:
+    """Point each figure at its SVG copy, where one exists, so the PDF figures are vector."""
+
+    def swap(match: re.Match[str]) -> str:
+        stem = match.group(1)
+        if (PAPER / "figures" / f"{stem}.svg").is_file():
+            return f'image("../figures/{stem}.svg"'
+        return match.group(0)
+
+    return _FIGURE_PNG.sub(swap, typst_source)
+
+
 def build_pdf() -> Path:
     TYPST_SOURCE.parent.mkdir(exist_ok=True)
     subprocess.run(
@@ -66,7 +82,7 @@ def build_pdf() -> Path:
     source = TYPST_SOURCE.read_text(encoding="utf-8").replace(
         'image("figures/', 'image("../figures/'
     )
-    TYPST_SOURCE.write_text(source, encoding="utf-8")
+    TYPST_SOURCE.write_text(vector_figures(source), encoding="utf-8")
     import typst
 
     typst.compile(str(TYPST_SOURCE), output=str(PDF), root=str(ROOT))
