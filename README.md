@@ -8,14 +8,22 @@ change an agent makes, and measure how far that is possible.**
 [![Python](https://img.shields.io/pypi/pyversions/rulewarden.svg)](https://pypi.org/project/rulewarden/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/thanatchon36/rulewarden/blob/main/LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23368991.svg)](https://doi.org/10.5281/zenodo.23368991)
+[![Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20dataset-rulewarden--data-yellow.svg)](https://huggingface.co/datasets/thanatchon36/rulewarden-data)
 
 📄 **[Read the paper on the web](https://thanatchon36.github.io/rulewarden/paper/)** ·
 ⬇️ **[Download the PDF](https://github.com/thanatchon36/rulewarden/raw/main/paper/paper.pdf)** ·
-📚 **[Documentation](https://thanatchon36.github.io/rulewarden/)**
+📚 **[Documentation](https://thanatchon36.github.io/rulewarden/)** ·
+🤗 **[Dataset on Hugging Face](https://huggingface.co/datasets/thanatchon36/rulewarden-data)**
 
 rulewarden turns instruction-file rules into checks that run in a pre-tool hook, a git hook and CI, and fails
 closed. The same repository is a corpus study of 300 public instruction files and a pre-registered benchmark of
 headless Claude Code runs, with every null result and every tool defect reported.
+
+![Decidability per file type under the rubric and model pass 1: 34% of all 3,844 rule-like lines are deterministic under the rubric and 19% under the model.](https://raw.githubusercontent.com/thanatchon36/rulewarden/main/paper/figures/corpus_decidability.png)
+
+*How much of an instruction file can be checked on a diff: decidability per file type under (a) the rubric and
+(b) model pass 1. The figure inside each dark segment is the deterministic share, and n is the number of rule-like
+lines.*
 
 Status: alpha (0.1.1). Research prototype accompanying the paper in [`paper/`](https://github.com/thanatchon36/rulewarden/tree/main/paper).
 
@@ -222,11 +230,6 @@ Generated from the result files (149 benchmark runs). *null* means no detectable
 In short: only a minority of the rules people write can be decided on a diff, which is why rulewarden reports what
 it does *not* enforce. On small tasks a strong model rarely broke the rules at all, so the hooks' value showed up
 mid-session and in dogfooding rather than in the final diffs.
-
-![Decidability per file type under the rubric and model pass 1: 34% of all 3,844 rule-like lines are deterministic under the rubric and 19% under the model.](https://raw.githubusercontent.com/thanatchon36/rulewarden/main/paper/figures/corpus_decidability.png)
-
-*Decidability per file type under (a) the rubric and (b) model pass 1. The figure inside each dark segment is the
-deterministic share, and n is the number of rule-like lines.*
 
 ![Rule-like lines per rubric category, coloured by rubric decidability. Style is the largest named category with 700 lines, and the residual category other has 1,456.](https://raw.githubusercontent.com/thanatchon36/rulewarden/main/paper/figures/corpus_categories.png)
 
