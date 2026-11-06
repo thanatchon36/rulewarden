@@ -192,6 +192,7 @@ Enforce Agent Instruction Files.*
 | 📝 Markdown source | [`paper/paper.md`](https://github.com/thanatchon36/rulewarden/blob/main/paper/paper.md), rendered from [`paper/main.md`](https://github.com/thanatchon36/rulewarden/blob/main/paper/main.md) |
 | 🔢 Every number in it | filled from generated results (`corpus/data/summary.json`, `bench/results/summary.json`, `bench/results/rq3.json`, `paper/data/dogfood_audit.json`); an unresolved number or an unverified citation fails the build |
 | 🧪 Pre-registration | [`bench/ANALYSIS_PLAN.md`](https://github.com/thanatchon36/rulewarden/blob/main/bench/ANALYSIS_PLAN.md), fixed before the benchmark ran, with dated amendments |
+| 🤗 Data | [`thanatchon36/rulewarden-data`](https://huggingface.co/datasets/thanatchon36/rulewarden-data) on Hugging Face: the labelled corpus, recorded runs and benchmark tasks |
 
 The tool, the corpus pipeline, the benchmark and the manuscript draft were produced by Claude Opus 5.5, and the
 prose was revised by Claude Fable 5.1 (both Anthropic), under the author's specification and the constraint that
@@ -221,6 +222,16 @@ Generated from the result files (149 benchmark runs). *null* means no detectable
 In short: only a minority of the rules people write can be decided on a diff, which is why rulewarden reports what
 it does *not* enforce. On small tasks a strong model rarely broke the rules at all, so the hooks' value showed up
 mid-session and in dogfooding rather than in the final diffs.
+
+![Decidability per file type under the rubric and model pass 1: 34% of all 3,844 rule-like lines are deterministic under the rubric and 19% under the model.](https://raw.githubusercontent.com/thanatchon36/rulewarden/main/paper/figures/corpus_decidability.png)
+
+*Decidability per file type under (a) the rubric and (b) model pass 1. The figure inside each dark segment is the
+deterministic share, and n is the number of rule-like lines.*
+
+![Rule-like lines per rubric category, coloured by rubric decidability. Style is the largest named category with 700 lines, and the residual category other has 1,456.](https://raw.githubusercontent.com/thanatchon36/rulewarden/main/paper/figures/corpus_categories.png)
+
+*Rule-like lines per rubric category, coloured by rubric decidability. Labels give the count and the share of all
+lines.*
 
 ```bash
 make corpus     # RQ1 from corpus/data/
