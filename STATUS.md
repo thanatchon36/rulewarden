@@ -87,3 +87,5 @@ Incident log (dogfooding evidence, paper §6), 2026-10-14:
       (concept DOI 10.5281/zenodo.23368991, used in the badge and citations)
 - [x] Paper prose revised (abstract, principal findings, formal register); 11-page PDF and reader rebuilt; all
       placeholders and citations still resolve
+- [x] Data published 2026-11-06 from commit 9d78997: https://huggingface.co/datasets/thanatchon36/rulewarden-data
+- [x] README shows the two corpus figures and links the dataset
